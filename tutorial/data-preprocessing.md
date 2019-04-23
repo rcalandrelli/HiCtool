@@ -41,12 +41,15 @@ The data preprocessing is performed with a single command line (replace paramete
 - Removing the unmapped reads and selecting reads that were uniquely mapped with a MAPQ >= 30, i.e. the estimated probability of mapping error is <= 0.1%.
 
 ```unix
+# Make the bash script executable
 chmod u+x /HiCtool-master/scripts/HiCtool_run_preprocessing.sh
+
+# Run the script
 /HiCtool-master/scripts/HiCtool_run_preprocessing.sh \
 -h /HiCtool-master/scripts/ \
 -o your_output_directory \
--1 file1.fastq \
--2 file2.fastq \
+-1 /myfastq_path/file1.fastq \
+-2 /myfastq_path/file2.fastq \
 -e MboI \
 -g /path_to_the_genome_indexes/index \
 -p 32
