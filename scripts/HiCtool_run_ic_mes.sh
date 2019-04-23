@@ -30,7 +30,7 @@ has_header_column=0 # input file doesn't have header column
 
 
 ### Calculate biases
-cmd=$hiCorrector"/bin/ic_mes"
+cmd=$hiCorrector"bin/ic_mes"
 bias_factor_file="$output_dir/output.bias" # output file consists of a vector of bias factors
 log_file="$output_dir/output.log" # log file recording the verbose console output of the ic command
 

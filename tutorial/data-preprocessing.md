@@ -4,13 +4,112 @@ This is the first section of the pipeline and it allows to pre-process the raw H
 
 ## Table of Contents
 
-1. [Downloading the raw data from GEO](#1-downloading-the-raw-data-from-geo)
-2. [Pre-truncation of the reads that contain potential ligation junctions](#2-pre-trunction-of-the-reads-that-contain-potential-ligation-junction)
-3. [Mapping read pairs to the reference genome](#3-mapping-read-pairs-to-reference-genome)
-4. [Filtering reads and selecting reads that are paired](#4-filtering-reads-and-selecting-reads-that-are-paired)
-5. [Creating the fragment-end (FEND) bed file](#5-creating-the-fragment-end-fend-bed-file)
+1. [Preprocessing the data](#1-preprocessing-the-data)
+   - [1.1. Downloading the raw data from GEO](#11-downloading-the-raw-data-from-geo)
+2. [Creating the fragment-end (FEND) bed file](#2-creating-the-fragment-end-fend-bed-file)
 
-## 1. Downloading the raw data from GEO
+
+## 1. Preprocessing the data
+
+In order to start the Hi-C data analysis and preprocess your data you should have two fastq files, respectively of the first and the second reads of the pairs. If you wish to use public datasets on GEO and you need instructions to download the data, see [this section](#11-downloading-the-raw-data-from-geo). 
+
+**Note!** To produce our final results, use this GEO accession number: **[GSM1551550](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM1551550)**.
+
+HiCtool allows to process Hi-C data generated using one or more of the following restriction enzymes:
+
+- HindIII
+- MboI
+- DpnII
+- Sau3AI
+- BglII
+- NcoI
+- Hinfl
+
+The Arima Kit uses a cocktail of restriction enzymes which includes MboI and Hinfl.
+If your experiment was performed using a different restriction enzyme, please contact Riccardo Calandrelli at <rcalandrelli@eng.ucsd.edu>.
+In addition, the Bowtie2 genome index of the species under analysis should be provided too. If you do not have it, please run the following in order to generate it:
+```unix
+bowtie2-build hg38.fa index
+```
+```hg38.fa``` is the reference sequence in FASTA format (in this case for hg38), the output files in ``bt2`` format are named with the prefix ``index``.
+
+The data preprocessing is performed now with a single command line (replace parameters):
+```unix
+chmod u+x /HiCtool-master/scripts/HiCtool_run_preprocessing.sh
+/HiCtool-master/scripts/HiCtool_run_preprocessing.sh \
+-h /HiCtool-master/scripts/ \
+-o your_output_directory \
+-1 file1.fastq \
+-2 file2.fastq \
+-e MboI \
+-g /path_to_the_genome_indexes/index \
+-p 32
+```
+where:
+
+- ``-h``: path where are the HiCtool scripts with the final trailing slash.
+- ``-o``: path to save the output files. If the folder does not exist, it is created automatically.
+- ``-1``: the fastq file with the first reads of the pairs.
+- ``-2``: the fastq file with the second reads of the pairs.
+- ``-e``: the restriction enzyme or enzymes passed between square brackets (example: [MboI,Hinfl] for the cocktail of the Arima Kit).
+- ``-g``: Bowtie2 genome indexes. Only the filename should be passed here without extension.
+- ``-p``: the number of parallel threads (processors) to use for alignment and preprocessing. The more the fastest the process.
+
+The preprocessing code performs the following steps:
+
+- Pre-truncation of the reads that contain potential ligation junctions to keep the longest piece without a junction sequence ([Ay et al., 2015](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0745-7)).
+- Independent mapping of the read pairs to the reference genome to avoid any proximity constraint.
+- Removing the unmapped reads and selecting reads that were uniquely mapped with a MAPQ >= 30, i.e. the estimated probability of mapping error is <= 0.1%.
+
+The code produces the following output files:
+
+- ``pre_truncation_log.txt`` with the information about the percentage of reads that have been truncated. This is also printed on the console:
+```unix
+SRR1658570_1.fastq
+202095066 reads (length = 101 bp); of these:
+29851195 (14.78%) contained a potential ligation junction and have been truncated.
+SRR1658570_2.fastq
+202095066 reads (length = 101 bp); of these:
+28681691 (14.2%) contained a potential ligation junction and have been truncated.
+```
+The length distribution of the truncated reads is also plotted and saved to file.
+
+![](/figures/SRR1658570_1.fastq_truncated_reads.png)
+
+![](/figures/SRR1658570_2.fastq_truncated_reads.png)
+
+- ``HiCfile1_log.txt`` and ``HiCfile2_log.txt`` 
+```unix
+HiCfile1_log.txt
+202095066 reads; of these:
+202095066 (100.00%) were unpaired; of these:
+5770798 (2.86%) aligned 0 times
+156759009 (77.57%) aligned exactly 1 time
+39565259 (19.58%) aligned >1 times
+97.14% overall alignment rate
+
+----------
+202095066 reads; of these:
+172973813 (85.59%) aligned with MAPQ>=30; of these:
+143415284 (82.91%) were paired and saved into HiCfile_pair1.bam
+
+HiCfile2_log.txt
+202095066 reads; of these:
+202095066 (100.00%) were unpaired; of these:
+13381441 (6.62%) aligned 0 times
+149852422 (74.15%) aligned exactly 1 time
+38861203 (19.23%) aligned >1 times
+93.38% overall alignment rate
+
+----------
+202095066 reads; of these:
+161438783 (79.88%) aligned with MAPQ>=30; of these:
+143415284 (88.83%) were paired and saved into HiCfile_pair2.bam
+```
+
+
+
+### 1.1. Downloading the raw data from GEO
 
 **Note!** If you have your fastq files generated from your custom experiment, you can skip this first step and go to [step 2](#2-pre-trunction-of-the-reads-that-contain-potential-ligation-junction).
 
@@ -241,7 +340,7 @@ echo -e "@NcoI\nCCATGG\n+\nIIIIII" > NcoI.fastq
 ```
 After this, implement the multiple alignment command in Bowtie 2 to locate all the coordinates of the restriction enzyme sites:
 ```unix
-(bowtie2 -p 32 -k 8000000 -x your_genome_index -U MboI.fastq -S restrictionsites.sam) 2>restrictionsites_log.txt
+(bowtie2 -p 32 -k 10000000 -x your_genome_index -U MboI.fastq -S restrictionsites.sam) 2>restrictionsites_log.txt
 ```
 where the ``-k`` argument changes Bowtie 2 research behavior. By default, ``bowtie2`` searches for distinct, valid alignments for each read. When it finds a valid alignment, it continues looking for alignments that are nearly as good or better and the best alignment found is reported. When ``-k <int>`` is specified, ``bowtie2`` searches for at most ``<int>`` distinct, valid alignments for each read. The search terminates when it can not find more distinct valid alignments, or when it finds ``<int>``, which happens first.
 

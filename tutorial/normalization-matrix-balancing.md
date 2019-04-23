@@ -129,7 +129,7 @@ chmod u+x HiCtool_run_ic_mes.sh
                 -m "100" \
                 -r 3078 \
                 -s 17237 \
-                -h "/path_to_Hi-Corrector/Hi-Corrector1.2" \
+                -h "/path_to_Hi-Corrector/Hi-Corrector1.2/" \
                 -i "HiCtool_1mb_matrix_global_observed_tab.txt"
 ```
 Where the options are:

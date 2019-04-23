@@ -1,112 +1,40 @@
-"""
-Program to generate the global observed contact matrix containing all the matrices (intra and inter) for all the chromosomes using parallel jobs to be normalized using run_ic_mes.sh.
+# Generate the global observed contact matrix containing all the matrices (intra and inter) for all the chromosomes using parallel jobs to be normalized using run_ic_mes.sh.
 
-To use this code, an HiC_project_object.hdf5 must be provided (see HiCtool_hifive.py)
-"""
+# Usage: python2.7 HiCtool_global_map_observed.py [-h] [options]
+# Options:
+#  -h, --help                           show this help message and exit
+#  -i INPUT_FILE                        Project object file in .hdf5 format obtained with HiCtool_hifive.py
+#  -o OUTPUT_PATH                       Output path to save the observed contact matrix with trailing slash at the end
+#  -b BIN_SIZE                          The bin size (resolution) for the analysis
+#  -s SPECIES                           Species. It has to be one of those present under the chromSizes path. Example: for human hg38 type here "hg38"
+#  -c CHROMSIZES_PATH                   Path to the folder chromSizes with trailing slash at the end
+#  --save_each SAVE_SINGLE_MATRIX       Set to 1 to save each single contact matrix, 0 otherwise
+#  -p THREADS                           Number of parallel threads to use. It has to be less or equal than the number of chromosomes
 
-### Input variables to be updated before running the script
+# Output files:
+#  Global all-by-all chromosomes observed contact matrix in compressed format and tab separated format.
+#  Single contact matrices if SAVE_SINGLE_MATRIX is 1.
 
-# 1) Project object file in .hdf5 format obtained with HiCtool_hifive.py
-input_file='HiC_project_object.hdf5'
-
-# 2) Bin size in bp of the contact matrix generated
-bin_size = 1000000
-
-# 3) 'hg38' or 'mm10' or any other species label in string format
-species = 'hg38'
-
-# 4) Dictionary with chromosome sizes of your custom species if you did not use 'hg38' or 'mm10'. Keys: string. Values: int.
-# Example: {'1':int1, '2':int2, ... , 'X':intX, 'Y':intY}
-custom_species_sizes = {}
-
-# 5) List with the sexual chromosomes of your custom species (if present) as strings.
-# Example ['X', 'Y']
-sexual_chromosomes = []
-
-# 6) If true, save each single contact matrix
-save_each_matrix = False
-
-# 7) Number of threads to be used
-threads = 24 # (under the assumption that you have at least 24 threads available in this case!)    
-
+from optparse import OptionParser
 from time import gmtime, strftime
-print "Generating the global observed contact matrix in parallel using " + str(threads) + " threads..."
-print "Start: " + strftime("%Y-%m-%d %H:%M:%S", gmtime())
-
-chromosomes = {'hg38':{'1':248956422,
-                   '2':242193529,
-                   '3':198295559,
-                   '4':190214555,
-                   '5':181538259,
-                   '6':170805979,
-                   '7':159345973,
-                   '8':145138636,
-                   '9':138394717,
-                   '10':133797422,
-                   '11':135086622,
-                   '12':133275309,
-                   '13':114364328,
-                   '14':107043718,
-                   '15':101991189,
-                   '16':90338345,
-                   '17':83257441,
-                   '18':80373285,
-                   '19':58617616,
-                   '20':64444167,
-                   '21':46709983,
-                   '22':50818468,
-                   'X':156040895,
-                   'Y':57227415},
-                   'mm10':{'1':195471971,
-                   '2':182113224,
-                   '3':160039680,
-                   '4':156508116,
-                   '5':151834684,
-                   '6':149736546,
-                   '7':145441459,
-                   '8':129401213,
-                   '9':124595110,
-                   '10':130694993,
-                   '11':122082543,
-                   '12':120129022,
-                   '13':120421639,
-                   '14':124902244,
-                   '15':104043685,
-                   '16':98207768,
-                   '17':94987271,
-                   '18':90702639,
-                   '19':61431566,
-                   'X':171031299,
-                   'Y':91744698}}  
-                   
-
-if species in chromosomes.keys():
-        chromosomes_list = [str(i) for i in range(len(chromosomes[species]) - 1)[1:]] + ['X', 'Y']
-        chr_dim = []
-        for i in chromosomes_list:
-            chr_dim.append(chromosomes[species][i]/bin_size) 
-        d_chr_dim = {}
-        for i in chromosomes_list:
-            d_chr_dim[i] = chromosomes[species][i]/bin_size
-else:
-    if len(sexual_chromosomes) > 0:
-        chromosomes_list = [str(i) for i in range(len(custom_species_sizes) - len(sexual_chromosomes) + 1)[1:]]
-        chromosomes_list += sexual_chromosomes
-    else:
-        chromosomes_list = [str(i) for i in range(len(custom_species_sizes) + 1)[1:]]
-    chr_dim = []
-    for i in chromosomes_list:
-        chr_dim.append(custom_species_sizes[i]/bin_size)                
-    d_chr_dim = {}
-    for i in chromosomes_list:
-        d_chr_dim[i] = custom_species_sizes[i]/bin_size
+from multiprocessing import Pool
+import numpy as np
+import os
 
 
+parameters = {'input_file': None,
+              'output_path': None,
+              'bin_size': None,
+              'species': None,
+              'chromSizes_path': None,
+              'save_single_matrix': None,
+              'threads': None}  
+
+                
 def generate_intrachromosomal_observed_data(a_chr,
                                             bin_size,
-                                            input_file='HiC_project_object.hdf5',
+                                            input_file,
                                             species='hg38',
-                                            custom_species_sizes={},
                                             save_file=False):
     """
     Generate an observed intrachromosomal contact matrix from HiC_project_object.hdf5.
@@ -116,9 +44,6 @@ def generate_intrachromosomal_observed_data(a_chr,
         input_file (str): object containing learned correction parameters in .hdf5 format obtained with
         HiCtool_hifive.py (default: 'HiC_project_object.hdf5').
         species (str): 'hg38' or 'mm10' or any other species label in string format.
-        custom_species_sizes (dict): dictionary containing the sizes of the chromosomes
-        of your custom species. The keys of the dictionary are chromosomes in string
-        format (example for chromosome 1: '1'), the values are chromosome lengths as integers.
         save_file (bool): if true, save the observed contact data.
     Return: 
         observed intrachromosomal contact matrix in numpy array format.
@@ -131,16 +56,22 @@ def generate_intrachromosomal_observed_data(a_chr,
     
     if bin_size >= 1000000:
         bin_size_str = str(bin_size/1000000)
-        output_filename = 'HiCtool_' + chromosome + '_' + bin_size_str + 'mb_' + 'observed_fend'
+        output_filename = 'HiCtool_' + chromosome + '_' + bin_size_str + 'mb_'
     elif bin_size < 1000000:
         bin_size_str = str(bin_size/1000)
-        output_filename = 'HiCtool_' + chromosome + '_' + bin_size_str + 'kb_' + 'observed_fend'    
+        output_filename = 'HiCtool_' + chromosome + '_' + bin_size_str + 'kb_'
     
-    if species in chromosomes.keys():
-        end_pos = (chromosomes[species][a_chr]/bin_size)*bin_size
-    else:
-        end_pos = (custom_species_sizes[a_chr]/bin_size)*bin_size
-            
+    chromosomes = open(parameters['chromSizes_path'] + species + '.chrom.sizes', 'r')
+    d_chr_dim = {}
+    while True:
+        try:
+            line2list = next(chromosomes).split('\n')[0].split('\t')
+            d_chr_dim[line2list[0]] = int(line2list[1])/bin_size
+        except StopIteration:
+            break
+    
+    end_pos = d_chr_dim[a_chr]*bin_size
+     
     hic = hifive.HiC(input_file)
     heatmap_raw = hic.cis_heatmap(chrom=chromosome,
                                   start=0,
@@ -152,16 +83,15 @@ def generate_intrachromosomal_observed_data(a_chr,
     observed = heatmap_raw[:,:,0]
     
     if save_file == True:
-        save_matrix(observed, output_filename + '.txt')  
+        save_matrix(observed, output_filename + 'observed.txt')  
     return observed
 
 
 def generate_interchromosomal_observed_data(chr_row,
                                             chr_col,
                                             bin_size,
-                                            input_file='HiC_project_object.hdf5',
+                                            input_file,
                                             species='hg38',
-                                            custom_species_sizes={},
                                             save_file=False):
     """
     Generate an observed interchromosomal contact matrix from HiC_project_object.hdf5
@@ -172,9 +102,6 @@ def generate_interchromosomal_observed_data(chr_row,
         input_file (str): object containing learned correction parameters in hdf5 format obtained with
         HiCtool_hifive.py (default: 'HiC_project_object.hdf5').
         species (str): 'hg38' or 'mm10' or any other species label in string format.
-        custom_species_sizes (dict): dictionary containing the sizes of the chromosomes
-        of your custom species. The keys of the dictionary are chromosomes in string
-        format (example for chromosome 1: '1'), the values are chromosome lengths as integers.
         save_file (bool): if True, save the observed contact data.
     Return: 
         observed interchromosomal contact matrix in numpy array format.
@@ -191,15 +118,20 @@ def generate_interchromosomal_observed_data(chr_row,
         output_filename = 'HiCtool_' + chromosome_row + '_' + chromosome_col + '_' + bin_size_str + 'mb_'
     elif bin_size < 1000000:
         bin_size_str = str(bin_size/1000)
-        output_filename = 'HiCtool_' + chromosome_row + '_' + chromosome_col + '_' + bin_size_str + 'kb_'    
+        output_filename = 'HiCtool_' + chromosome_row + '_' + chromosome_col + '_' + bin_size_str + 'kb_'
     
-    if species in chromosomes.keys():
-        end_pos_row = (chromosomes[species][chr_row]/bin_size)*bin_size
-        end_pos_col = (chromosomes[species][chr_col]/bin_size)*bin_size
-    else:
-        end_pos_row = (custom_species_sizes[chr_row]/bin_size)*bin_size
-        end_pos_col = (custom_species_sizes[chr_col]/bin_size)*bin_size
-            
+    chromosomes = open(parameters['chromSizes_path'] + species + '.chrom.sizes', 'r')
+    d_chr_dim = {}
+    while True:
+        try:
+            line2list = next(chromosomes).split('\n')[0].split('\t')
+            d_chr_dim[line2list[0]] = int(line2list[1])/bin_size
+        except StopIteration:
+            break
+    
+    end_pos_row = d_chr_dim[chr_row]*bin_size
+    end_pos_col = d_chr_dim[chr_col]*bin_size
+    
     hic = hifive.HiC(input_file)
     heatmap_raw = hic.trans_heatmap(chromosome_row, chromosome_col, 
                                     start1=0, stop1=end_pos_row, 
@@ -310,6 +242,7 @@ def save_matrix(a_matrix, output_file):
         txt file containing the formatted data
     """
     import numpy as np
+    
     n = len(a_matrix)
     iu = np.triu_indices(n)
     vect = a_matrix[iu].tolist()
@@ -372,68 +305,147 @@ def compute_matrix_data_full_observed_parallel(chr_row):
     Output: Txt file of the row of matrices in the compressed HiCtool format.
     """
     import numpy as np
-
+    
+    bin_size = int(parameters['bin_size'])
+    input_file = parameters['input_file']
+    species = parameters['species']
+    save_single_matrix = bool(parameters['save_single_matrix'])
+    
+    chromosomes = open(parameters['chromSizes_path'] + parameters['species'] + '.chrom.sizes', 'r')
+    chromosomes_list = []
+    while True:
+        try:
+            line2list = next(chromosomes).split('\n')[0].split('\t')
+            chromosomes_list.append(line2list[0])
+        except StopIteration:
+            break
+    
     chromosome_row = 'chr' + chr_row
-    if chromosome_row == 'chr1':
-        intra = generate_intrachromosomal_observed_data(chr_row,bin_size,input_file,species,custom_species_sizes,save_each_matrix)
+    if chromosome_row == 'chr' + chromosomes_list[0]:
+        intra = generate_intrachromosomal_observed_data(chr_row,bin_size,input_file,species,save_single_matrix)
         matrix_full_line = intra
     
     for chr_col in chromosomes_list:
         chromosome_col = 'chr' + chr_col
         
-        if chromosome_row == chromosome_col and chromosome_row == 'chr1':
+        if chromosome_row == chromosome_col and chromosome_row == 'chr' + chromosomes_list[0]:
             continue
     
-        elif chromosome_row == chromosome_col and chromosome_row != 'chr1':
-            intra = generate_intrachromosomal_observed_data(chr_row,bin_size,input_file,species,custom_species_sizes,save_each_matrix)
-            n_row = np.shape(intra)[0]
+        elif chromosome_row == chromosome_col and chromosome_row != 'chr' + chromosomes_list[0]:
+            intra = generate_intrachromosomal_observed_data(chr_row,bin_size,input_file,species,save_single_matrix)
+            #n_row = np.shape(intra)[0]
             matrix_full_line = np.concatenate((matrix_full_line,intra),axis=1)
                 
         else:
-            row = (chromosomes[species][chr_row]/bin_size)*bin_size/bin_size
-            col = (chromosomes[species][chr_col]/bin_size)*bin_size/bin_size
-            row_str = str(row)
-            col_str = str(col)
-
-            matrix_data_full = generate_interchromosomal_observed_data(chr_row,chr_col,bin_size,input_file,species,custom_species_sizes,save_each_matrix)
-            n_row = np.shape(matrix_data_full)[0]
+            matrix_data_full = generate_interchromosomal_observed_data(chr_row,chr_col,bin_size,input_file,species,save_single_matrix)
+            #n_row = np.shape(matrix_data_full)[0]
             
             if 'matrix_full_line' in locals():
                 matrix_full_line = np.concatenate((matrix_full_line,matrix_data_full),axis=1)
             else:
                 matrix_full_line = matrix_data_full
     
-    save_matrix_rectangular(matrix_full_line, 'matrix_full_line_' + chr_row + '.txt')
-    
-    
-# Multiprocessing code execution
-from multiprocessing import Pool
-import numpy as np
-import os
+    save_matrix_rectangular(matrix_full_line, parameters['output_path'] + 'matrix_full_line_' + chr_row + '.txt')
+  
 
 if __name__ == '__main__':
+    
+    usage = 'Usage: python2.7 HiCtool_global_map_observed.py [-h] [options]'
+    parser = OptionParser(usage = 'python2.7 %prog -i input_file -o output_path -b bin_size -s species -c chromSizes_path --save_each save_single_matrix -p threads')
+    parser.add_option('-i', dest='input_file', type='string', help='Project object file in .hdf5 format obtained with HiCtool_hifive.py.')
+    parser.add_option('-o', dest='output_path', type='string', help='Path to save the output files with the trailing slash in the end.')
+    parser.add_option('-b', dest='bin_size', type='string', help='Bin size (resolution) of the contact matrix.')
+    parser.add_option('-s', dest='species', type='string', help='Species. It has to be one of those present under the chromSizes path. Example: for human hg38 type here "hg38".')  
+    parser.add_option('-c', dest='chromSizes_path', type='string', help='Path to the folder chromSizes with trailing slash at the end.')
+    parser.add_option('--save_each', dest='save_single_matrix', type='int', default=0, help='Insert 1 to save each single contact matrix, 0 otherwise (default: 0).')  
+    parser.add_option('-p', dest='threads', type='int', help='Number of parallel threads to use. It has to be less or equal than the number of chromosomes.')
+    (options, args) = parser.parse_args( )
+    
+    if options.input_file == None:
+        parser.error('-h for help or provide the input project object file!')
+    else:
+        pass
+    if options.output_path == None:
+        parser.error('-h for help or provide the output path!')
+    else:
+        pass
+    if options.bin_size == None:
+        parser.error('-h for help or provide the bin size of the contact matrix!')
+    else:
+        pass
+    if options.chromSizes_path == None:
+        parser.error('-h for help or provide the chromSizes path!')
+    else:
+        pass
+    if options.species == None:
+        parser.error('-h for help or provide the species!')
+    else:
+        pass
+    if options.threads == None:
+        parser.error('-h for help or provide the number of threads!')
+    else:
+        pass
+    
+    parameters['input_file'] = options.input_file
+    parameters['output_path'] = options.output_path
+    parameters['bin_size'] = options.bin_size
+    parameters['chromSizes_path'] = options.chromSizes_path
+    parameters['species'] = options.species
+    parameters['save_single_matrix'] = options.save_single_matrix
+    parameters['threads'] = options.threads
+    
+    if parameters['species'] + ".chrom.sizes" not in os.listdir(parameters['chromSizes_path']):
+        available_species = ', '.join([x.split('.')[0] for x in  os.listdir(parameters['chromSizes_path'])])
+        parser.error('Wrong species inserted! Check the species spelling or insert an available species: ' + available_species + '. If your species is not listed, please contact Riccardo Calandrelli at <rcalandrelli@eng.ucsd.edu>.')
+    
+    bin_size = int(parameters['bin_size'])
+    chromosomes = open(parameters['chromSizes_path'] + parameters['species'] + '.chrom.sizes', 'r')
+    chromosomes_list = []
+    chr_dim = []
+    d_chr_dim = {}
+    while True:
+        try:
+            line2list = next(chromosomes).split('\n')[0].split('\t')
+            chromosomes_list.append(line2list[0])
+            chr_dim.append(int(line2list[1])/bin_size)
+            d_chr_dim[line2list[0]] = int(line2list[1])/bin_size
+        except StopIteration:
+            break
+    
+    threads = parameters['threads']
+    
+    if threads > len(chromosomes_list):
+        parser.error("Input a number of threads less or equal than the number of chromosomes (" + str(len(chromosomes_list)) + ").")
+    else:
+        pass
+    
+    output_path = parameters['output_path']
+    
+    print "Generating the global observed contact matrix in parallel using " + str(threads) + " threads..."
+    print "Start: " + strftime("%Y-%m-%d %H:%M:%S", gmtime())
     pool = Pool(processes=threads)             
     pool.map(compute_matrix_data_full_observed_parallel, chromosomes_list)
 
-matrix_global_observed = load_matrix_rectangular('matrix_full_line_1.txt',d_chr_dim['1'],np.sum(chr_dim))
-os.remove('matrix_full_line_1.txt')
-for i in chromosomes_list[1:]:
-    temp = load_matrix_rectangular('matrix_full_line_' + i + '.txt', d_chr_dim[i], np.sum(chr_dim))
-    matrix_global_observed = np.concatenate((matrix_global_observed,temp))
-    os.remove('matrix_full_line_' + i + '.txt')
-
-if bin_size >= 1000000:
-    bin_size_str = str(bin_size/1000000)
-    my_filename = 'HiCtool_' + bin_size_str + 'mb_'
-elif bin_size < 1000000:
-    bin_size_str = str(bin_size/1000)
-    my_filename = 'HiCtool_' + bin_size_str + 'kb_'
-
-save_matrix(matrix_global_observed, my_filename + 'matrix_global_observed.txt')
-save_matrix_tab(matrix_global_observed, my_filename + 'matrix_global_observed_tab.txt')
-            
-with open ('info.txt', 'w') as f:
-    f.write('Rows: ' + str(len(matrix_global_observed)) + '\n')
-    f.write('Rowsum (average matrix * rows): ' + str(int(np.mean(matrix_global_observed) * len(matrix_global_observed))))
+    matrix_global_observed = load_matrix_rectangular(output_path + 'matrix_full_line_' + chromosomes_list[0] + '.txt', d_chr_dim[chromosomes_list[0]], np.sum(chr_dim))
+    os.remove(output_path + 'matrix_full_line_' + chromosomes_list[0] + '.txt')
+    for i in chromosomes_list[1:]:
+        temp = load_matrix_rectangular(output_path + 'matrix_full_line_' + i + '.txt', d_chr_dim[i], np.sum(chr_dim))
+        matrix_global_observed = np.concatenate((matrix_global_observed,temp))
+        os.remove(output_path + 'matrix_full_line_' + i + '.txt')
     
-print "End: " + strftime("%Y-%m-%d %H:%M:%S", gmtime())
+    print "Building global matrix... "
+    if bin_size >= 1000000:
+        bin_size_str = str(bin_size/1000000)
+        my_filename = 'HiCtool_' + bin_size_str + 'mb_'
+    elif bin_size < 1000000:
+        bin_size_str = str(bin_size/1000)
+        my_filename = 'HiCtool_' + bin_size_str + 'kb_'
+    
+    save_matrix(matrix_global_observed, output_path + my_filename + 'matrix_global_observed.txt')
+    save_matrix_tab(matrix_global_observed, output_path + my_filename + 'matrix_global_observed_tab.txt')
+    print "Done!"
+    with open (output_path + 'info.txt', 'w') as f:
+        f.write('Rows: ' + str(len(matrix_global_observed)) + '\n')
+        f.write('Rowsum (average matrix * rows): ' + str(int(np.mean(matrix_global_observed) * len(matrix_global_observed))))
+        
+    print "End: " + strftime("%Y-%m-%d %H:%M:%S", gmtime())
