@@ -5,7 +5,7 @@ This is the first section of the pipeline and it allows to pre-process the raw H
 ## Table of Contents
 
 1. [Preprocessing the data](#1-preprocessing-the-data)
-   - [1.1. Downloading the raw data from GEO](#11-downloading-the-raw-data-from-geo)
+- [1.1. Downloading the raw data from GEO](#11-downloading-the-raw-data-from-geo)
 2. [Creating the fragment-end (FEND) bed file](#2-creating-the-fragment-end-fend-bed-file)
 
 
