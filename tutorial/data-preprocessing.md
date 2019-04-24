@@ -47,7 +47,7 @@ bowtie2-build hg38.fa index
 ```
 ```hg38.fa``` is the reference genome sequence in FASTA format (in this case of hg38), the output files in ``.bt2`` format are named with the prefix ``index``.
 
-**The data preprocessing is performed with a single unix command line (replace parameters in the code below accordingly) and comprises the following steps:**
+**The data preprocessing is performed with a single unix command line (replace parameters in the code below properly) and comprises the following steps:**
 
 1. Pre-truncation of the reads that contain potential ligation junctions to keep the longest piece without a junction sequence ([Ay et al., 2015](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0745-7)).
 2. Independent mapping of the read pairs to the reference genome to avoid any proximity constraint.
@@ -79,7 +79,7 @@ where:
 
 The structure of the output directory is the following:
 ```unix
-your_output_directory
+~/your_output_directory
 	|___ file1.trunc.fastq
 	|___ file2.trunc.fastq
 	|___ pre_truncation_log.txt
@@ -145,7 +145,7 @@ HiCfile2_log.txt
 
 The source data in sra format are downloaded via GEO accession number using the command ``fastq-dump`` of [SRA Toolkit](http://www.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?view=toolkit_doc&f=fastq-dump).
 
-Before proceeding, you may need to [setup the output directory](https://github.com/ncbi/sra-tools/wiki/Toolkit-Configuration) where the sra files will be saved. After having installed SRA Toolkit, go to the path where the software has been installed, under the subfolder “bin”, and run the following command line:
+Before proceeding, you may need to [setup the output directory](https://github.com/ncbi/sra-tools/wiki/Toolkit-Configuration) where the sra files will be saved. After having installed SRA Toolkit, go to the path where the software has been installed, under the subfolder ``/bin``, and run the following command line:
 ```unix
 ./vdb-config -i
 ```
@@ -215,7 +215,7 @@ where:
 
 The structure of the output directory is the following:
 ```unix
-your_output_directory
+~/your_output_directory
 	|___ restrictionsites.bed
 	|___ restrictionsites_log.txt
 ```
@@ -263,7 +263,7 @@ where:
 
 If both ``-b`` and ``-m`` are declared, the structure of the output directory is the following (``i`` stands for a general chromosome, and there are gonna be one of those files per each chromosome):
 ```unix
-your_output_directory
+~/your_output_directory
 	|___ restrictionsites.bed
 	|___ chri.bed
 	|___ chri_gc.bed
