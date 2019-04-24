@@ -217,8 +217,8 @@ where:
 The structure of the output directory is the following:
 ```unix
 your_output_directory
-|___ restrictionsites.bed
-|___ restrictionsites_log.txt
+	|___ restrictionsites.bed
+	|___ restrictionsites_log.txt
 ```
 
 **The following output files are generated:**
@@ -265,16 +265,16 @@ where:
 If both ``-b`` and ``-m`` are declared, the structure of the output directory is the following (``i`` stands for a general chromosome, and there are gonna be one of those files per each chromosome):
 ```unix
 your_output_directory
-|___ restrictionsites.bed
-|___ chri.bed
-|___ chri_gc.bed
-|___ chri_map.bed
-|___ restrictionsites_gc_map.bed
-|___ GC_info
-	|___ chri.txt
-|___ mappability_info
-	|___ chri.txt
-	|___ artificial_reads.log
+	|___ restrictionsites.bed
+	|___ chri.bed
+	|___ chri_gc.bed
+	|___ chri_map.bed
+	|___ restrictionsites_gc_map.bed
+	|___ GC_info
+		|___ chri.txt
+	|___ mappability_info
+		|___ chri.txt
+		|___ artificial_reads.log
 ```
 **The following output files are generated:**
 
