@@ -72,20 +72,19 @@ The structure of the output directory is the following:
 ```unix
 your_output_directory
 	|___ file1.trunc.fastq
-	|___file2.trunc.fastq
-	|___pre_truncation_log.txt
-	|___file1.fastq_truncated_reads.pdf
-	|___file2.fastq_truncated_reads.pdf
-	|___HiCfile1_pair1.bam
-	|___HiCfile2_pair1.bam
-	|___HiCfile1_log.txt
-	|___HiCfile2_log.txt
+	|___ file2.trunc.fastq
+	|___ pre_truncation_log.txt
+	|___ file1.fastq_truncated_reads.pdf
+	|___ file2.fastq_truncated_reads.pdf
+	|___ HiCfile1_pair1.bam
+	|___ HiCfile2_pair1.bam
+	|___ HiCfile1_log.txt
+	|___ HiCfile2_log.txt
 ```
 
 **The following output files are generated:**
 
-- ``file1.trunc.fastq`` and ``file2.trunc.fastq``
-- ``HiCfile_pair1.bam`` and ``HiCfile_pair2.bam`` that are the bam files of the pre-truncated first and second reads in the pairs respectively, generated after alignment and filtering.
+- ``file1.trunc.fastq`` and ``file2.trunc.fastq`` are the two fastq file with pre-truncated reads.
 - ``pre_truncation_log.txt`` with the information about the percentage of reads that have been truncated. This is also printed on the console during pre-processing:
 ```unix
 SRR1658570_1.fastq
@@ -95,12 +94,13 @@ SRR1658570_2.fastq
 202095066 reads (length = 101 bp); of these:
 28681691 (14.2%) contained a potential ligation junction and have been truncated.
 ```
-The length distribution of the truncated reads is also plotted and saved to files, for both the fastq files:
+- ``file1.fastq_truncated_reads.pdf`` and ``file2.fastq_truncated_reads.pdf`` are plots of the length distribution of the truncated reads, for both the fastq files:
 
 ![](/figures/SRR1658570_1.fastq_truncated_reads.png)
 
 ![](/figures/SRR1658570_2.fastq_truncated_reads.png)
 
+- ``HiCfile_pair1.bam`` and ``HiCfile_pair2.bam`` that are the bam files of the pre-truncated first and second reads in the pairs respectively, generated after alignment and filtering.
 - ``HiCfile1_log.txt`` and ``HiCfile2_log.txt`` are the log files with alignment and filtering statistics for the first and second reads in the pairs respectively.
 ```unix
 HiCfile1_log.txt
