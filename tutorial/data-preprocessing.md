@@ -7,8 +7,6 @@ This is the first section of the pipeline and it allows to pre-process the raw H
 1. [Preprocessing the data](#1-preprocessing-the-data)
    - [1.1. Downloading the raw data from GEO](#11-downloading-the-raw-data-from-geo)
 2. [Creating the fragment-end (FEND) bed file](#2-creating-the-fragment-end-fend-bed-file)
-   - [2.1. FEND bed file to be used with ]
-
 
 ## 1. Preprocessing the data
 
@@ -27,7 +25,8 @@ HiCtool allows to process Hi-C data generated for one of the following species:
 - mm9
 - mm10
 - dm6
-- susScr2
+- susScr3
+- susScr11
 
 HiCtool allows to process Hi-C data generated using one or more of the following restriction enzymes:
 
@@ -160,11 +159,11 @@ where ``SRRXXXXXXX`` has to be replaced with the specific number of the run you 
 
 To be more specific, this code will either download the SRA file under the output directory you have set with the interface above, but it will also convert the SRA file into fastq files and dump each read into separate files in the current working directory, to produce:
 
-- SRRXXXXXXX_1.fastq
-- SRRXXXXXXX_2.fastq
-- SRRXXXXXXX.fastq
+- ``SRRXXXXXXX_1.fastq``
+- ``SRRXXXXXXX_2.fastq``
+- ``SRRXXXXXXX.fastq``
 
-where paired-end reads in SRRXXXXXXX.sra are split and stored into **SRRXXXXXXX_1.fastq** and **SRRXXXXXXX_2.fastq**, and SRRXXXXXXX.fastq (if present) contains reads with no mates.
+where paired-end reads in ``SRRXXXXXXX.sra`` are split and stored into **``SRRXXXXXXX_1.fastq``** and **``SRRXXXXXXX_2.fastq``**, and ``SRRXXXXXXX.fastq`` (if present) contains reads with no mates.
 
 **Note!** To produce our final results, use this GEO accession number: **[GSM1551550](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM1551550)**.
 
@@ -211,7 +210,7 @@ where:
 - ``-o``: path to save the output files. If the folder does not exist, it is created automatically.
 - ``-e``: the restriction enzyme or enzymes passed between square brackets (example: [MboI,Hinfl] for the cocktail of the Arima Kit).
 - ``-g``: Bowtie2 genome indexes. Only the filename should be passed here without extension, in this case ``index``.
-- ``-s``: species, one of: hg19, hg38, mm9, mm10, dm6, susScr2.
+- ``-s``: species name.
 - ``-p``: the number of parallel threads (processors) to use for alignment and preprocessing. The more the fastest the process.
 
 The structure of the output directory is the following:
@@ -235,7 +234,7 @@ You can decide if adding both the GC content and mappability score information o
 
 **The update of the FEND file to add GC content and/or mappability score is performed with a single unix command line (replace parameters in the code below accordingly) and comprises the following steps:**
 
-1. Splitting restrictionsites.bed into single bed files, one per each chromosome.
+1. Splitting ``restrictionsites.bed`` into single bed files, one per each chromosome.
 2. Adding GC content information per each single chromosome (if GC content selected).
 3. Adding mappability score information per each single chromosome (if mappability selected).
 4. Merging all the files, removing fragments with mappability score < 0.5, and parsing the file format to generate the final FEND bed file.
@@ -257,7 +256,7 @@ where:
 
 - ``-h``: path to the HiCtool scripts with the final trailing slash ``/``.
 - ``-o``: path to save the output files. If the folder does not exist, it is created automatically.
-- ``-s``: species, one of: hg19, hg38, mm9, mm10, dm6, susScr2.
+- ``-s``: species name.
 - ``-p``: the number of parallel threads (processors) to use for alignment and preprocessing. The more the fastest the process.
 - ``-b``: gc5Base.bw file with the GC content information (download it from this website: hgdownload.cse.ucsc.edu/gbdb/your_species/bbi/). **If the GC content information has been already calculated for the reference genome** (i.e. you have run already this code using the same reference genome), you will have a ``GC_info`` directory with several ``txt`` files (one per each chromosome); therefore you can input this directory path to avoid this redundant step. If ``-b`` is not declared, the GC content information is not added.
 - ``-m``: the reference genome in fasta format to add the mappability score to the FEND file. **If the mappability score has been already calculated for the reference genome** (i.e. you have run already this code using the same reference genome), you will have a ``mappability_info`` directory with several ``txt`` files (one per each chromosome); therefore you can input this directory path to avoid this redundant step. If ``-m`` is not declared, the mappability score information is not added.
