@@ -12,7 +12,7 @@ This is the first section of the pipeline and it allows to pre-process the raw H
 
 In order to start the Hi-C data analysis and preprocess your data you have to provide: 
 
-- Two fastq files, respectively of the first and the second reads of the pairs. If you wish to use public datasets on GEO and you need instructions to download the data, see [this section](#11-downloading-the-raw-data-from-geo). 
+- Two fastq files, respectively of the first and the second reads of the pairs. If you wish to use public datasets on GEO and you need instructions to download the data, see [section 1.1.](#11-downloading-the-raw-data-from-geo). 
 - The Bowtie2 indexes of your reference genome.
 - The restriction enzyme used in the Hi-C experiment.
 
@@ -140,8 +140,6 @@ HiCfile2_log.txt
 ```
 
 ### 1.1. Downloading the raw data from GEO
-
-**Note!** If you have your fastq files generated from your custom experiment, you can skip this paragraph.
 
 The source data in sra format are downloaded via GEO accession number using the command ``fastq-dump`` of [SRA Toolkit](http://www.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?view=toolkit_doc&f=fastq-dump).
 

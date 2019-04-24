@@ -121,7 +121,7 @@ where:
 - ``-m``: the memory size. Its unit is Megabytes (MB).
 - ``-r``: the number of rows or columns of the input chromatin contact frequency matrix to be normalized (provided in  ``info.txt`` generated in [section 2](#2-generating-the-global-observed-contact-matrix)).
 - ``-s``: the row sum after normalization. The iterative correction algorithm can allow users to specify the row sum after the normalization, because this method is a matrix scaling approach that normalizes the matrix to be a doubly stochastic matrix (rows and columns sums equal to 1). Then we can multiple each element of this normalized matrix by the given value of this parameter, say 10.0 or 100.0 or whatever you choose. In such a way, the row sums of normalized matrix becomes this number (10.0 or 100.0 or whatever you choose). In ``info.txt`` we provide a row sum value that you could use calculated as "the average number of contacts of the observed matrix multiplied by the number of rows" to make the normalized data counts "comparable" with the observed ones. The choice is arbitrary.
-- ``-h``: the path to the Hi-Corrector source code.
+- ``-h``: the path to the Hi-Corrector source code with the final trailing slash ``/``.
 - ``-i``: the observed global contact matrix in tab delimited format.
 
 This command creates a **folder named ``output_ic_mes``** with 3 files inside:
