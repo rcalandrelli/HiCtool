@@ -11,9 +11,13 @@ This is the first section of the pipeline and it allows to pre-process the raw H
 
 ## 1. Preprocessing the data
 
-In order to start the Hi-C data analysis and preprocess your data you should have two fastq files, respectively of the first and the second reads of the pairs. If you wish to use public datasets on GEO and you need instructions to download the data, see [this section](#11-downloading-the-raw-data-from-geo). 
+In order to start the Hi-C data analysis and preprocess your data you have to provide: 
 
-**Note!** To produce our final results, use this GEO accession number: **[GSM1551550](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM1551550)**.
+- Two fastq files, respectively of the first and the second reads of the pairs. If you wish to use public datasets on GEO and you need instructions to download the data, see [this section](#11-downloading-the-raw-data-from-geo). 
+- The Bowtie2 indexes of your reference genome.
+- The restriction enzyme used in the Hi-C experiment.
+
+**Note!** To reproduce the results of this tutorial, use the public dataset with this GEO accession number: **[GSM1551550](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM1551550)**.
 
 HiCtool allows to process Hi-C data generated using one or more of the following restriction enzymes:
 
@@ -26,19 +30,19 @@ HiCtool allows to process Hi-C data generated using one or more of the following
 - Hinfl
 
 The **Arima Kit** uses a cocktail of restriction enzymes which includes MboI and Hinfl.
-If your experiment was performed using a different restriction enzyme, please contact Riccardo Calandrelli at <rcalandrelli@eng.ucsd.edu>.
+If your experiment was performed using a different restriction enzyme(s), please contact Riccardo Calandrelli at <rcalandrelli@eng.ucsd.edu>.
 
-In addition, the Bowtie2 genome index of the species under analysis should be provided too. If you do not have it, please run the following in order to generate it:
+If you do not have the Bowtie2 genome index, please run the following in order to generate it:
 ```unix
 bowtie2-build hg38.fa index
 ```
-```hg38.fa``` is the reference sequence in FASTA format (in this case for hg38), the output files in ``bt2`` format are named with the prefix ``index``.
+```hg38.fa``` is the reference genome sequence in FASTA format (in this case of hg38), the output files in ``.bt2`` format are named with the prefix ``index``.
 
-The data preprocessing is performed with a single command line (replace parameters) and comprises the following steps:
+**The data preprocessing is performed with a single unix command line (replace parameters in the code below accordingly) and comprises the following steps:**
 
-- Pre-truncation of the reads that contain potential ligation junctions to keep the longest piece without a junction sequence ([Ay et al., 2015](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0745-7)).
-- Independent mapping of the read pairs to the reference genome to avoid any proximity constraint.
-- Removing the unmapped reads and selecting reads that were uniquely mapped with a MAPQ >= 30, i.e. the estimated probability of mapping error is <= 0.1%.
+1. Pre-truncation of the reads that contain potential ligation junctions to keep the longest piece without a junction sequence ([Ay et al., 2015](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0745-7)).
+2. Independent mapping of the read pairs to the reference genome to avoid any proximity constraint.
+3. Removing the unmapped reads and selecting reads that were uniquely mapped with a MAPQ >= 30, i.e. the estimated probability of mapping error is <= 0.1%.
 
 ```unix
 # Make the bash script executable
@@ -56,18 +60,33 @@ chmod u+x /HiCtool-master/scripts/HiCtool_run_preprocessing.sh
 ```
 where:
 
-- ``-h``: path where are the HiCtool scripts with the final trailing slash.
+- ``-h``: path to the HiCtool scripts with the final trailing slash ``/``.
 - ``-o``: path to save the output files. If the folder does not exist, it is created automatically.
 - ``-1``: the fastq file with the first reads of the pairs.
 - ``-2``: the fastq file with the second reads of the pairs.
 - ``-e``: the restriction enzyme or enzymes passed between square brackets (example: [MboI,Hinfl] for the cocktail of the Arima Kit).
-- ``-g``: Bowtie2 genome indexes. Only the filename should be passed here without extension.
+- ``-g``: Bowtie2 genome indexes. Only the filename should be passed here without extension, in this case ``index``.
 - ``-p``: the number of parallel threads (processors) to use for alignment and preprocessing. The more the fastest the process.
 
-The following output files are generated:
+The structure of the output directory is the following:
+```unix
+your_output_directory
+	|___file1.trunc.fastq
+	|___file2.trunc.fastq
+	|___pre_truncation_log.txt
+	|___file1.fastq_truncated_reads.pdf
+	|___file2.fastq_truncated_reads.pdf
+	|___HiCfile1_pair1.bam
+	|___HiCfile2_pair1.bam
+	|___HiCfile1_log.txt
+	|___HiCfile2_log.txt
+```
 
-- ``HiCfile_pair1.bam`` and ``HiCfile_pair2.bam`` that are the bam files generated after alignment and filtering of the first and second reads in the pairs respectively.
-- ``pre_truncation_log.txt`` with the information about the percentage of reads that have been truncated. This is also printed on the console:
+**The following output files are generated:**
+
+- ``file1.trunc.fastq`` and ``file2.trunc.fastq``
+- ``HiCfile_pair1.bam`` and ``HiCfile_pair2.bam`` that are the bam files of the pre-truncated first and second reads in the pairs respectively, generated after alignment and filtering.
+- ``pre_truncation_log.txt`` with the information about the percentage of reads that have been truncated. This is also printed on the console during pre-processing:
 ```unix
 SRR1658570_1.fastq
 202095066 reads (length = 101 bp); of these:
@@ -76,7 +95,7 @@ SRR1658570_2.fastq
 202095066 reads (length = 101 bp); of these:
 28681691 (14.2%) contained a potential ligation junction and have been truncated.
 ```
-The length distribution of the truncated reads is also plotted and saved to file.
+The length distribution of the truncated reads is also plotted and saved to files, for both the fastq files:
 
 ![](/figures/SRR1658570_1.fastq_truncated_reads.png)
 
