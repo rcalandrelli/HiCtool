@@ -71,7 +71,7 @@ where:
 The structure of the output directory is the following:
 ```unix
 your_output_directory
-	|___file1.trunc.fastq
+	|___ file1.trunc.fastq
 	|___file2.trunc.fastq
 	|___pre_truncation_log.txt
 	|___file1.fastq_truncated_reads.pdf
