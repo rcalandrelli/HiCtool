@@ -227,7 +227,7 @@ your_output_directory
 - ``restrictionsites_log.txt`` is the log file with the restriction site multiple alignment statistics.
 
 - **If you will be using the [Hi-Corrector normalization approach](https://github.com/Zhong-Lab-UCSD/HiCtool/blob/master/tutorial/normalization-matrix-balancing.md), you do NOT need to perform the following steps, because additional information such as GC content or mappability score are not needed. You can use ``restrictionsites.bed`` as the FEND file.**
-- **Proceed with the following steps ONLY if you will be using [Yaffe and Tanay's normalization approach](https://github.com/Zhong-Lab-UCSD/HiCtool/blob/master/tutorial/normalization-yaffe-tanay.md).**
+- **Proceed with the following section ONLY if you will be using [Yaffe and Tanay's normalization approach](https://github.com/Zhong-Lab-UCSD/HiCtool/blob/master/tutorial/normalization-yaffe-tanay.md).**
 
 ***
 
@@ -271,10 +271,10 @@ your_output_directory
 |___ chri_map.bed
 |___ restrictionsites_gc_map.bed
 |___ GC_info
-		|___ chri.txt
+	|___ chri.txt
 |___ mappability_info
-		|___ chri.txt
-		|___ artificial_reads.log
+	|___ chri.txt
+	|___ artificial_reads.log
 ```
 **The following output files are generated:**
 
