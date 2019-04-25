@@ -27,6 +27,8 @@ HiCtool can implement contact data normalization following two approaches:
 - The explicit-factor correction method reported by [Yaffe and Tanay](https://www.nature.com/articles/ng.947) and performed by the library [HiFive](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0806-y). In this case, only intra-chromosomal analysis is performed, per each chromosome singularly.
 - The matrix balancing approach performed by [Hi-Corrector](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4380031/). In this case, a global analysis is performed including all the chromosomes and both intra- and inter-chromosomal maps.
 
+Data can be visualized as a single intra-chromosomal heatmap (Yaffe-Tanay), or single intra- and inter-chromosomal heatmap or global all-by-all chromosomes heatmap (Hi-Corrector). For the global heatmap visualization, resolution could be limited by your hardware. In addition, there is the possibility to plot topological domains over the intra-chromosomal heatmap or plot the same maps from different samples on a side-by-side view for easy comparison.
+
 ## Installation
 
 HiCtool is in a pipeline format to allow extreme flexibility and easy usage. In order to use HiCtool, you need to install the following Python libraries, packages and software. Everything is open source.
