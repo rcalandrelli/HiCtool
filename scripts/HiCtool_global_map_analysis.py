@@ -559,6 +559,20 @@ def plot_map(input_matrix,
             return
         matrix_data_full_list = []
         
+        if topological_domains != None:
+            topological_domains_list = map(str, topological_domains.strip('[]').split(','))
+            if len(topological_domains_list) != len(chr_row_list):
+                print "Insert in topological domains the same number of elements than chr_row (or chr_col). Leave empty slots where you do not wish to plot topological domains."
+                return
+            
+        if chr_row_coord != None or chr_col_coord != None:
+            if chr_row_coord == None:
+                print "ERROR! Coordinates on the chromosomes on the rows should be declared."
+                return
+            if chr_col_coord == None:
+                print "ERROR! Coordinates on the chromosomes on the cols should be declared."
+                return
+        
         # Plotting one of more single heatmaps from the global map
         if isGlobal == True:
             if tab_sep == True:
@@ -599,10 +613,9 @@ def plot_map(input_matrix,
             
             # Update matrix values to plot topological domains
             if topological_domains != None:
-                topological_domains_list = map(str, topological_domains.strip('[]').split(','))
                 if topological_domains_list[m_index] != '':
                     if c_row != c_col:
-                        print "ERROR! To plot topological domains the matrix should be intrachromosomal"
+                        print "ERROR! To plot topological domains the matrix in position " + str(m_index) + " should be intrachromosomal."
                         return
                     if isinstance(topological_domains_list[m_index], str):
                         domains = load_topological_domains(topological_domains_list[m_index])
@@ -619,13 +632,7 @@ def plot_map(input_matrix,
             
         
             # Selecting a part of a single heatmap
-            if chr_row_coord != None or chr_col_coord != None:
-                if chr_row_coord == None:
-                    print "ERROR! Coordinates on the chromosome on the rows should be declared."
-                    return
-                if chr_col_coord == None:
-                    print "ERROR! Coordinates on the chromosome on the cols should be declared."
-                    return
+            if chr_row_coord != None and chr_col_coord != None:
                 chr_row_coord_list = json.loads(chr_row_coord)
                 chr_col_coord_list = json.loads(chr_col_coord)
         
@@ -633,134 +640,132 @@ def plot_map(input_matrix,
                 chr_col_coord_temp = chr_col_coord_list[m_index]
                 
                 if len(chr_row_coord_temp) == 1 or len(chr_col_coord_temp) == 1:
-                    print "ERROR! Start and end coordinate for each chromosome should be declared."
+                    print "ERROR! Start and end coordinate for each chromosome in position " + str(m_index) + " should be declared."
                     return
                 if len(chr_row_coord_temp) > 2 or len(chr_col_coord_temp) > 2:
-                    print "ERROR! Only two coordinates (start and end) for each chromosome should be declared)."
+                    print "ERROR! Only two coordinates (start and end) for each chromosome in position " + str(m_index) + " should be declared."
                     return
                 if len(chr_row_coord_temp) == 2 and len(chr_col_coord_temp) == 2:
                     chr_row_bin = map(lambda x: x/bin_size, chr_row_coord_temp)
                     chr_col_bin = map(lambda x: x/bin_size, chr_col_coord_temp)
             
                     if chr_row_coord_temp[0] >= chr_row_coord_temp[1] or chr_col_coord_temp[0] >= chr_col_coord_temp[1]:
-                        print "ERROR! Start coordinate should be lower than end coordinate"
+                        print "ERROR! Start coordinate for chromosomes in position " + str(m_index) + " should be lower than end coordinate"
                         return
                     if chr_row_bin[0] >= chr_row_bin[1] or chr_col_bin[0] >= chr_col_bin[1]:
-                        print "ERROR! Start coordinate should be much lower than the end coordinate given the bin size"
+                        print "ERROR! Start coordinate for chromosome in position " + str(m_index) + " should be much lower than the end coordinate given the bin size"
                         return
                     if chr_row_bin[1] > d_chr_dim[c_row]:
-                        print "ERROR! End coordinate of the chromosome on the rows should be lower than the chromosome size"
+                        print "ERROR! End coordinate of the chromosome on the rows in position " + str(m_index) + " should be lower than the chromosome size"
                         return
                     if chr_col_bin[1] > d_chr_dim[c_col]:
-                        print "ERROR! End coordinate of the chromosome on the cols should be lower than the chromosome size"
+                        print "ERROR! End coordinate of the chromosome on the columns in position " + str(m_index) + " should be lower than the chromosome size"
                         return
                     
                     matrix_data_full = matrix_data_full[chr_row_bin[0]:chr_row_bin[1]+1,chr_col_bin[0]:chr_col_bin[1]+1]
                     
                 
                 
-                
-                
-                
-        row = np.shape(matrix_data_full)[0]
-        col = np.shape(matrix_data_full)[1]
-        
-        output_vect = np.reshape(matrix_data_full,row*col,1)
-        non_zero = np.nonzero(output_vect)
-        
-        if isinstance(my_colormap, list):
-            my_cmap = LinearSegmentedColormap.from_list('mycmap', my_colormap)
-        elif isinstance(my_colormap, str):
-            my_cmap = my_colormap
-        
-        def format_e(n):
-            a = '%e' % n
-            return a.split('e')[0].rstrip('0').rstrip('.') + 'e' + a.split('e')[1]        
-        
-        plt.close("all")
-        plt.gcf().subplots_adjust(left=0.15)
-        plt.gcf().subplots_adjust(bottom=0.15)
-        
-        if cutoff_type == 'perc':
-            perc = np.percentile(output_vect[non_zero[0]],cutoff)
-            if topological_domains == '':
-                plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest', vmax=perc)
-                cbar = plt.colorbar(extend='max')
-                cbar.cmap.set_over(max_color)
-            else:
-                plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest', vmax=perc, vmin=0)
-                cbar = plt.colorbar(extend='max')
-                cbar.cmap.set_over(max_color)
-                cbar.cmap.set_under(domain_color)
-        elif cutoff_type == 'contact':
-            perc = cutoff 
-            if topological_domains == '':
-                plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest', vmax=perc)
-                cbar = plt.colorbar(extend='max')
-                cbar.cmap.set_over(max_color)
-            else:
-                plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest', vmax=perc, vmin=0)
-                cbar = plt.colorbar(extend='max')
-                cbar.cmap.set_over(max_color)
-                cbar.cmap.set_under(domain_color)
-        elif cutoff_type == None:
-            if topological_domains == '':
-                plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest')
-                cbar = plt.colorbar()
-            else:
-                plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest', vmin=0)
-                cbar = plt.colorbar()
-                cbar.cmap.set_under(domain_color)
-        
-        plt.title(data_type + ' contact map (' + bin_size_str + ')', fontsize=12)
-        cbar.ax.set_ylabel(data_type + ' contact counts', rotation=270, labelpad=20)
-        plt.ylabel(chromosome_row + ' coordinate (bp)', fontsize=10)
-        plt.xlabel(chromosome_col + ' coordinate (bp)', fontsize=10)
-        if len(chr_row_coord) == 2 and len(chr_col_coord) == 2:
-            ticks_row = (np.arange(0, row, row/4) * bin_size) + chr_row_coord[0]
-            ticks_col = (np.arange(0, col, col/4) * bin_size) + chr_col_coord[0]
-            format_ticks_row = [format_e(i) for i in ticks_row.tolist()]
-            format_ticks_col = [format_e(i) for i in ticks_col.tolist()]
-            plt.yticks(np.arange(0, row, row/4), format_ticks_row)
-            plt.xticks(np.arange(0, col, col/4), format_ticks_col)
-        else:
-            ticks_row = (np.arange(0, row, row/4) * bin_size)
-            ticks_col = (np.arange(0, col, col/4) * bin_size)
-            format_ticks_row = [format_e(i) for i in ticks_row.tolist()]
-            format_ticks_col = [format_e(i) for i in ticks_col.tolist()]
-            plt.yticks(np.arange(0, row, row/4), format_ticks_row)
-            plt.xticks(np.arange(0, col, col/4), format_ticks_col)
-        plt.tick_params(axis='both', which='both', direction='out', top=False, right=False)
-        plt.xticks(fontsize=8)
-        plt.yticks(fontsize=8)
-        plt.savefig(my_filename + '.pdf', format = 'pdf', dpi=my_dpi)
-        
-        # Plot of the histogram
-        if plot_histogram:
-            histogram = []
-            if chr_row == chr_col:
-                n = len(matrix_data_full)
-                k = 1
-                for i in xrange(n):
-                    row = matrix_data_full[i][k:]
-                    for j in row:
-                        histogram.append(j)
-                    k += 1
-            else:
-                histogram = matrix_data_full.reshape((1,row*col)).tolist()[0]
-                
+            row = np.shape(matrix_data_full)[0]
+            col = np.shape(matrix_data_full)[1]
+            
+            output_vect = np.reshape(matrix_data_full,row*col,1)
+            non_zero = np.nonzero(output_vect)
+            
+            if isinstance(my_colormap, list):
+                my_cmap = LinearSegmentedColormap.from_list('mycmap', my_colormap)
+            elif isinstance(my_colormap, str):
+                my_cmap = my_colormap
+            
+            def format_e(n):
+                a = '%e' % n
+                return a.split('e')[0].rstrip('0').rstrip('.') + 'e' + a.split('e')[1]        
+            
             plt.close("all")
-            histogram_bins = int(pow(len(histogram),0.3))
-            plt.hist(histogram, bins=histogram_bins)
-            plt.title(data_type + ' contact counts distribution', fontsize=18)
-            plt.xlabel(data_type + ' contact counts', fontsize=16)
-            plt.ylabel('Number of bins', fontsize=16)
-            plt.xticks(fontsize=16)
-            plt.yticks(fontsize=16)
-            plt.tight_layout()
-            plt.savefig(my_filename + '_histogram.pdf', format = 'pdf')
-        
-        print "Done!"
+            plt.gcf().subplots_adjust(left=0.15)
+            plt.gcf().subplots_adjust(bottom=0.15)
+            
+            if cutoff_type == 'perc':
+                perc = np.percentile(output_vect[non_zero[0]],cutoff)
+                if topological_domains_list[m_index] == '':
+                    plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest', vmax=perc)
+                    cbar = plt.colorbar(extend='max')
+                    cbar.cmap.set_over(max_color)
+                else:
+                    plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest', vmax=perc, vmin=0)
+                    cbar = plt.colorbar(extend='max')
+                    cbar.cmap.set_over(max_color)
+                    cbar.cmap.set_under(domain_color)
+            elif cutoff_type == 'contact':
+                perc = cutoff 
+                if topological_domains_list[m_index] == '':
+                    plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest', vmax=perc)
+                    cbar = plt.colorbar(extend='max')
+                    cbar.cmap.set_over(max_color)
+                else:
+                    plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest', vmax=perc, vmin=0)
+                    cbar = plt.colorbar(extend='max')
+                    cbar.cmap.set_over(max_color)
+                    cbar.cmap.set_under(domain_color)
+            elif cutoff_type == None:
+                if topological_domains_list[m_index] == '':
+                    plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest')
+                    cbar = plt.colorbar()
+                else:
+                    plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest', vmin=0)
+                    cbar = plt.colorbar()
+                    cbar.cmap.set_under(domain_color)
+            
+            plt.title(data_type + ' contact map (' + bin_size_str + ')', fontsize=12)
+            cbar.ax.set_ylabel(data_type + ' contact counts', rotation=270, labelpad=20)
+            plt.ylabel(chromosome_row + ' coordinate (bp)', fontsize=10)
+            plt.xlabel(chromosome_col + ' coordinate (bp)', fontsize=10)
+            if len(chr_row_coord_temp) == 2 and len(chr_col_coord_temp) == 2:
+                ticks_row = (np.arange(0, row, row/4) * bin_size) + chr_row_coord_temp[0]
+                ticks_col = (np.arange(0, col, col/4) * bin_size) + chr_col_coord_temp[0]
+                format_ticks_row = [format_e(i) for i in ticks_row.tolist()]
+                format_ticks_col = [format_e(i) for i in ticks_col.tolist()]
+                plt.yticks(np.arange(0, row, row/4), format_ticks_row)
+                plt.xticks(np.arange(0, col, col/4), format_ticks_col)
+            else:
+                ticks_row = (np.arange(0, row, row/4) * bin_size)
+                ticks_col = (np.arange(0, col, col/4) * bin_size)
+                format_ticks_row = [format_e(i) for i in ticks_row.tolist()]
+                format_ticks_col = [format_e(i) for i in ticks_col.tolist()]
+                plt.yticks(np.arange(0, row, row/4), format_ticks_row)
+                plt.xticks(np.arange(0, col, col/4), format_ticks_col)
+            plt.tick_params(axis='both', which='both', direction='out', top=False, right=False)
+            plt.xticks(fontsize=8)
+            plt.yticks(fontsize=8)
+            plt.savefig(my_filename + '.pdf', format = 'pdf', dpi=my_dpi)
+            
+            # Plot of the histogram
+            if plot_histogram:
+                histogram = []
+                if c_row == c_col:
+                    n = len(matrix_data_full)
+                    k = 1
+                    for i in xrange(n):
+                        row = matrix_data_full[i][k:]
+                        for j in row:
+                            histogram.append(j)
+                        k += 1
+                else:
+                    histogram = matrix_data_full.reshape((1,row*col)).tolist()[0]
+                    
+                plt.close("all")
+                histogram_bins = int(pow(len(histogram),0.3))
+                plt.hist(histogram, bins=histogram_bins)
+                plt.title(data_type + ' contact counts distribution', fontsize=18)
+                plt.xlabel(data_type + ' contact counts', fontsize=16)
+                plt.ylabel('Number of bins', fontsize=16)
+                plt.xticks(fontsize=16)
+                plt.yticks(fontsize=16)
+                plt.tight_layout()
+                plt.savefig(my_filename + '_histogram.pdf', format = 'pdf')
+            
+            m_index += 1
+            print "Done!"
         
 
 def plot_timeline_map(inputFiles,
@@ -1057,7 +1062,6 @@ if __name__ == '__main__':
         available_species = ', '.join([x.split('.')[0] for x in  os.listdir(parameters['chromSizes_path'])])
         parser.error('Wrong species inserted! Check the species spelling or insert an available species: ' + available_species + '. If your species is not listed, please contact Riccardo Calandrelli at <rcalandrelli@eng.ucsd.edu>.')
     
-    bin_size = int(parameters['bin_size'])
     chromosomes = open(parameters['chromSizes_path'] + parameters['species'] + '.chrom.sizes', 'r')
     chromosomes_list = []
     chr_dim = []
@@ -1066,8 +1070,8 @@ if __name__ == '__main__':
         try:
             line2list = next(chromosomes).split('\n')[0].split('\t')
             chromosomes_list.append(line2list[0])
-            chr_dim.append(int(line2list[1])/bin_size)
-            d_chr_dim[line2list[0]] = int(line2list[1])/bin_size
+            chr_dim.append(int(line2list[1])/parameters['bin_size'])
+            d_chr_dim[line2list[0]] = int(line2list[1])/parameters['bin_size']
         except StopIteration:
             break
     
@@ -1078,21 +1082,43 @@ if __name__ == '__main__':
         if len(chr_row_list) != len(chr_row_list):
             parser.error('chr_row and chr_col should be of the same length!')
         
-        if parameters['tab_sep'] == True:
+        if bool(parameters['tab_sep']) == True:
             matrix_global = load_matrix_tab(parameters['input_file'])
-        elif parameters['tab_sep'] == False:
+        elif bool(parameters['tab_sep']) == False:
             matrix_global = load_matrix(parameters['input_file'])
         
         for c_row, c_col in zip(chr_row_list, chr_col_list):
             extract_single_map(matrix_global,
-                               parameters['tab_sep'],
-                               c_row, c_col,
+                               bool(parameters['tab_sep']),
+                               c_row, 
+                               c_col,
                                parameters['species'],
-                               bin_size,
+                               parameters['bin_size'],
                                parameters['data_type'],
-                               True, True)
+                               True, 
+                               True)
     
     elif parameters['action'] == 'plot_map':
+        plot_map(parameters['input_file'],
+                 bool(parameters['isGlobal']),
+                 bool(parameters['tab_sep']),
+                 parameters['chr_row'],
+                 parameters['chr_col'],
+                 parameters['bin_size'],
+                 parameters['chr_row_coord'],
+                 parameters['chr_col_coord'],
+                 parameters['data_type'],
+                 parameters['species'],
+                 parameters['my_colormap'],
+                 parameters['cutoff_type'],
+                 float(parameters['cutoff']),
+                 parameters['max_color'],
+                 parameters['my_dpi'],
+                 bool(parameters['plot_histogram']),
+                 parameters['topological_domains'],
+                 parameters['domain_color'])
+    
+    elif parameters['action'] == 'plot_timeline_map':
         
         
         
