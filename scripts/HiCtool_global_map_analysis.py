@@ -385,11 +385,11 @@ def extract_single_map(input_global_matrix,
 def plot_map(input_matrix,
              isGlobal,
              tab_sep=False,
-             chr_row='',
-             chr_col='',
+             chr_row=None,
+             chr_col=None,
              bin_size=1000000,
-             chr_row_coord=[],
-             chr_col_coord=[],
+             chr_row_coord=None,
+             chr_col_coord=None,
              data_type='observed',
              species='hg38',
              my_colormap=['white', 'red'],
@@ -398,11 +398,11 @@ def plot_map(input_matrix,
              max_color='#460000',
              my_dpi=2000,
              plot_histogram=False,
-             topological_domains='',
+             topological_domains=None,
              domain_color='#0000ff'):
     """
     Plot a contact map, either global or single map. To plot the global matrix leave "chr_row" and
-    "chr_col" as empty strings.
+    "chr_col" as None.
     Arguments:
         input_matrix (object | str): contact matrix. This can be passed either as
         an object of the workspace or a string of the filename saved to file.
@@ -427,7 +427,7 @@ def plot_map(input_matrix,
         my_dpi (int): resolution of the contact map in dpi.
         plot_histogram (bool): if True, plot the contact data distribution (only if a single map is selected).
         topological_domains (str | obj): topological domain coordinates to visualize domains on the heatmap. 
-        They can be passed either as a txt file or object (as generated from HiCtool_TAD_analysis.py) If empty string, no topological domains (only if a single map is selected).
+        They can be passed either as a txt file or object (as generated from HiCtool_TAD_analysis.py) If None, no topological domains (only if a single map is selected).
         domain_color (str): to set the color for topological domains on the heatmap. 
     Outputs:
         Heatmap saved in pdf format.
@@ -439,6 +439,16 @@ def plot_map(input_matrix,
     from matplotlib.colors import LinearSegmentedColormap
     import numpy as np
     import copy
+    import json
+    
+    if bin_size > 200000:
+        grid_width = 2
+    elif bin_size <= 200000 and bin_size > 100000:
+        grid_width = 4
+    elif bin_size <= 100000 and bin_size > 50000:
+        grid_width = 8
+    elif bin_size <= 50000:
+        grid_width = 16
     
     chromosomes = open(parameters['chromSizes_path'] + parameters['species'] + '.chrom.sizes', 'r')
     chromosomes_list = []
@@ -463,7 +473,7 @@ def plot_map(input_matrix,
     k = 0 # to consider the pixel occupied by the grid added after
     for i in chromosomes_list:
         d_chr_label_pos[i] = d_chr_dim_inc[i] - d_chr_dim[i]/2 + k
-        k+=2
+        k += grid_width
     
     label_pos = []
     label_name = []
@@ -473,8 +483,8 @@ def plot_map(input_matrix,
     label_pos = np.array(label_pos)
     label_name = tuple(label_name)
     
-    # Plot global heatmap
-    if chr_row == '' and chr_col == '':
+    ### Plot global heatmap
+    if chr_row == None and chr_col == None and isGlobal == True:
         if bin_size >= 1000000:
             bin_size_str = str(bin_size/1000000) + 'mb'
             my_filename = 'HiCtool_' + bin_size_str + '_' + data_type
@@ -494,11 +504,10 @@ def plot_map(input_matrix,
         # Adding grid to separate chromosomes
         k=0
         for i in chromosomes_list[:-1]:
-            matrix_data_full = np.insert(matrix_data_full, d_chr_dim_inc[i]+k, -1, axis=1)
-            matrix_data_full = np.insert(matrix_data_full, d_chr_dim_inc[i]+k, -1, axis=0)
-            matrix_data_full = np.insert(matrix_data_full, d_chr_dim_inc[i]+k, -1, axis=1)
-            matrix_data_full = np.insert(matrix_data_full, d_chr_dim_inc[i]+k, -1, axis=0)
-            k += 2
+            for j in range(grid_width):
+                matrix_data_full = np.insert(matrix_data_full, d_chr_dim_inc[i]+k, -1, axis=1)
+                matrix_data_full = np.insert(matrix_data_full, d_chr_dim_inc[i]+k, -1, axis=0)
+            k += grid_width
         
         row = np.shape(matrix_data_full)[0]
         col = np.shape(matrix_data_full)[1]
@@ -538,89 +547,120 @@ def plot_map(input_matrix,
         plt.savefig(my_filename + '.pdf', format = 'pdf', dpi=my_dpi)
         print "Done!"
     
-    # Plot a single heatmap
-    if (chr_row != '' and chr_col == '') or (chr_row == '' and chr_col != ''):
-        print "ERROR! Both the chromosomes have to be declared."
+    ### Plot a single heatmap
+    if (chr_row != None and chr_col == None) or (chr_row == None and chr_col != None):
+        print "ERROR! Chromosomes on the rows and on the columns have to be declared."
         return
-    if chr_row != '' and chr_col != '':
+    if chr_row != None and chr_col != None:
+        chr_row_list = map(str, chr_row.strip('[]').split(','))
+        chr_col_list = map(str, chr_col.strip('[]').split(','))
+        if len(chr_row_list) != len(chr_row_list):
+            print 'chr_row and chr_col should be of the same length!'
+            return
+        matrix_data_full_list = []
+        
+        # Plotting one of more single heatmaps from the global map
         if isGlobal == True:
-            matrix_data_full = extract_single_map(input_matrix,tab_sep,chr_row,chr_col,species,bin_size,data_type,False,False)
+            if tab_sep == True:
+                matrix_global = load_matrix_tab(input_matrix)
+            elif tab_sep == False:
+                matrix_global = load_matrix(input_matrix)
+            
+            for c_row, c_col in zip(chr_row_list, chr_col_list):
+                matrix_data_full_list.append(extract_single_map(matrix_global,tab_sep,c_row,c_col,species,bin_size,data_type,False,False))
+        # Plotting one single heatmaps from single file
         else:
             if isinstance(input_matrix,str):
                 if tab_sep == True:
                     matrix_data_full = load_matrix_tab(input_matrix)
                 else:
-                    if chr_row == chr_col:
+                    if chr_row_list[0] == chr_col_list[0]:
                         matrix_data_full = load_matrix(input_matrix)
                     else:
                         matrix_data_full = load_matrix_rectangular(input_matrix)
             else:
                 matrix_data_full = copy.deepcopy(input_matrix)
-    
-        print "Plotting..."        
-        chromosome_row = 'chr' + chr_row
-        chromosome_col = 'chr' + chr_col        
+            
+            matrix_data_full_list.append(matrix_data_full)
         
-        if bin_size >= 1000000:
-            bin_size_str = str(bin_size/1000000) + 'mb'
-            my_filename = 'HiCtool_' + chromosome_row + '_' + chromosome_col + '_' + bin_size_str + '_' + data_type
-        elif bin_size < 1000000:
-            bin_size_str = str(bin_size/1000) + 'kb'
-            my_filename = 'HiCtool_' + chromosome_row + '_' + chromosome_col + '_' + bin_size_str + '_' + data_type
+        m_index = 0 # to select each single matrix
+        for c_row, c_col in zip(chr_row_list, chr_col_list):
+            print "Plotting chr" + c_row + " x chr" + c_col + "..."
+            chromosome_row = 'chr' + c_row
+            chromosome_col = 'chr' + c_col        
+            matrix_data_full = matrix_data_full_list[m_index]
+            
+            if bin_size >= 1000000:
+                bin_size_str = str(bin_size/1000000) + 'mb'
+                my_filename = 'HiCtool_' + chromosome_row + '_' + chromosome_col + '_' + bin_size_str + '_' + data_type
+            elif bin_size < 1000000:
+                bin_size_str = str(bin_size/1000) + 'kb'
+                my_filename = 'HiCtool_' + chromosome_row + '_' + chromosome_col + '_' + bin_size_str + '_' + data_type
+            
+            # Update matrix values to plot topological domains
+            if topological_domains != None:
+                topological_domains_list = map(str, topological_domains.strip('[]').split(','))
+                if topological_domains_list[m_index] != '':
+                    if c_row != c_col:
+                        print "ERROR! To plot topological domains the matrix should be intrachromosomal"
+                        return
+                    if isinstance(topological_domains_list[m_index], str):
+                        domains = load_topological_domains(topological_domains_list[m_index])
+                    else:
+                        domains = topological_domains_list[m_index]
+                    my_filename = my_filename + '_domains'
+                    diag_index = np.diag_indices(len(matrix_data_full))
+                    for domain in domains:
+                        temp_start = domain[0]/bin_size
+                        temp_end = domain[1]/bin_size
+                        matrix_data_full[temp_start,temp_start:temp_end] = -1
+                        matrix_data_full[temp_start:temp_end,temp_end-1] = -1
+                        matrix_data_full[(diag_index[0][temp_start:temp_end],diag_index[1][temp_start:temp_end])] = -1
+            
         
-        # Update matrix values to plot topological domains
-        if topological_domains != '':
-            if chr_row != chr_col:
-                print "ERROR! To plot topological domains the matrix should be intrachromosomal"
-                return
-            if chr_row == '' and chr_col == '':
-                print "ERROR! To plot topological domains select a single intrachromosomal contact matrix. Use chr_row and chr_col for that."
-                return
-            if isinstance(topological_domains, str):
-                domains = load_topological_domains(topological_domains)
-            else:
-                domains = topological_domains
-            my_filename = my_filename + '_domains'
-            diag_index = np.diag_indices(len(matrix_data_full))
-            for domain in domains:
-                temp_start = domain[0]/bin_size
-                temp_end = domain[1]/bin_size
-                matrix_data_full[temp_start,temp_start:temp_end] = -1
-                matrix_data_full[temp_start:temp_end,temp_end-1] = -1
-                matrix_data_full[(diag_index[0][temp_start:temp_end],diag_index[1][temp_start:temp_end])] = -1
+            # Selecting a part of a single heatmap
+            if chr_row_coord != None or chr_col_coord != None:
+                if chr_row_coord == None:
+                    print "ERROR! Coordinates on the chromosome on the rows should be declared."
+                    return
+                if chr_col_coord == None:
+                    print "ERROR! Coordinates on the chromosome on the cols should be declared."
+                    return
+                chr_row_coord_list = json.loads(chr_row_coord)
+                chr_col_coord_list = json.loads(chr_col_coord)
         
-        # Selecting a part of a single heatmap
-        if len(chr_row_coord) > 0 or len(chr_col_coord) > 0:
-            if len(chr_row_coord) == 0:
-                print "ERROR! Coordinates on the chromosome on the rows should be declared (no empty chr_row_coord)."
-                return
-            if len(chr_col_coord) == 0:
-                print "ERROR! Coordinates on the chromosome on the cols should be declared (no empty chr_col_coord)."
-                return
-            if len(chr_row_coord) == 1 or len(chr_col_coord) == 1:
-                print "ERROR! Start and end coordinate for each chromosome should be declared."
-                return
-            if len(chr_row_coord) > 2 or len(chr_col_coord) > 2:
-                print "ERROR! Only two coordinates (start and end) for each chromosome should be declared."
-                return
-            if len(chr_row_coord) == 2 or len(chr_col_coord) == 2:
-                chr_row_bin = map(lambda x: x/bin_size, chr_row_coord)
-                chr_col_bin = map(lambda x: x/bin_size, chr_col_coord)
-        
-                if chr_row_coord[0] >= chr_row_coord[1] or chr_col_coord[0] >= chr_col_coord[1]:
-                    print "ERROR! Start coordinate should be lower than end coordinate"
-                    return
-                if chr_row_bin[0] >= chr_row_bin[1] or chr_col_bin[0] >= chr_col_bin[1]:
-                    print "ERROR! Start coordinate should be much lower than the end coordinate given the bin size"
-                    return
-                if chr_row_bin[1] > d_chr_dim[chr_row]:
-                    print "ERROR! End coordinate of the chromosome on the rows should be lower than the chromosome size"
-                    return
-                if chr_col_bin[1] > d_chr_dim[chr_col]:
-                    print "ERROR! End coordinate of the chromosome on the cols should be lower than the chromosome size"
-                    return
+                chr_row_coord_temp = chr_row_coord_list[m_index]
+                chr_col_coord_temp = chr_col_coord_list[m_index]
                 
-                matrix_data_full = matrix_data_full[chr_row_bin[0]:chr_row_bin[1]+1,chr_col_bin[0]:chr_col_bin[1]+1]
+                if len(chr_row_coord_temp) == 1 or len(chr_col_coord_temp) == 1:
+                    print "ERROR! Start and end coordinate for each chromosome should be declared."
+                    return
+                if len(chr_row_coord_temp) > 2 or len(chr_col_coord_temp) > 2:
+                    print "ERROR! Only two coordinates (start and end) for each chromosome should be declared)."
+                    return
+                if len(chr_row_coord_temp) == 2 and len(chr_col_coord_temp) == 2:
+                    chr_row_bin = map(lambda x: x/bin_size, chr_row_coord_temp)
+                    chr_col_bin = map(lambda x: x/bin_size, chr_col_coord_temp)
+            
+                    if chr_row_coord_temp[0] >= chr_row_coord_temp[1] or chr_col_coord_temp[0] >= chr_col_coord_temp[1]:
+                        print "ERROR! Start coordinate should be lower than end coordinate"
+                        return
+                    if chr_row_bin[0] >= chr_row_bin[1] or chr_col_bin[0] >= chr_col_bin[1]:
+                        print "ERROR! Start coordinate should be much lower than the end coordinate given the bin size"
+                        return
+                    if chr_row_bin[1] > d_chr_dim[c_row]:
+                        print "ERROR! End coordinate of the chromosome on the rows should be lower than the chromosome size"
+                        return
+                    if chr_col_bin[1] > d_chr_dim[c_col]:
+                        print "ERROR! End coordinate of the chromosome on the cols should be lower than the chromosome size"
+                        return
+                    
+                    matrix_data_full = matrix_data_full[chr_row_bin[0]:chr_row_bin[1]+1,chr_col_bin[0]:chr_col_bin[1]+1]
+                    
+                
+                
+                
+                
                 
         row = np.shape(matrix_data_full)[0]
         col = np.shape(matrix_data_full)[1]
@@ -963,38 +1003,32 @@ if __name__ == '__main__':
     parser.add_option('--topological_domains', dest='topological_domains', type='str', help='Topological domain coordinates file (as generated from HiCtool_TAD_analysis.py) to visualize domains on the heatmap (only if a single map is selected).')  
     parser.add_option('--domain_color', dest='domain_color', type='str', default='#0000ff', help='To set the color for topological domains on the heatmap.')  
     parser.add_option('--time_points', dest='time_points', type='str', help='If action is "plot_timeline_map", insert here the time point labels between square brackets.')  
-
-    
-    
-    
-    parser.add_option('--save_each', dest='save_single_matrix', type='int', default=0, help='Insert 1 to save each single contact matrix, 0 otherwise (default: 0).')  
-    parser.add_option('-p', dest='threads', type='int', help='Number of parallel threads to use. It has to be less or equal than the number of chromosomes.')
     (options, args) = parser.parse_args( )
     
-    if options.input_file == None:
-        parser.error('-h for help or provide the input project object file!')
-    else:
-        pass
-    if options.output_path == None:
-        parser.error('-h for help or provide the output path!')
-    else:
-        pass
-    if options.bin_size == None:
-        parser.error('-h for help or provide the bin size of the contact matrix!')
-    else:
-        pass
-    if options.chromSizes_path == None:
-        parser.error('-h for help or provide the chromSizes path!')
-    else:
-        pass
-    if options.species == None:
-        parser.error('-h for help or provide the species!')
-    else:
-        pass
-    if options.threads == None:
-        parser.error('-h for help or provide the number of threads!')
-    else:
-        pass
+#    if options.input_file == None:
+#        parser.error('-h for help or provide the input project object file!')
+#    else:
+#        pass
+#    if options.output_path == None:
+#        parser.error('-h for help or provide the output path!')
+#    else:
+#        pass
+#    if options.bin_size == None:
+#        parser.error('-h for help or provide the bin size of the contact matrix!')
+#    else:
+#        pass
+#    if options.chromSizes_path == None:
+#        parser.error('-h for help or provide the chromSizes path!')
+#    else:
+#        pass
+#    if options.species == None:
+#        parser.error('-h for help or provide the species!')
+#    else:
+#        pass
+#    if options.threads == None:
+#        parser.error('-h for help or provide the number of threads!')
+#    else:
+#        pass
     
     parameters['action'] = options.action
     parameters['input_file'] = options.input_file
@@ -1036,3 +1070,34 @@ if __name__ == '__main__':
             d_chr_dim[line2list[0]] = int(line2list[1])/bin_size
         except StopIteration:
             break
+    
+    if parameters['action'] == 'extract_single_map':
+        chr_row_list = map(str, parameters['chr_row'].strip('[]').split(','))
+        chr_col_list = map(str, parameters['chr_col'].strip('[]').split(','))
+        
+        if len(chr_row_list) != len(chr_row_list):
+            parser.error('chr_row and chr_col should be of the same length!')
+        
+        if parameters['tab_sep'] == True:
+            matrix_global = load_matrix_tab(parameters['input_file'])
+        elif parameters['tab_sep'] == False:
+            matrix_global = load_matrix(parameters['input_file'])
+        
+        for c_row, c_col in zip(chr_row_list, chr_col_list):
+            extract_single_map(matrix_global,
+                               parameters['tab_sep'],
+                               c_row, c_col,
+                               parameters['species'],
+                               bin_size,
+                               parameters['data_type'],
+                               True, True)
+    
+    elif parameters['action'] == 'plot_map':
+        
+        
+        
+        
+        
+        
+        
+        
