@@ -510,7 +510,7 @@ def plot_map(input_matrix,
         else:
             matrix_data_full = copy.deepcopy(input_matrix)
         
-        print "Plotting..."
+        print "Plotting the global matrix..."
         # Adding grid to separate chromosomes
         k=0
         for i in chromosomes_list[:-1]:
@@ -565,14 +565,14 @@ def plot_map(input_matrix,
         chr_row_list = map(str, chr_row.strip('[]').split(','))
         chr_col_list = map(str, chr_col.strip('[]').split(','))
         if len(chr_row_list) != len(chr_row_list):
-            print 'chr_row and chr_col should be of the same length!'
+            print 'ERROR! chr_row and chr_col should be of the same length!'
             return
         matrix_data_full_list = []
         
         if topological_domains != None:
             topological_domains_list = map(str, topological_domains.strip('[]').split(','))
             if len(topological_domains_list) != len(chr_row_list):
-                print "Insert in topological domains the same number of elements than chr_row (or chr_col). Leave empty slots where you do not wish to plot topological domains."
+                print "ERROR! Insert in topological domains the same number of elements than chr_row (or chr_col). Leave empty slots where you do not wish to plot topological domains."
                 return
             
         if chr_row_coord != None or chr_col_coord != None:
@@ -625,21 +625,21 @@ def plot_map(input_matrix,
             if topological_domains != None:
                 if topological_domains_list[m_index] != '':
                     if c_row != c_col:
-                        print "ERROR! To plot topological domains the matrix in position " + str(m_index) + " should be intrachromosomal."
-                        return
-                    if isinstance(topological_domains_list[m_index], str):
-                        domains = load_topological_domains(topological_domains_list[m_index])
+                        print "WARNING! To plot topological domains the matrix in position " + str(m_index) + " should be intrachromosomal. Topological domains for this matrix are skipped."
                     else:
-                        domains = topological_domains_list[m_index]
-                    my_filename = my_filename + '_domains'
-                    diag_index = np.diag_indices(len(matrix_data_full))
-                    for domain in domains:
-                        temp_start = domain[0]/bin_size
-                        temp_end = domain[1]/bin_size
-                        matrix_data_full[temp_start,temp_start:temp_end] = -1
-                        matrix_data_full[temp_start:temp_end,temp_end-1] = -1
-                        matrix_data_full[(diag_index[0][temp_start:temp_end],diag_index[1][temp_start:temp_end])] = -1
-            
+                        if isinstance(topological_domains_list[m_index], str):
+                            domains = load_topological_domains(topological_domains_list[m_index])
+                        else:
+                            domains = topological_domains_list[m_index]
+                        my_filename = my_filename + '_domains'
+                        diag_index = np.diag_indices(len(matrix_data_full))
+                        for domain in domains:
+                            temp_start = domain[0]/bin_size
+                            temp_end = domain[1]/bin_size
+                            matrix_data_full[temp_start,temp_start:temp_end] = -1
+                            matrix_data_full[temp_start:temp_end,temp_end-1] = -1
+                            matrix_data_full[(diag_index[0][temp_start:temp_end],diag_index[1][temp_start:temp_end])] = -1
+                
         
             # Selecting a part of a single heatmap
             if chr_row_coord != None and chr_col_coord != None:
@@ -1040,14 +1040,14 @@ if __name__ == '__main__':
     parser.add_option('--data_type', dest='data_type', type='str', help='Data type to label your data, example: observed, normalized, etc.')  
     parser.add_option('--chr_row_coord', dest='chr_row_coord', type='str', help='List of two integers with start and end coordinates for the chromosome on the rows to be plotted. It can also be a list of lists of two elements if multiple single maps are plotted.')  
     parser.add_option('--chr_col_coord', dest='chr_col_coord', type='str', help='List of two integers with start and end coordinates for the chromosome on the columns to be plotted. It can also be a list of lists of two elements if multiple single maps are plotted.')  
-    parser.add_option('--my_colormap', dest='my_colormap', type='str', default='[white,red]', help='Colormap to be used to plot the data. You can choose among any colorbar here https://matplotlib.org/examples/color/colormaps_reference.html, or input a list of colors if you want a custom colorbar. Example: [white, red, black]. Colors can be specified also HEX format.')  
-    parser.add_option('--cutoff_type', dest='cutoff_type', type='str', default='perc', help='To select a type of cutoff (perc or contact_number) or plot the full range of the data (leave it empty).')  
-    parser.add_option('--cutoff', dest='cutoff', type='str', default='95', help='Percentile to set a maximum cutoff on the number of contacts for the colorbar.')  
-    parser.add_option('--max_color', dest='max_color', type='str', default='#460000', help='To set the color of the bins with contact counts over "cutoff".')  
-    parser.add_option('--my_dpi', dest='my_dpi', type='int', default=2000, help='Resolution of the contact map in dpi.')  
-    parser.add_option('--plot_histogram', dest='plot_histogram', type='int', default=0, help='Insert 1 to plot the histogram of the contact distribution of the single contact matrices, 0 otherwise.')  
+    parser.add_option('--my_colormap', dest='my_colormap', type='str', default='[white,red]', help='Colormap to be used to plot the data. You can choose among any colorbar here https://matplotlib.org/examples/color/colormaps_reference.html, or input a list of colors if you want a custom colorbar. Example: [white, red, black]. Colors can be specified also HEX format. Default: [white,red]')  
+    parser.add_option('--cutoff_type', dest='cutoff_type', type='str', default='perc', help='To select a type of cutoff (perc or contact_number) or plot the full range of the data (leave it empty). Default: perc.')  
+    parser.add_option('--cutoff', dest='cutoff', type='str', default='95', help='Percentile to set a maximum cutoff on the number of contacts for the colorbar. Default: 95.')  
+    parser.add_option('--max_color', dest='max_color', type='str', default='#460000', help='To set the color of the bins with contact counts over "cutoff". Default: #460000.')  
+    parser.add_option('--my_dpi', dest='my_dpi', type='int', default=2000, help='Resolution of the contact map in dpi. Default: 2000.')  
+    parser.add_option('--plot_histogram', dest='plot_histogram', type='int', default=0, help='Insert 1 to plot the histogram of the contact distribution of the single contact matrices, 0 otherwise. Default: 0.')  
     parser.add_option('--topological_domains', dest='topological_domains', type='str', help='Topological domain coordinates file (as generated from HiCtool_TAD_analysis.py) to visualize domains on the heatmap (only if a single map is selected).')  
-    parser.add_option('--domain_color', dest='domain_color', type='str', default='#0000ff', help='To set the color for topological domains on the heatmap.')  
+    parser.add_option('--domain_color', dest='domain_color', type='str', default='#0000ff', help='To set the color for topological domains on the heatmap. Default: #0000ff.')  
     parser.add_option('--time_points', dest='time_points', type='str', help='If action is "plot_timeline_map", insert here the time point labels between square brackets.')  
     (options, args) = parser.parse_args( )
     
