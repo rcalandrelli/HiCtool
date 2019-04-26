@@ -25,7 +25,7 @@ import os
 
 parameters = {'action': None,
               'input_file': None,
-              'output_path': None,
+              #'output_path': None,
               'chromSizes_path': None,
               'isGlobal': None,
               'tab_sep': None,
@@ -790,6 +790,7 @@ def plot_timeline_map(inputFiles,
     import matplotlib.pyplot as plt
     from matplotlib.colors import LinearSegmentedColormap
     import numpy as np
+    import json
     
     # Different width for the grid to separate contact maps at different resolutions in order to be well visualized in the plots
     if bin_size > 200000:
@@ -852,6 +853,12 @@ def plot_timeline_map(inputFiles,
         bin_size_str = str(bin_size/1000) + 'kb'
         my_filename = 'HiCtool_time' + bin_size_str + '_' + data_type
     
+    if topological_domains != None:
+        topological_domains_list = json.loads(topological_domains) # list of lists
+        if len(topological_domains_list) != len(chr_row_list):
+            print "Insert in topological domains the same number of elements than chr_row (or chr_col). Leave empty lists where you do not wish to plot topological domains."
+            return
+    
     # From global heatmap
     # Load each global map at every time point into a dictionary
     inputFiles_dict = dict()
@@ -874,9 +881,11 @@ def plot_timeline_map(inputFiles,
         if value == max([d_chr_dim[x] for x in chr_col]):
             chr_col_max = key # bigger chromosomes in the columns
     output_full_matrix = np.zeros((1,n_col_max)) # initialize matrix so I can concatenate already a line where the chromosome in the columns is not the biggest
+    row_index = 0 # to select the topological domains for a row
     for i,j in zip(chr_row, chr_col):
         init_counter += 1
         line_dict = dict() # to save the contact matrices per each line
+        col_index = 0 # to select each topological domain file of a row per time point
         for k in time_points:
             # Extract the single map
             if i == '1':
@@ -894,7 +903,24 @@ def plot_timeline_map(inputFiles,
             input_matrix_array = inputFiles_dict[k] # global map at the k time point
             output_matrix = input_matrix_array[row_start:row_end,col_start:col_end]
             
+            # Update matrix values to plot topological domains
+            if topological_domains != None:
+                if topological_domains_list[row_index] != []:
+                    if i != j:
+                        print "WARNING! To plot topological domains the matrices in position " + str(row_index) + " should be intrachromosomal."
+                    else:
+                        domains = load_topological_domains(topological_domains_list[row_index][col_index])
+                        #my_filename = my_filename + '_domains'
+                        diag_index = np.diag_indices(len(output_matrix))
+                        for domain in domains:
+                            temp_start = domain[0]/bin_size
+                            temp_end = domain[1]/bin_size
+                            output_matrix[temp_start,temp_start:temp_end] = -1
+                            output_matrix[temp_start:temp_end,temp_end-1] = -1
+                            output_matrix[(diag_index[0][temp_start:temp_end],diag_index[1][temp_start:temp_end])] = -1
+            
             line_dict[k] = output_matrix # fill in the dictionary with each matrix per time point for this line
+            col_index += 1
         
         # Build the line
         matrix_line = line_dict[time_points[0]] # initialize the line with the first matrix
@@ -932,6 +958,7 @@ def plot_timeline_map(inputFiles,
         for i in range(len(time_steps)):
             if counter == time_steps[i]:
                 print str(i*10) + '% completed.'
+        row_index += 1
 
     print "(1/2) Done!"
 
@@ -984,18 +1011,17 @@ def plot_timeline_map(inputFiles,
 if __name__ == '__main__':
     
     usage = 'Usage: python2.7 HiCtool_global_map_analysis.py [-h] [options]'
-    parser = OptionParser(usage = 'python2.7 %prog -i input_file -o output_path [options]')
+    parser = OptionParser(usage = 'python2.7 %prog -a action -i input_file [options]')
     parser.add_option('-a', dest='action', type='string', help='Action to perform: extract_single_map, plot_map, plot_timeline_map')
     parser.add_option('-i', dest='input_file', type='string', help='Input contact matrix file.')
-    parser.add_option('-o', dest='output_path', type='string', help='Path to save the output files with the trailing slash in the end.')
+    #parser.add_option('-o', dest='output_path', type='string', help='Path to save the output files with the trailing slash in the end.')
     parser.add_option('-c', dest='chromSizes_path', type='string', help='Path to the folder chromSizes with trailing slash at the end.')
     parser.add_option('-b', dest='bin_size', type='int', help='Bin size (resolution) of the contact matrix.')
     parser.add_option('-s', dest='species', type='string', help='Species. It has to be one of those present under the chromSizes path.')  
-    parser.add_option('-s', dest='species', type='string', help='Species. It has to be one of those present under the chromSizes path.')  
     parser.add_option('--isGlobal', dest='isGlobal', type='int', help='Insert 1 if the input matrix is a global matrix, 0 otherwise.')  
     parser.add_option('--tab_sep', dest='tab_sep', type='int', help='Insert 1 if the input matrix is in a tab separated format, 0 if it is in compressed format.')  
-    parser.add_option('--chr_row', dest='chr_row', type='str', help='Chromosome or list of chromosomes in the rows to select specific maps for extraction for plotting.')  
-    parser.add_option('--chr_col', dest='chr_col', type='str', help='Chromosome or list of chromosomes in the columns to select specific maps for extraction for plotting.')  
+    parser.add_option('--chr_row', dest='chr_row', type='str', help='Chromosome or list of chromosomes between square brackets in the rows to select specific maps for extraction for plotting.')  
+    parser.add_option('--chr_col', dest='chr_col', type='str', help='Chromosome or list of chromosomes between square brackets in the columns to select specific maps for extraction for plotting.')  
     parser.add_option('--data_type', dest='data_type', type='str', help='Data type to label your data, example: observed, normalized, etc.')  
     parser.add_option('--chr_row_coordinates', dest='chr_row_coordinates', type='str', help='List of two integers with start and end coordinates for the chromosome on the rows to be plotted. It can also be a list of lists of two elements if multiple single maps are plotted.')  
     parser.add_option('--chr_col_coordinates', dest='chr_col_coordinates', type='str', help='List of two integers with start and end coordinates for the chromosome on the columns to be plotted. It can also be a list of lists of two elements if multiple single maps are plotted.')  
@@ -1010,34 +1036,43 @@ if __name__ == '__main__':
     parser.add_option('--time_points', dest='time_points', type='str', help='If action is "plot_timeline_map", insert here the time point labels between square brackets.')  
     (options, args) = parser.parse_args( )
     
-#    if options.input_file == None:
-#        parser.error('-h for help or provide the input project object file!')
-#    else:
-#        pass
+    if options.action == None:
+        parser.error('-h for help or provide the action command (extract_single_map, plot_map, plot_timeline_map)!')
+    else:
+        pass
+    if options.input_file == None:
+        parser.error('-h for help or provide the input contact matrix!')
+    else:
+        pass
 #    if options.output_path == None:
 #        parser.error('-h for help or provide the output path!')
 #    else:
 #        pass
-#    if options.bin_size == None:
-#        parser.error('-h for help or provide the bin size of the contact matrix!')
-#    else:
-#        pass
-#    if options.chromSizes_path == None:
-#        parser.error('-h for help or provide the chromSizes path!')
-#    else:
-#        pass
-#    if options.species == None:
-#        parser.error('-h for help or provide the species!')
-#    else:
-#        pass
-#    if options.threads == None:
-#        parser.error('-h for help or provide the number of threads!')
-#    else:
-#        pass
+    if options.bin_size == None:
+        parser.error('-h for help or provide the bin size of the contact matrix!')
+    else:
+        pass
+    if options.chromSizes_path == None:
+        parser.error('-h for help or provide the chromSizes path!')
+    else:
+        pass
+    if options.species == None:
+        parser.error('-h for help or provide the species!')
+    else:
+        pass
+    if options.tab_sep == None:
+        parser.error('-h for help or insert 1 if the contact matrix is in tab separated format, 0 otherwise!')
+    else:
+        pass
+    if options.data_type == None:
+        parser.error('-h for help or insert a custom label for the data type (observed, normalized, etc.)!')
+    else:
+        pass
+
     
     parameters['action'] = options.action
     parameters['input_file'] = options.input_file
-    parameters['output_path'] = options.output_path
+    #parameters['output_path'] = options.output_path
     parameters['chromSizes_path'] = options.chromSizes_path
     parameters['isGlobal'] = options.isGlobal
     parameters['tab_sep'] = options.tab_sep
@@ -1076,6 +1111,15 @@ if __name__ == '__main__':
             break
     
     if parameters['action'] == 'extract_single_map':
+        if options.chr_row == None:
+            parser.error('-h for help or insert a chromosome or a list of chromosomes for the rows of the contact matrices!')
+        else:
+            pass
+        if options.chr_col == None:
+            parser.error('-h for help or insert a chromosome or a list of chromosomes for the columns of the contact matrices!')
+        else:
+            pass
+        
         chr_row_list = map(str, parameters['chr_row'].strip('[]').split(','))
         chr_col_list = map(str, parameters['chr_col'].strip('[]').split(','))
         
@@ -1099,6 +1143,11 @@ if __name__ == '__main__':
                                True)
     
     elif parameters['action'] == 'plot_map':
+        if options.isGlobal == None:
+            parser.error('-h for help or insert 1 if the contact matrix is a global all-by-all chromosomes, 0 if it is a single contact matrix!')
+        else:
+            pass
+        
         plot_map(parameters['input_file'],
                  bool(parameters['isGlobal']),
                  bool(parameters['tab_sep']),
@@ -1119,7 +1168,18 @@ if __name__ == '__main__':
                  parameters['domain_color'])
     
     elif parameters['action'] == 'plot_timeline_map':
-        
+        if options.time_points == None:
+            parser.error('-h for help or insert the label for each data point between square brackets!')
+        else:
+            pass
+        if options.chr_row == None:
+            parser.error('-h for help or insert a chromosome or a list of chromosomes for the rows of the contact matrices!')
+        else:
+            pass
+        if options.chr_col == None:
+            parser.error('-h for help or insert a chromosome or a list of chromosomes for the columns of the contact matrices!')
+        else:
+            pass
         
         
         
