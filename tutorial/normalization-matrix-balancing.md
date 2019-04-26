@@ -1,6 +1,6 @@
 # Data normalization with the matrix balancing approach of Hi-Corrector
 
-This pipeline illustrates the procedure to normalize and normalize a **global Hi-C contact map** (intra- and inter-chromosomal interactions) following the matrix balancing approach of [Hi-Corrector](http://www.nature.com/ng/journal/v43/n11/abs/ng.947.html).
+This pipeline illustrates the procedure to generate and normalize a **global Hi-C contact map** (intra- and inter-chromosomal interactions) following the matrix balancing approach of [Hi-Corrector](http://www.nature.com/ng/journal/v43/n11/abs/ng.947.html). Visualization functions are also implemented.
 
 For more information about the Python functions used here check the [API documentation](https://sysbio.ucsd.edu/public/rcalandrelli/HiCtool_API_documentation.pdf).
 
@@ -16,9 +16,9 @@ For more information about the Python functions used here check the [API documen
 
 ## 1. Running HiFive functions
 
-We resort to the HiFive package in order to generate the global observed contact matrix (intra- and inter-chromosomal contact maps all together to form a single, global contact matrix). HiFive allows to remove spurious ligation products, as well as PCR duplicates and non-informative reads.
+We resort to the HiFive package in order to generate the global observed contact matrix (intra- and inter-chromosomal contact maps all together to form a single, global contact matrix). HiFive allows to remove spurious ligation products, as well as PCR duplicates and non-informative reads before generating the contact matrix.
 
-The Python script [HiCtool_hifive.py](/scripts/HiCtool_hifive.py) is used to run all the three steps needed in order to obtain the observed contact data, whose outputs are ``.hdf5`` files: 
+The Python script [HiCtool_hifive.py](/scripts/HiCtool_hifive.py) is used to run all the three steps needed in order to generate the observed contact data: 
 
 - Creating the Fend object.
 - Creating the HiCData object from a Fend object and mapped data in bam format. At this step spurious ligation products (paired-reads whose total distance to their respective restriction sites exceeds 500 bp) are removed. In addition, PCR duplicates are removed and reads with ends mapping to the same fragment and reads with ends mapping to adjacent fragments on opposite strands are also excluded, to consider the possibility of incomplete restriction enzyme digestion and fragment circularization.
@@ -38,8 +38,8 @@ where:
 - ``-f`` is the FEND file from preprocessing.
 - ``--b1`` is the first bam file from preprocessing.
 - ``--b2`` is the second bam file from preprocessing.
-- ``-e`` is the restriction enzyme or enzymes names between square brackets.
-- ``-m`` is the normalization model used (Yaffe-Tanay or Hi-Corrector).
+- ``-e`` is the restriction enzyme or enzymes names between square brackets (example [MboI,Hinfl]).
+- ``-m`` is the normalization model used (Hi-Corrector in this case).
 
 **The following output files are generated:**
 
@@ -50,9 +50,9 @@ where:
 
 ## 2. Generating the global observed contact matrix
 
-This section will allow you to generate a **global square observed contact matrix** (24-by-24 chromosomes for hg38). The total number of bins of this big matrix will depend on the resolution of the data, and it can be estimated as the entire genome length over the resolution (for hg38 at 1Mb resolution is 3078x3078). The observed data contain the observed read count per each bin.
+This section will allow you to generate a **global square observed contact matrix** (24-by-24 chromosomes for hg38). The total number of bins of this big matrix will depend on the resolution of the data (for hg38 at 1Mb resolution is 3078x3078). The observed data contain the observed read count per each bin.
 
-Especially at higher resolution, the generation of the global observed contact matrix may be computationally expensive and require long time. Therefore, we implemented a code to allow job parallelization. Each row of the contact matrix is computed in parallel, meaning all the contact matrices per each chromosome, and finally they are merged together to generate the global matrix. Each row of the matrix is saved in a temporary file, which is automatically deleted after the job is done.
+Especially at higher resolution, the generation of the global observed contact matrix may be computationally expensive and require long time. Therefore, we implemented a code to allow job parallelization (if your machine allows that). Each row of the contact matrix is computed in parallel, meaning all the contact matrices per each chromosome, and finally they are merged together to generate the global matrix. Each row of the matrix is saved in a temporary file, which is automatically deleted after the job is done.
 
 To calculate and save the global observed contact matrix use the script [HiCtool_global_map_observed.py](/scripts/HiCtool_global_map_observed.py) and run this command:
 ```unix
@@ -67,18 +67,18 @@ python /HiCtool-master/scripts/HiCtool_global_map_observed.py \
 ```
 where:
 
-- ``-i``: Project object file in ``.hdf5`` format obtained with ``HiCtool_hifive.py``.
+- ``-i``: Project object file in ``.hdf5`` format obtained with ``HiCtool_hifive.py`` above.
 - ``-o``: Output path to save the observed contact matrix with trailing slash at the end ``/``.
 - ``-b``: The bin size (resolution) for the analysis.
 - ``-s``: Species name.
 - ``-c``: Path to the folder ``chromSizes`` with trailing slash at the end ``/``.
 - ``--save_each``: Set to 1 to save each single contact matrix, 0 otherwise.
-- ``-p``: Number of parallel threads to use. It has to be less or equal than the number of chromosomes of your species.
+- ``-p``: Number of parallel threads to use. It has to be less or equal than the number of chromosomes of your species. If you do not have a multi-core machine, insert 1 here (note that it may take a long time at higher resolutions).
 
 **The following output files are generated:**
 
 - ``HiCtool_1mb_matrix_global_observed.txt``, the global matrix saved using a compressed format ([see here for more details](/tutorial/HiCtool_compressed_format.md)).
--``HiCtool_1mb_matrix_global_observed_tab.txt``, the global matrix saved in tab separated format. This matrix will be used in the next section to normalize the data.
+- ``HiCtool_1mb_matrix_global_observed_tab.txt``, the global matrix saved in tab separated format. This matrix will be used in the next section to normalize the data.
 - ``info.txt``, which contains the number of rows of the global matrix and the average rowsum.
 
 
