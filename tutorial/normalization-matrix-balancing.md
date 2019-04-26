@@ -78,25 +78,50 @@ where:
 **The following output files are generated:**
 
 - ``HiCtool_1mb_matrix_global_observed.txt``, the global matrix saved using a compressed format ([see here for more details](/tutorial/HiCtool_compressed_format.md)).
-- ``HiCtool_1mb_matrix_global_observed_tab.txt``, the global matrix saved in tab separated format. This matrix will be used in the next section to normalize the data.
+- ``HiCtool_1mb_matrix_global_observed_tab.txt``, the global matrix saved in tab separated format. This matrix will be used in the next section to normalize the data, since Hi-Corrector required the input data in a tab separated format.
 - ``info.txt``, which contains the number of rows of the global matrix and the average rowsum.
 
+### 2.1. Extracting single contact matrices
 
-After having generated the global observed contact matrix, it is possible to extract a single contact matrix (either intra- or inter-chromosomal) using the function ``extract_single_map`` of [HiCtool_full_map_analysis.py](/scripts/HiCtool_full_map_analysis.py) as following:
-```Python
-execfile('HiCtool_full_map_analysis.py')
-global_observed = load_matrix('HiCtool_1mb_matrix_global_observed.txt')
-
-chr1_intra = extract_single_map(input_global_matrix=global_observed, tab_sep=False, 
-                                chr_row='1', chr_col='1', bin_size=1000000, 
-                                data_type='observed', save_output=True, save_tab=True)
-
-chr1_2_inter = extract_single_map(input_global_matrix=global_observed, tab_sep=False, 
-                                  chr_row='1', chr_col='2', bin_size=1000000, 
-                                  data_type='observed', save_output=True, save_tab=True)
+After having generated the global observed contact matrix, it is possible to extract and save to file a single contact matrix (either intra- or inter-chromosomal) using the function ``extract_single_map`` of [HiCtool_global_map_analysis.py](/scripts/HiCtool_global_map_analysis.py) as following (here we extract the chr1-chr1 map):
+```unix
+python HiCtool_global_map_analysis.py \
+-a extract_single_map \
+-i HiCtool_1mb_matrix_global_observed.txt \
+-c /HiCtool-master/scripts/chromSizes/ \
+-b 1000000 \
+-s hg38 \
+--tab_sep 0 \
+--chr_row 1 \
+--chr_col 1 \
+--data_type observed
 ```
-**Tip!** ``extract_single_map`` can accept also directly the path to the global matrix file (``input_global_matrix='HiCtool_1mb_matrix_global_observed.txt'``) however, especially at higher resolution, the loading step of the matrix may require long time. Therefore, it is suggested to load once the matrix in the workspace using ``load_matrix`` and then work with it.
+where:
 
+- ``-a``: action to perform (here ``extract_single_map``).
+- ``-i``: Input gloabl contact matrix file.
+- ``-c``: Path to the folder ``chromSizes`` with trailing slash at the end ``/``.
+- ``-b``: The bin size (resolution) for the analysis.
+- ``-s``: Species name.
+- ``--tab_sep``: 1 if the input matrix is in a tab separated format, 0 if it is in compressed format.
+- ``--chr_row``: Chromosome or chromosomes in the rows between square brackets, to select specific maps for extraction.
+- ``--chr_col``: Chromosome or chromosomes in the columns between square brackets, to select specific maps for extraction.
+- ``--data_type``: Data type to label your data, example: observed, normalized, etc.
+
+**Tip!** To extract a single matrix the code loads first the global matrix to the workspace and especially at higher resolution, the loading step of the matrix may require long time. Therefore, if you wish to extract multiple single matrices, it is suggested to extract everything at once, instead of running the command multiple times. See the following example where chr1-chr1, chr1-chr2, chr3-chr4 are extracted.
+
+```unix
+python HiCtool_global_map_analysis.py \
+-a extract_single_map \
+-i HiCtool_1mb_matrix_global_observed.txt \
+-c /HiCtool-master/scripts/chromSizes/ \
+-b 1000000 \
+-s hg38 \
+--tab_sep 0 \
+--chr_row [1,1,3] \
+--chr_col [1,2,4] \
+--data_type observed
+```
 
 ## 3. Normalizing the global contact matrix
 
@@ -114,7 +139,7 @@ chmod u+x /HiCtool-master/scripts/HiCtool_run_ic_mes.sh
 -r 3078 \
 -s 17237 \
 -h /HiCtool-master/scripts/Hi-Corrector1.2/ \
--i /output_path/HiCtool_1mb_matrix_global_observed_tab.txt
+-i HiCtool_1mb_matrix_global_observed_tab.txt
 ```
 where:
 
@@ -125,26 +150,26 @@ where:
 - ``-h``: the path to the Hi-Corrector source code with the final trailing slash ``/``.
 - ``-i``: the observed global contact matrix in tab delimited format.
 
-This command creates a **folder named ``output_ic_mes``** with 3 files inside:
+This command creates a **folder ``output_ic_mes``** with 3 files inside:
 
 - ``output.log``: a log file
 - ``output.bias``: a bias file used by the software to normalize the data
 - ``output_normalized.txt``: the **global normalized contact matrix** in tab separated format
 
-After having normalized the data, it is possible to extract a single normalized contact matrix (either intra- or inter-chromosomal) using the function ``extract_single_map`` of [HiCtool_full_map_analysis.py](/scripts/HiCtool_full_map_analysis.py) as following:
-```Python
-execfile('HiCtool_full_map_analysis.py')
-global_normalized = load_matrix_tab("output_ic_mes/output_normalized.txt")
-
-chr1_intra_norm = extract_single_map(input_global_matrix=global_normalized, tab_sep=True, 
-                                     chr_row='1', chr_col='1', bin_size=1000000,       
-                                     data_type='normalized', save_output=True, save_tab=True)  
-
-chr1_2_inter_norm = extract_single_map(input_global_matrix=global_normalized, tab_sep=True, 
-                                       chr_row='1', chr_col='2', bin_size=1000000, 
-                                       data_type='normalized', save_output=True, save_tab=True)
+After having normalized the data, it is possible to extract and save to file a single contact matrix (either intra- or inter-chromosomal) using the function ``extract_single_map`` of [HiCtool_global_map_analysis.py](/scripts/HiCtool_global_map_analysis.py) as following (here we extract the chr1-chr1 map):
+```unix
+python HiCtool_global_map_analysis.py \
+-a extract_single_map \
+-i /output_ic_mes/output_normalized.txt \
+-c /HiCtool-master/scripts/chromSizes/ \
+-b 1000000 \
+-s hg38 \
+--tab_sep 1 \
+--chr_row 1 \
+--chr_col 1 \
+--data_type normalized
 ```
-**Tip!** ``extract_single_map`` can accept also directly the path to the global matrix file (``input_global_matrix='output_ic_mes/output_normalized.txt'``) however, especially at higher resolution, the loading step of the matrix may require long time. Therefore, it is suggested to load once the matrix in the workspace using ``load_matrix_tab`` and then work with it.
+See [above](#21-extracting-single-contact-matrices) for parameters.
 
 ## 4. Visualizing the data
 
