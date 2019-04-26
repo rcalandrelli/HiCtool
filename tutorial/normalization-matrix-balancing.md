@@ -8,6 +8,7 @@ For more information about the Python functions used here check the [API documen
 
 1. [Running HiFive functions](#1-running-hifive-functions)
 2. [Generating the global observed contact matrix](#2-generating-the-global-observed-contact-matrix)
+   - [2.1. Extracting single contact matrices](#21-extracting-single-contact-matrices)
 3. [Normalizing the global contact matrix](#3-normalizing-the-global-contact-matrix)
 4. [Visualizing the data](#4-visualizing-the-data)
    - [4.1. Visualizing the global contact data](#41-visualizing-the-global-contact-data)
