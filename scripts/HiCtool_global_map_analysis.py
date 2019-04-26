@@ -6,18 +6,28 @@
 
 # Usage: python2.7 HiCtool_global_map_analysis.py [-h] [options]
 # Options:
-#  -h, --help                           show this help message and exit
-#  -i INPUT_FILE                        Project object file in .hdf5 format obtained with HiCtool_hifive.py
-#  -o OUTPUT_PATH                       Output path to save the observed contact matrix with trailing slash at the end
-#  -b BIN_SIZE                          The bin size (resolution) for the analysis
-#  -s SPECIES                           Species. It has to be one of those present under the chromSizes path. Example: for human hg38 type here "hg38"
-#  -c CHROMSIZES_PATH                   Path to the folder chromSizes with trailing slash at the end
-#  --save_each SAVE_SINGLE_MATRIX       Set to 1 to save each single contact matrix, 0 otherwise
-#  -p THREADS                           Number of parallel threads to use. It has to be less or equal than the number of chromosomes
-
-# Output files:
-#  Global all-by-all chromosomes observed contact matrix in compressed format and tab separated format.
-#  Single contact matrices if SAVE_SINGLE_MATRIX is 1.
+#  -h, --help                show this help message and exit
+#  -a ACTION                 Action to perform: extract_single_map, plot_map, plot_timeline_map.
+#  -i INPUT_FILE             Input contact matrix file.
+#  -c CHROMSIZES_PATH        Path to the folder chromSizes with trailing slash at the end.
+#  -b BIN_SIZE               Bin size (resolution) of the contact matrix.
+#  -s SPECIES                Species. It has to be one of those present under the chromSizes path.
+#  --isGlobal                Insert 1 if the input matrix is a global matrix, 0 otherwise.  
+#  --tab_sep                 Insert 1 if the input matrix is in a tab separated format, 0 if it is in compressed format.
+#  --chr_row                 Chromosome or list of chromosomes between square brackets in the rows to select specific maps for extraction for plotting.
+#  --chr_col                 Chromosome or list of chromosomes between square brackets in the columns to select specific maps for extraction for plotting.
+#  --data_type               Data type to label your data, example: observed, normalized, etc.
+#  --chr_row_coord           List of two integers with start and end coordinates for the chromosome on the rows to be plotted. It can also be a list of lists of two elements if multiple single maps are plotted.
+#  --chr_col_coord           List of two integers with start and end coordinates for the chromosome on the columns to be plotted. It can also be a list of lists of two elements if multiple single maps are plotted.
+#  --my_colormap             Colormap to be used to plot the data. You can choose among any colorbar here https://matplotlib.org/examples/color/colormaps_reference.html, or input a list of colors if you want a custom colorbar. Example: [white, red, black]. Colors can be specified also HEX format. Default: [white,red].  
+#  --cutoff_type             To select a type of cutoff (perc or contact_number) or plot the full range of the data (leave it empty). Default: perc.  
+#  --cutoff                  Percentile to set a maximum cutoff on the number of contacts for the colorbar. Default: 95.  
+#  --max_color               To set the color of the bins with contact counts over "cutoff". Default: #460000. 
+#  --my_dpi                  Resolution of the contact map in dpi. Default: 2000.  
+#  --plot_histogram          Insert 1 to plot the histogram of the contact distribution of the single contact matrices, 0 otherwise. Default: 0. 
+#  --topological_domains     Topological domain coordinates file (as generated from HiCtool_TAD_analysis.py) to visualize domains on the heatmap (only if a single map is selected).
+#  --domain_color            To set the color for topological domains on the heatmap. Default: #0000ff.
+#  --time_points             If action is "plot_timeline_map", insert here the time point labels between square brackets.
 
 from optparse import OptionParser
 import numpy as np
@@ -599,7 +609,7 @@ def plot_map(input_matrix,
         
         m_index = 0 # to select each single matrix
         for c_row, c_col in zip(chr_row_list, chr_col_list):
-            print "Plotting chr" + c_row + " x chr" + c_col + "..."
+            print "Plotting chr" + c_row + "xchr" + c_col + " contact map..."
             chromosome_row = 'chr' + c_row
             chromosome_col = 'chr' + c_col        
             matrix_data_full = matrix_data_full_list[m_index]
@@ -663,8 +673,7 @@ def plot_map(input_matrix,
                         return
                     
                     matrix_data_full = matrix_data_full[chr_row_bin[0]:chr_row_bin[1]+1,chr_col_bin[0]:chr_col_bin[1]+1]
-                    
-                
+                         
                 
             row = np.shape(matrix_data_full)[0]
             col = np.shape(matrix_data_full)[1]
@@ -687,46 +696,57 @@ def plot_map(input_matrix,
             
             if cutoff_type == 'perc':
                 perc = np.percentile(output_vect[non_zero[0]],cutoff)
-                if topological_domains_list[m_index] == '':
-                    plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest', vmax=perc)
-                    cbar = plt.colorbar(extend='max')
-                    cbar.cmap.set_over(max_color)
-                else:
-                    plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest', vmax=perc, vmin=0)
-                    cbar = plt.colorbar(extend='max')
-                    cbar.cmap.set_over(max_color)
-                    cbar.cmap.set_under(domain_color)
             elif cutoff_type == 'contact':
-                perc = cutoff 
-                if topological_domains_list[m_index] == '':
+                perc = cutoff
+                
+            if cutoff_type != None: 
+                if topological_domains != None:
+                    if topological_domains_list[m_index] == '':
+                        plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest', vmax=perc)
+                        cbar = plt.colorbar(extend='max')
+                        cbar.cmap.set_over(max_color)
+                    else:
+                        plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest', vmax=perc, vmin=0)
+                        cbar = plt.colorbar(extend='max')
+                        cbar.cmap.set_over(max_color)
+                        cbar.cmap.set_under(domain_color)
+                else:
                     plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest', vmax=perc)
                     cbar = plt.colorbar(extend='max')
                     cbar.cmap.set_over(max_color)
+            else:
+                if topological_domains != None:
+                    if topological_domains_list[m_index] == '':
+                        plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest')
+                        cbar = plt.colorbar()
+                    else:
+                        plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest', vmin=0)
+                        cbar = plt.colorbar()
+                        cbar.cmap.set_under(domain_color)
                 else:
-                    plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest', vmax=perc, vmin=0)
-                    cbar = plt.colorbar(extend='max')
-                    cbar.cmap.set_over(max_color)
-                    cbar.cmap.set_under(domain_color)
-            elif cutoff_type == None:
-                if topological_domains_list[m_index] == '':
                     plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest')
                     cbar = plt.colorbar()
-                else:
-                    plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest', vmin=0)
-                    cbar = plt.colorbar()
-                    cbar.cmap.set_under(domain_color)
             
             plt.title(data_type + ' contact map (' + bin_size_str + ')', fontsize=12)
             cbar.ax.set_ylabel(data_type + ' contact counts', rotation=270, labelpad=20)
             plt.ylabel(chromosome_row + ' coordinate (bp)', fontsize=10)
             plt.xlabel(chromosome_col + ' coordinate (bp)', fontsize=10)
-            if len(chr_row_coord_temp) == 2 and len(chr_col_coord_temp) == 2:
-                ticks_row = (np.arange(0, row, row/4) * bin_size) + chr_row_coord_temp[0]
-                ticks_col = (np.arange(0, col, col/4) * bin_size) + chr_col_coord_temp[0]
-                format_ticks_row = [format_e(i) for i in ticks_row.tolist()]
-                format_ticks_col = [format_e(i) for i in ticks_col.tolist()]
-                plt.yticks(np.arange(0, row, row/4), format_ticks_row)
-                plt.xticks(np.arange(0, col, col/4), format_ticks_col)
+            if chr_row_coord != None and chr_col_coord != None:
+                if chr_row_coord_temp != [] and chr_col_coord_temp != []:
+                    ticks_row = (np.arange(0, row, row/4) * bin_size) + chr_row_coord_temp[0]
+                    ticks_col = (np.arange(0, col, col/4) * bin_size) + chr_col_coord_temp[0]
+                    format_ticks_row = [format_e(i) for i in ticks_row.tolist()]
+                    format_ticks_col = [format_e(i) for i in ticks_col.tolist()]
+                    plt.yticks(np.arange(0, row, row/4), format_ticks_row)
+                    plt.xticks(np.arange(0, col, col/4), format_ticks_col)
+                    my_filename += '_part'
+                else:
+                    ticks_row = (np.arange(0, row, row/4) * bin_size)
+                    ticks_col = (np.arange(0, col, col/4) * bin_size)
+                    format_ticks_row = [format_e(i) for i in ticks_row.tolist()]
+                    format_ticks_col = [format_e(i) for i in ticks_col.tolist()]
+                    plt.yticks(np.arange(0, row, row/4), format_ticks_row)
+                    plt.xticks(np.arange(0, col, col/4), format_ticks_col)
             else:
                 ticks_row = (np.arange(0, row, row/4) * bin_size)
                 ticks_col = (np.arange(0, col, col/4) * bin_size)
@@ -769,7 +789,6 @@ def plot_map(input_matrix,
         
 
 def plot_timeline_map(inputFiles,
-                      outputFile,
                       tab_sep,
                       chr_row,
                       chr_col,
@@ -781,16 +800,14 @@ def plot_timeline_map(inputFiles,
                       cutoff_type='perc',
                       cutoff=95,
                       max_color='#460000',
-                      my_dpi=2000,
-                      topological_domains=None,
-                      domain_color='#0000ff'):
+                      my_dpi=2000):
     
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     from matplotlib.colors import LinearSegmentedColormap
     import numpy as np
-    import json
+    #import json
     
     # Different width for the grid to separate contact maps at different resolutions in order to be well visualized in the plots
     if bin_size > 200000:
@@ -848,16 +865,16 @@ def plot_timeline_map(inputFiles,
     
     if bin_size >= 1000000:
         bin_size_str = str(bin_size/1000000) + 'mb'
-        my_filename = 'HiCtool_time' + bin_size_str + '_' + data_type
+        my_filename = 'HiCtool_time_' + bin_size_str + '_' + data_type
     elif bin_size < 1000000:
         bin_size_str = str(bin_size/1000) + 'kb'
-        my_filename = 'HiCtool_time' + bin_size_str + '_' + data_type
+        my_filename = 'HiCtool_time_' + bin_size_str + '_' + data_type
     
-    if topological_domains != None:
-        topological_domains_list = json.loads(topological_domains) # list of lists
-        if len(topological_domains_list) != len(chr_row_list):
-            print "Insert in topological domains the same number of elements than chr_row (or chr_col). Leave empty lists where you do not wish to plot topological domains."
-            return
+#    if topological_domains != None:
+#        topological_domains_list = json.loads(topological_domains) # list of lists
+#        if len(topological_domains_list) != len(chr_row_list):
+#            print "Insert in topological domains the same number of elements than chr_row (or chr_col). Leave empty lists where you do not wish to plot topological domains."
+#            return
     
     # From global heatmap
     # Load each global map at every time point into a dictionary
@@ -881,11 +898,11 @@ def plot_timeline_map(inputFiles,
         if value == max([d_chr_dim[x] for x in chr_col]):
             chr_col_max = key # bigger chromosomes in the columns
     output_full_matrix = np.zeros((1,n_col_max)) # initialize matrix so I can concatenate already a line where the chromosome in the columns is not the biggest
-    row_index = 0 # to select the topological domains for a row
+    #row_index = 0 # to select the topological domains for a row
     for i,j in zip(chr_row, chr_col):
         init_counter += 1
         line_dict = dict() # to save the contact matrices per each line
-        col_index = 0 # to select each topological domain file of a row per time point
+        #col_index = 0 # to select each topological domain file of a row per time point
         for k in time_points:
             # Extract the single map
             if i == '1':
@@ -904,23 +921,23 @@ def plot_timeline_map(inputFiles,
             output_matrix = input_matrix_array[row_start:row_end,col_start:col_end]
             
             # Update matrix values to plot topological domains
-            if topological_domains != None:
-                if topological_domains_list[row_index] != []:
-                    if i != j:
-                        print "WARNING! To plot topological domains the matrices in position " + str(row_index) + " should be intrachromosomal."
-                    else:
-                        domains = load_topological_domains(topological_domains_list[row_index][col_index])
-                        #my_filename = my_filename + '_domains'
-                        diag_index = np.diag_indices(len(output_matrix))
-                        for domain in domains:
-                            temp_start = domain[0]/bin_size
-                            temp_end = domain[1]/bin_size
-                            output_matrix[temp_start,temp_start:temp_end] = -1
-                            output_matrix[temp_start:temp_end,temp_end-1] = -1
-                            output_matrix[(diag_index[0][temp_start:temp_end],diag_index[1][temp_start:temp_end])] = -1
-            
+#            if topological_domains != None:
+#                if topological_domains_list[row_index] != []:
+#                    if i != j:
+#                        print "WARNING! To plot topological domains the matrices in position " + str(row_index) + " should be intrachromosomal."
+#                    else:
+#                        domains = load_topological_domains(topological_domains_list[row_index][col_index])
+#                        #my_filename = my_filename + '_domains'
+#                        diag_index = np.diag_indices(len(output_matrix))
+#                        for domain in domains:
+#                            temp_start = domain[0]/bin_size
+#                            temp_end = domain[1]/bin_size
+#                            output_matrix[temp_start,temp_start:temp_end] = -1
+#                            output_matrix[temp_start:temp_end,temp_end-1] = -1
+#                            output_matrix[(diag_index[0][temp_start:temp_end],diag_index[1][temp_start:temp_end])] = -1
+#            
             line_dict[k] = output_matrix # fill in the dictionary with each matrix per time point for this line
-            col_index += 1
+            #col_index += 1
         
         # Build the line
         matrix_line = line_dict[time_points[0]] # initialize the line with the first matrix
@@ -958,7 +975,7 @@ def plot_timeline_map(inputFiles,
         for i in range(len(time_steps)):
             if counter == time_steps[i]:
                 print str(i*10) + '% completed.'
-        row_index += 1
+        #row_index += 1
 
     print "(1/2) Done!"
 
@@ -1000,10 +1017,8 @@ def plot_timeline_map(inputFiles,
     plt.xticks(sample_pos, tuple(time_points), fontsize = 6)
     plt.yticks(label_pos, label_name, fontsize = 6)
     plt.tick_params(axis='both', which='both', length=0)
-    if outputFile == None:
-        plt.savefig(my_filename + '.pdf', format = 'pdf', dpi=my_dpi)
-    else:
-        plt.savefig(outputFile, format = 'pdf', dpi=my_dpi)
+    plt.savefig(my_filename + '.pdf', format = 'pdf', dpi=my_dpi)
+
 
     print "(2/2) Done!"
     
@@ -1023,8 +1038,8 @@ if __name__ == '__main__':
     parser.add_option('--chr_row', dest='chr_row', type='str', help='Chromosome or list of chromosomes between square brackets in the rows to select specific maps for extraction for plotting.')  
     parser.add_option('--chr_col', dest='chr_col', type='str', help='Chromosome or list of chromosomes between square brackets in the columns to select specific maps for extraction for plotting.')  
     parser.add_option('--data_type', dest='data_type', type='str', help='Data type to label your data, example: observed, normalized, etc.')  
-    parser.add_option('--chr_row_coordinates', dest='chr_row_coordinates', type='str', help='List of two integers with start and end coordinates for the chromosome on the rows to be plotted. It can also be a list of lists of two elements if multiple single maps are plotted.')  
-    parser.add_option('--chr_col_coordinates', dest='chr_col_coordinates', type='str', help='List of two integers with start and end coordinates for the chromosome on the columns to be plotted. It can also be a list of lists of two elements if multiple single maps are plotted.')  
+    parser.add_option('--chr_row_coord', dest='chr_row_coord', type='str', help='List of two integers with start and end coordinates for the chromosome on the rows to be plotted. It can also be a list of lists of two elements if multiple single maps are plotted.')  
+    parser.add_option('--chr_col_coord', dest='chr_col_coord', type='str', help='List of two integers with start and end coordinates for the chromosome on the columns to be plotted. It can also be a list of lists of two elements if multiple single maps are plotted.')  
     parser.add_option('--my_colormap', dest='my_colormap', type='str', default='[white,red]', help='Colormap to be used to plot the data. You can choose among any colorbar here https://matplotlib.org/examples/color/colormaps_reference.html, or input a list of colors if you want a custom colorbar. Example: [white, red, black]. Colors can be specified also HEX format.')  
     parser.add_option('--cutoff_type', dest='cutoff_type', type='str', default='perc', help='To select a type of cutoff (perc or contact_number) or plot the full range of the data (leave it empty).')  
     parser.add_option('--cutoff', dest='cutoff', type='str', default='95', help='Percentile to set a maximum cutoff on the number of contacts for the colorbar.')  
@@ -1132,6 +1147,7 @@ if __name__ == '__main__':
             matrix_global = load_matrix(parameters['input_file'])
         
         for c_row, c_col in zip(chr_row_list, chr_col_list):
+            print "Extracting chr" + c_row + "xchr" + c_col + " contact matrix..."
             extract_single_map(matrix_global,
                                bool(parameters['tab_sep']),
                                c_row, 
@@ -1141,12 +1157,17 @@ if __name__ == '__main__':
                                parameters['data_type'],
                                True, 
                                True)
+            print "Done!"
     
     elif parameters['action'] == 'plot_map':
         if options.isGlobal == None:
             parser.error('-h for help or insert 1 if the contact matrix is a global all-by-all chromosomes, 0 if it is a single contact matrix!')
         else:
             pass
+        
+        my_cmap = map(str, parameters['my_colormap'].strip('[]').split(','))
+        if len(my_cmap) == 1:
+            my_cmap = my_cmap[0]
         
         plot_map(parameters['input_file'],
                  bool(parameters['isGlobal']),
@@ -1158,7 +1179,7 @@ if __name__ == '__main__':
                  parameters['chr_col_coord'],
                  parameters['data_type'],
                  parameters['species'],
-                 parameters['my_colormap'],
+                 my_cmap,
                  parameters['cutoff_type'],
                  float(parameters['cutoff']),
                  parameters['max_color'],
@@ -1181,8 +1202,33 @@ if __name__ == '__main__':
         else:
             pass
         
+        input_files = map(str, parameters['input_file'].strip('[]').split(','))
+        if len(input_files) <= 1:
+            parser.error('Insert at least two input files between square brackets!')
+        else:
+            pass
         
+        chr_row_list = map(str, parameters['chr_row'].strip('[]').split(','))
+        chr_col_list = map(str, parameters['chr_col'].strip('[]').split(','))
+        time_points_list = map(str, parameters['time_points'].strip('[]').split(','))
         
+        my_cmap = map(str, parameters['my_colormap'].strip('[]').split(','))
+        if len(my_cmap) == 1:
+            my_cmap = my_cmap[0]
+        
+        plot_timeline_map(input_files,
+                          bool(parameters['tab_sep']),
+                          chr_row_list,
+                          chr_col_list,
+                          time_points_list,
+                          parameters['bin_size'],  
+                          parameters['data_type'],
+                          parameters['species'],
+                          my_cmap,
+                          parameters['cutoff_type'],
+                          float(parameters['cutoff']),
+                          parameters['max_color'],
+                          parameters['my_dpi'])
         
         
         
