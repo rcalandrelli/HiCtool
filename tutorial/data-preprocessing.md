@@ -174,7 +174,7 @@ Since generating the FEND bed file may be time consuming, we provide the most co
 
 - [HindIII-hg38](http://data.genomegitar.org/HindIII_hg38_gc_map_valid.zip)
 - [MboI-hg38 (or DpnII-hg38)](http://data.genomegitar.org/MboI_hg38_gc_map_valid.zip) (file used in this documentation)
-- [Arima-hg38]()
+- [Arima_Kit-hg38]() (restriction ezymes cocktail with MboI and Hinfl)
 - [NcoI-hg38](http://data.genomegitar.org/NcoI_hg38_gc_map_valid.zip)
 - [HindIII-mm10](http://data.genomegitar.org/HindIII_mm10_gc_map_valid.zip)
 - [MboI-mm10 (or DpnII-mm10)](http://data.genomegitar.org/MboI_mm10_gc_map_valid.zip)

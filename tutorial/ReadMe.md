@@ -1,4 +1,4 @@
-# HiCtool Tutorial (v2.0)
+# HiCtool Tutorial (v2.1)
 
 This is a full tutorial of HiCtool. The tutorial steps have to be followed in sequence. At the normalization step, choose the preferred method.
 
@@ -18,5 +18,6 @@ The **explicit-factor correction model of Yaffe and Tanay** is applied to normal
 ***
 ## Supplementary information
 
+- ### [Python utility code](/tutorial/HiCtool_utility_code.md)
 - ### [HiCtool contact matrix compressed format](/tutorial/HiCtool_compressed_format.md)
 

@@ -70,7 +70,7 @@ All the functions used in this documentation are reported with all the input par
 
 - Version 2.1 released:
 
-   - HiCtool is now based only on unix commands. One Python code is left as utility.
+   - HiCtool is now based only on unix commands. A Python script is left containing utility functions for I/O of files generated with HiCtool in the Python console.
    - The entire pre-processing is now performed with a single-command.
    - Possibility of processing Hi-C data generated with a cocktail of restriction enzymes (i.e. as in the Arima Kit) or with restriction enzymes including "N" in their sequence.
    - HiCtool includes now additional species besides hg38 and mm10: hg19, mm9, dm6, susScr3, susScr11.
