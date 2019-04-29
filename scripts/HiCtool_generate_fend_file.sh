@@ -46,7 +46,7 @@ echo -n "Aligning restriction sites for "$restrictionEnzyme" ... "
 echo "Done!"
 
 echo -n "Converting sam file to bed file ... "
-samtools view -b restrictionsites.sam | bedtools bamtobed -i > restrictionsites.bed
+samtools view -b -@ $threads restrictionsites.sam | bedtools bamtobed -i > restrictionsites.bed
 rm restrictionsites.sam
 echo "Done!"
 
