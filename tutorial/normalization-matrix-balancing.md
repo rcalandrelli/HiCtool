@@ -330,5 +330,10 @@ python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --chr_col $chromosomes \
 --samples [GM12878,HEK293T]
 ```
+where:
+- ``-i``: List of input global contact matrices between square brackets.
+- ``chr_row``: List of chromosomes on the rows of the contact maps to be plotted between square brackets.
+- ``chr_col``: List of chromosomes on the columns of the contact maps to be plotted between square brackets.
+- ``--samples``: Sample labels between square brackets.
 
 ![](/figures/HiCtool_GM12878_HEK293T_1mb_observed.png)
