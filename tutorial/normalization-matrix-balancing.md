@@ -257,7 +257,7 @@ python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --cutoff 99 \
 --max_color #460000
 
-# Normalized contact heatmap
+# Normalized data
 python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --action plot_map \
 -i /output_ic_mes/output_normalized.txt \
@@ -312,4 +312,23 @@ Normalized (chr6) 0-80 Mb         |  Normalized (chr6-chr3) 0-50Mb; 0-80Mb
 
 ### 4.3. Visualizing maps on a side-by-side view
 
+The side-by-side maps visualization may be helpful to visually compare different datasets. For this part, we will use the sample used so far (B-lymphoblastoids GM12878: GSM1551550) and the HEK293T sample GSM1081530. The latter dataset has been processed following the same pipeline than the former.
 
+To plot side-by-side contact maps for two or more samples, we use the function ``plot_side_by_side_map`` of [HiCtool_global_map_analysis.py](/scripts/HiCtool_global_map_analysis.py). Here we plot all the intra-chromosomal maps. Only global maps can be passed as input ``-i`` (either observed or normalized) as list between square brackets.
+```unix
+chromosomes=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y]
+
+python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
+--action plot_side_by_side_map \
+-i [/GSM1551550/HiCtool_1mb_matrix_global_observed.txt,/HEK293T/HiCtool_1mb_matrix_global_observed.txt] \
+-c /HiCtool-master/scripts/chromSizes/ \
+-b 1000000 \
+-s hg38 \
+--tab_sep 0 \
+--data_type observed \
+--chr_row $chromosomes \
+--chr_col $chromosomes \
+--samples [GM12878,HEK293T]
+```
+
+![](/figures/HiCtool_GM12878_HEK293T_1mb_observed.png)

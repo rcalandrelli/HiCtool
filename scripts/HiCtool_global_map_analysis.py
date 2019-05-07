@@ -7,7 +7,7 @@
 # Usage: python2.7 HiCtool_global_map_analysis.py [-h] [options]
 # Options:
 #  -h, --help                show this help message and exit
-#  --action ACTION                 Action to perform: extract_single_map, plot_map, plot_timeline_map.
+#  --action ACTION                 Action to perform: extract_single_map, plot_map, plot_side_by_side_map.
 #  -i INPUT_FILE             Input contact matrix file.
 #  -c CHROMSIZES_PATH        Path to the folder chromSizes with trailing slash at the end.
 #  -b BIN_SIZE               Bin size (resolution) of the contact matrix.
@@ -20,14 +20,14 @@
 #  --chr_row_coord           List of two integers with start and end coordinates for the chromosome on the rows to be plotted. It can also be a list of lists of two elements if multiple single maps are plotted.
 #  --chr_col_coord           List of two integers with start and end coordinates for the chromosome on the columns to be plotted. It can also be a list of lists of two elements if multiple single maps are plotted.
 #  --my_colormap             Colormap to be used to plot the data. You can choose among any colorbar here https://matplotlib.org/examples/color/colormaps_reference.html, or input a list of colors if you want a custom colorbar. Example: [white, red, black]. Colors can be specified also HEX format. Default: [white,red].  
-#  --cutoff_type             To select a type of cutoff (perc or contact_number) or plot the full range of the data (leave it empty). Default: perc.  
+#  --cutoff_type             To select a type of cutoff (percentile or contact_number) or plot the full range of the data (leave it empty). Default: percentile.  
 #  --cutoff                  Percentile to set a maximum cutoff on the number of contacts for the colorbar. Default: 95.  
 #  --max_color               To set the color of the bins with contact counts over "cutoff". Default: #460000. 
 #  --my_dpi                  Resolution of the contact map in dpi. Default: 2000.  
 #  --plot_histogram          Insert 1 to plot the histogram of the contact distribution of the single contact matrices, 0 otherwise. Default: 0. 
 #  --topological_domains     Topological domain coordinates file (as generated from HiCtool_TAD_analysis.py) to visualize domains on the heatmap (only if a single map is selected).
 #  --domain_color            To set the color for topological domains on the heatmap. Default: #0000ff.
-#  --time_points             If action is "plot_timeline_map", insert here the time point labels between square brackets.
+#  --samples             If action is "plot_side_by_side_map", insert here the time point labels between square brackets.
 
 from optparse import OptionParser
 import numpy as np
@@ -54,7 +54,7 @@ parameters = {'action': None,
               'plot_histogram': None,
               'topological_domains': None,
               'domain_color': None,
-              'time_points': None
+              'samples': None
               }
 
 
@@ -403,7 +403,7 @@ def plot_map(input_matrix,
              data_type='observed',
              species='hg38',
              my_colormap=['white', 'red'],
-             cutoff_type='perc',
+             cutoff_type='percentile',
              cutoff=99,
              max_color='#460000',
              my_dpi=2000,
@@ -534,7 +534,7 @@ def plot_map(input_matrix,
         
         plt.close("all")
         
-        if cutoff_type == 'perc':
+        if cutoff_type == 'percentile':
             perc = np.percentile(output_vect[non_zero[0]],cutoff)
             plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest', vmax=perc , vmin=0)
             cbar = plt.colorbar(extend='max')
@@ -694,7 +694,7 @@ def plot_map(input_matrix,
             plt.gcf().subplots_adjust(left=0.15)
             plt.gcf().subplots_adjust(bottom=0.15)
             
-            if cutoff_type == 'perc':
+            if cutoff_type == 'percentile':
                 perc = np.percentile(output_vect[non_zero[0]],cutoff)
             elif cutoff_type == 'contact':
                 perc = cutoff
@@ -788,19 +788,19 @@ def plot_map(input_matrix,
             print "Done!"
         
 
-def plot_timeline_map(inputFiles,
-                      tab_sep,
-                      chr_row,
-                      chr_col,
-                      time_points,
-                      bin_size,
-                      data_type,
-                      species='hg38',
-                      my_colormap=['white','red'],
-                      cutoff_type='perc',
-                      cutoff=95,
-                      max_color='#460000',
-                      my_dpi=2000):
+def plot_side_by_side_map(inputFiles,
+                          tab_sep,
+                          chr_row,
+                          chr_col,
+                          samples,
+                          bin_size,
+                          data_type,
+                          species='hg38',
+                          my_colormap=['white','red'],
+                          cutoff_type='percentile',
+                          cutoff=95,
+                          max_color='#460000',
+                          my_dpi=2000):
     
     import matplotlib
     matplotlib.use('Agg')
@@ -865,10 +865,10 @@ def plot_timeline_map(inputFiles,
     
     if bin_size >= 1000000:
         bin_size_str = str(bin_size/1000000) + 'mb'
-        my_filename = 'HiCtool_time_' + bin_size_str + '_' + data_type
+        my_filename = 'HiCtool_' + '_'.join(samples) + '_' + bin_size_str + '_' + data_type
     elif bin_size < 1000000:
         bin_size_str = str(bin_size/1000) + 'kb'
-        my_filename = 'HiCtool_time_' + bin_size_str + '_' + data_type
+        my_filename = 'HiCtool_' + '_'.join(samples) + '_' + bin_size_str + '_' + data_type
     
 #    if topological_domains != None:
 #        topological_domains_list = json.loads(topological_domains) # list of lists
@@ -884,7 +884,7 @@ def plot_timeline_map(inputFiles,
             matrix_data_full = load_matrix(inputFiles[i])
         else:
             matrix_data_full = load_matrix_tab(inputFiles[i])
-        inputFiles_dict[time_points[i]] = matrix_data_full
+        inputFiles_dict[samples[i]] = matrix_data_full
 
     time_steps = np.linspace(0,len(chr_row),11).astype(int).tolist() # to print percentage of completion to console
 
@@ -893,7 +893,7 @@ def plot_timeline_map(inputFiles,
     counter = 0 # to print percentage of completion to console
     init_counter = 0 # counter to initialize the output full matrix (if equal 1) or not
     n_col_list = [] # to save the uumber of columns in each row
-    n_col_max = max([d_chr_dim[x] for x in chr_col]) * len(time_points) + (len(time_points)-1)*grid_width # to consider the grid
+    n_col_max = max([d_chr_dim[x] for x in chr_col]) * len(samples) + (len(samples)-1)*grid_width # to consider the grid
     for key, value in d_chr_dim.items():
         if value == max([d_chr_dim[x] for x in chr_col]):
             chr_col_max = key # bigger chromosomes in the columns
@@ -903,7 +903,7 @@ def plot_timeline_map(inputFiles,
         init_counter += 1
         line_dict = dict() # to save the contact matrices per each line
         #col_index = 0 # to select each topological domain file of a row per time point
-        for k in time_points:
+        for k in samples:
             # Extract the single map
             if i == '1':
                 row_start = 0
@@ -940,18 +940,18 @@ def plot_timeline_map(inputFiles,
             #col_index += 1
         
         # Build the line
-        matrix_line = line_dict[time_points[0]] # initialize the line with the first matrix
+        matrix_line = line_dict[samples[0]] # initialize the line with the first matrix
         n_row = np.shape(matrix_line)[0]
         sep_col = np.zeros((n_row,grid_width))-1
         if j == chr_col_max: # I do not add the last sep_col since it's going till the full width of the heatmap
-            for t in range(len(time_points))[1:]:
-                matrix_line = np.concatenate((matrix_line,sep_col,line_dict[time_points[t]]), axis=1)
+            for t in range(len(samples))[1:]:
+                matrix_line = np.concatenate((matrix_line,sep_col,line_dict[samples[t]]), axis=1)
         else: # for the other chromosomes that are shorter I add the last sep_col
-            for t in range(len(time_points))[1:]:
-                if t != len(time_points)-1:
-                    matrix_line = np.concatenate((matrix_line,sep_col,line_dict[time_points[t]]), axis=1)
+            for t in range(len(samples))[1:]:
+                if t != len(samples)-1:
+                    matrix_line = np.concatenate((matrix_line,sep_col,line_dict[samples[t]]), axis=1)
                 else: # another sep_col is added at the end
-                    matrix_line = np.concatenate((matrix_line,sep_col,line_dict[time_points[t]],sep_col), axis=1)
+                    matrix_line = np.concatenate((matrix_line,sep_col,line_dict[samples[t]],sep_col), axis=1)
         
         # Attach the row to the output full matrix
         if init_counter == 1: # initialize the output full matrix
@@ -992,7 +992,7 @@ def plot_timeline_map(inputFiles,
     
     plt.close("all")
     
-    if cutoff_type == 'perc':
+    if cutoff_type == 'percentile':
         perc = np.percentile(output_vect[non_zero[0]],cutoff)
         plt.imshow(output_full_matrix, cmap=my_cmap, interpolation='nearest', vmax=perc , vmin=0)
         cbar = plt.colorbar(extend='max')
@@ -1010,11 +1010,11 @@ def plot_timeline_map(inputFiles,
     cbar.ax.set_ylabel(data_type + ' contact counts', rotation=270, labelpad=20)
     plt.title(data_type + ' map (' + bin_size_str + ')', fontsize=12)
     sample_pos_k = [0.5,1.5]
-    if len(time_points) > 2:
-        for i in xrange(len(time_points[2:])):
+    if len(samples) > 2:
+        for i in xrange(len(samples[2:])):
             sample_pos_k.append(sample_pos_k[-1]+1)
     sample_pos = np.array([int(x*d_chr_dim[chr_col_max]) for x in sample_pos_k])
-    plt.xticks(sample_pos, tuple(time_points), fontsize = 6)
+    plt.xticks(sample_pos, tuple(samples), fontsize = 6, rotation=45)
     plt.yticks(label_pos, label_name, fontsize = 6)
     plt.tick_params(axis='both', which='both', length=0)
     plt.savefig(my_filename + '.pdf', format = 'pdf', dpi=my_dpi)
@@ -1027,7 +1027,7 @@ if __name__ == '__main__':
     
     usage = 'Usage: python2.7 HiCtool_global_map_analysis.py [-h] [options]'
     parser = OptionParser(usage = 'python2.7 %prog --action action -i input_file [options]')
-    parser.add_option('--action', dest='action', type='string', help='Action to perform: extract_single_map, plot_map, plot_timeline_map')
+    parser.add_option('--action', dest='action', type='string', help='Action to perform: extract_single_map, plot_map, plot_side_by_side_map')
     parser.add_option('-i', dest='input_file', type='string', help='Input contact matrix file.')
     #parser.add_option('-o', dest='output_path', type='string', help='Path to save the output files with the trailing slash in the end.')
     parser.add_option('-c', dest='chromSizes_path', type='string', help='Path to the folder chromSizes with trailing slash at the end.')
@@ -1041,18 +1041,18 @@ if __name__ == '__main__':
     parser.add_option('--chr_row_coord', dest='chr_row_coord', type='str', help='List of two integers with start and end coordinates for the chromosome on the rows to be plotted. It can also be a list of lists of two elements if multiple single maps are plotted.')  
     parser.add_option('--chr_col_coord', dest='chr_col_coord', type='str', help='List of two integers with start and end coordinates for the chromosome on the columns to be plotted. It can also be a list of lists of two elements if multiple single maps are plotted.')  
     parser.add_option('--my_colormap', dest='my_colormap', type='str', default='[white,red]', help='Colormap to be used to plot the data. You can choose among any colorbar here https://matplotlib.org/examples/color/colormaps_reference.html, or input a list of colors if you want a custom colorbar. Example: [white, red, black]. Colors can be specified also HEX format. Default: [white,red]')  
-    parser.add_option('--cutoff_type', dest='cutoff_type', type='str', default='perc', help='To select a type of cutoff (perc or contact_number) or plot the full range of the data (leave it empty). Default: perc.')  
-    parser.add_option('--cutoff', dest='cutoff', type='str', default='95', help='Percentile to set a maximum cutoff on the number of contacts for the colorbar. Default: 95.')  
+    parser.add_option('--cutoff_type', dest='cutoff_type', type='str', default='percentile', help='To select a type of cutoff (percentile or contact_number) or plot the full range of the data (leave it empty). Default: percentile.')  
+    parser.add_option('--cutoff', dest='cutoff', type='str', default='95', help='To set a maximum cutoff on the number of contacts for the colorbar based on cutoff_type. Default: 95.')  
     parser.add_option('--max_color', dest='max_color', type='str', default='#460000', help='To set the color of the bins with contact counts over "cutoff". Default: #460000.')  
     parser.add_option('--my_dpi', dest='my_dpi', type='int', default=2000, help='Resolution of the contact map in dpi. Default: 2000.')  
     parser.add_option('--plot_histogram', dest='plot_histogram', type='int', default=0, help='Insert 1 to plot the histogram of the contact distribution of the single contact matrices, 0 otherwise. Default: 0.')  
     parser.add_option('--topological_domains', dest='topological_domains', type='str', help='Topological domain coordinates file (as generated from HiCtool_TAD_analysis.py) to visualize domains on the heatmap (only if a single map is selected).')  
     parser.add_option('--domain_color', dest='domain_color', type='str', default='#0000ff', help='To set the color for topological domains on the heatmap. Default: #0000ff.')  
-    parser.add_option('--time_points', dest='time_points', type='str', help='If action is "plot_timeline_map", insert here the time point labels between square brackets.')  
+    parser.add_option('--samples', dest='samples', type='str', help='If action is "plot_side_by_side_map", insert here the time point labels between square brackets.')  
     (options, args) = parser.parse_args( )
     
     if options.action == None:
-        parser.error('-h for help or provide the action command (extract_single_map, plot_map, plot_timeline_map)!')
+        parser.error('-h for help or provide the action command (extract_single_map, plot_map, plot_side_by_side_map)!')
     else:
         pass
     if options.input_file == None:
@@ -1106,7 +1106,7 @@ if __name__ == '__main__':
     parameters['plot_histogram'] = options.plot_histogram
     parameters['topological_domains'] = options.topological_domains
     parameters['domain_color'] = options.domain_color
-    parameters['time_points'] = options.time_points
+    parameters['samples'] = options.samples
     
     if parameters['species'] + ".chrom.sizes" not in os.listdir(parameters['chromSizes_path']):
         available_species = ', '.join([x.split('.')[0] for x in  os.listdir(parameters['chromSizes_path'])])
@@ -1188,8 +1188,8 @@ if __name__ == '__main__':
                  parameters['topological_domains'],
                  parameters['domain_color'])
     
-    elif parameters['action'] == 'plot_timeline_map':
-        if options.time_points == None:
+    elif parameters['action'] == 'plot_side_by_side_map':
+        if options.samples == None:
             parser.error('-h for help or insert the label for each data point between square brackets!')
         else:
             pass
@@ -1210,25 +1210,25 @@ if __name__ == '__main__':
         
         chr_row_list = map(str, parameters['chr_row'].strip('[]').split(','))
         chr_col_list = map(str, parameters['chr_col'].strip('[]').split(','))
-        time_points_list = map(str, parameters['time_points'].strip('[]').split(','))
+        samples_list = map(str, parameters['samples'].strip('[]').split(','))
         
         my_cmap = map(str, parameters['my_colormap'].strip('[]').split(','))
         if len(my_cmap) == 1:
             my_cmap = my_cmap[0]
         
-        plot_timeline_map(input_files,
-                          bool(parameters['tab_sep']),
-                          chr_row_list,
-                          chr_col_list,
-                          time_points_list,
-                          parameters['bin_size'],  
-                          parameters['data_type'],
-                          parameters['species'],
-                          my_cmap,
-                          parameters['cutoff_type'],
-                          float(parameters['cutoff']),
-                          parameters['max_color'],
-                          parameters['my_dpi'])
+        plot_side_by_side_map(input_files,
+                              bool(parameters['tab_sep']),
+                              chr_row_list,
+                              chr_col_list,
+                              samples_list,
+                              parameters['bin_size'],  
+                              parameters['data_type'],
+                              parameters['species'],
+                              my_cmap,
+                              parameters['cutoff_type'],
+                              float(parameters['cutoff']),
+                              parameters['max_color'],
+                              parameters['my_dpi'])
         
         
         
