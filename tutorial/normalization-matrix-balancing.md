@@ -239,7 +239,7 @@ A single contact matrix can be plotted by passing as argument the chromosome(s) 
 **Tip!** Loading the global map to extract the single matrices to plot may require time especially at higher resolutions. If you wish to plot several single heatmaps either input them all at once using ``--chr_row`` and ``--chr_col`` as below, or extract them before using ``--action extract_single_map`` as above and then plot them.
 
 To plot the **intra-chromosomal heatmap** of chromosome 6 and **inter-chromosomal heatmap** (chr6-chr3), run the following:
-```Python
+```unix
 # Observed data
 python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --action plot_map \
