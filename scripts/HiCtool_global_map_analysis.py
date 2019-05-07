@@ -7,7 +7,7 @@
 # Usage: python2.7 HiCtool_global_map_analysis.py [-h] [options]
 # Options:
 #  -h, --help                show this help message and exit
-#  -a ACTION                 Action to perform: extract_single_map, plot_map, plot_timeline_map.
+#  --action ACTION                 Action to perform: extract_single_map, plot_map, plot_timeline_map.
 #  -i INPUT_FILE             Input contact matrix file.
 #  -c CHROMSIZES_PATH        Path to the folder chromSizes with trailing slash at the end.
 #  -b BIN_SIZE               Bin size (resolution) of the contact matrix.
@@ -1026,8 +1026,8 @@ def plot_timeline_map(inputFiles,
 if __name__ == '__main__':
     
     usage = 'Usage: python2.7 HiCtool_global_map_analysis.py [-h] [options]'
-    parser = OptionParser(usage = 'python2.7 %prog -a action -i input_file [options]')
-    parser.add_option('-a', dest='action', type='string', help='Action to perform: extract_single_map, plot_map, plot_timeline_map')
+    parser = OptionParser(usage = 'python2.7 %prog --action action -i input_file [options]')
+    parser.add_option('--action', dest='action', type='string', help='Action to perform: extract_single_map, plot_map, plot_timeline_map')
     parser.add_option('-i', dest='input_file', type='string', help='Input contact matrix file.')
     #parser.add_option('-o', dest='output_path', type='string', help='Path to save the output files with the trailing slash in the end.')
     parser.add_option('-c', dest='chromSizes_path', type='string', help='Path to the folder chromSizes with trailing slash at the end.')

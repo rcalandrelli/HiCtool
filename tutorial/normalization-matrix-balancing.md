@@ -13,6 +13,7 @@ For more information about the Python functions used here check the [API documen
 4. [Visualizing the data](#4-visualizing-the-data)
    - [4.1. Visualizing the global contact data](#41-visualizing-the-global-contact-data)
    - [4.2. Visualizing a single heatmap](#42-visualizing-a-single-heatmap)
+   - [4.3. Visualizing maps on a side-by-side view](#43-visualizing-maps-on-a-side-by-side-view)  
 
 ## 1. Running HiFive functions
 
@@ -85,8 +86,8 @@ where:
 
 After having generated the global observed contact matrix, it is possible to extract and save to file a single contact matrix (either intra- or inter-chromosomal) using the function ``extract_single_map`` of [HiCtool_global_map_analysis.py](/scripts/HiCtool_global_map_analysis.py) as following (here we extract the chr1-chr1 map):
 ```unix
-python HiCtool_global_map_analysis.py \
--a extract_single_map \
+python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
+--action extract_single_map \
 -i HiCtool_1mb_matrix_global_observed.txt \
 -c /HiCtool-master/scripts/chromSizes/ \
 -b 1000000 \
@@ -98,8 +99,8 @@ python HiCtool_global_map_analysis.py \
 ```
 where:
 
-- ``-a``: action to perform (here ``extract_single_map``).
-- ``-i``: Input gloabl contact matrix file.
+- ``--action``: action to perform (here ``extract_single_map``).
+- ``-i``: Input global contact matrix file.
 - ``-c``: Path to the folder ``chromSizes`` with trailing slash at the end ``/``.
 - ``-b``: The bin size (resolution) for the analysis.
 - ``-s``: Species name.
@@ -111,8 +112,8 @@ where:
 **Tip!** To extract a single matrix the code loads first the global matrix to the workspace and especially at higher resolution, the loading step of the matrix may require long time. Therefore, if you wish to extract multiple single matrices, it is suggested to extract everything at once, instead of running the command multiple times. See the following example where chr1-chr1, chr1-chr2, chr3-chr4 are extracted.
 
 ```unix
-python HiCtool_global_map_analysis.py \
--a extract_single_map \
+python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
+--action extract_single_map \
 -i HiCtool_1mb_matrix_global_observed.txt \
 -c /HiCtool-master/scripts/chromSizes/ \
 -b 1000000 \
@@ -158,8 +159,8 @@ This command creates a **folder ``output_ic_mes``** with 3 files inside:
 
 After having normalized the data, it is possible to extract and save to file a single contact matrix (either intra- or inter-chromosomal) using the function ``extract_single_map`` of [HiCtool_global_map_analysis.py](/scripts/HiCtool_global_map_analysis.py) as following (here we extract the chr1-chr1 map):
 ```unix
-python HiCtool_global_map_analysis.py \
--a extract_single_map \
+python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
+--action extract_single_map \
 -i /output_ic_mes/output_normalized.txt \
 -c /HiCtool-master/scripts/chromSizes/ \
 -b 1000000 \
@@ -173,102 +174,142 @@ See [above](#21-extracting-single-contact-matrices) for parameters.
 
 ## 4. Visualizing the data
 
-To plot the contact maps use the function ``plot_map`` of [HiCtool_full_map_analysis.py](/scripts/HiCtool_full_map_analysis.py).
-```Python
-execfile('HiCtool_full_map_analysis.py')
-global_observed = load_matrix('HiCtool_1mb_matrix_global_observed.txt')
-global_normalized = load_matrix_tab('output_ic_mes/output_normalized.txt')
-```
-**Tip!** ``plot_map`` used below can accept also directly the path to the global matrix files loaded above however, especially at higher resolution, the loading step of the matrix may require long time. Therefore, it is suggested to load once the matrix of interest in the workspace using ``load_matrix`` or ``load_matrix_tab`` as appropriate, and then plot.
+To plot the contact maps we use the function ``plot_map`` of [HiCtool_global_map_analysis.py](/scripts/HiCtool_global_map_analysis.py).
 
 ### 4.1. Visualizing the global contact data
 
 You can visualize either the observed or the normalized data. Here we plot both the global maps at 1 Mb resolution as calculated above.
-```Python
+```unix
 # Observed data
-plot_map(input_matrix=global_observed, isGlobal=True,
-         bin_size=1000000, data_type='observed', species='hg38',
-         my_colormap=['white', 'red'],
-         cutoff_type='perc', cutoff=99, max_color='#460000')
+python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
+--action plot_map \
+-i HiCtool_1mb_matrix_global_observed.txt \
+-c /HiCtool-master/scripts/chromSizes/ \
+-b 1000000 \
+-s hg38 \
+--isGlobal 1 \
+--tab_sep 0 \
+--data_type observed \
+--my_colormap [white,red] \
+--cutoff_type percentile \
+--cutoff 99 \
+--max_color #460000
+
 ```
 ![](/figures/HiCtool_1mb_observed.png)
 
-```Python
+```unix
 # Normalized data
-plot_map(input_matrix=global_normalized, isGlobal=True,
-         bin_size=1000000, data_type='normalized', species='hg38',
-         my_colormap=['white', 'red'],
-         cutoff_type='perc', cutoff=99, max_color='#460000')
+python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
+--action plot_map \
+-i /output_ic_mes/output_normalized.txt \
+-c /HiCtool-master/scripts/chromSizes/ \
+-b 1000000 \
+-s hg38 \
+--isGlobal 1 \
+--tab_sep 1 \
+--data_type normalized \
+--my_colormap [white,red] \
+--cutoff_type percentile \
+--cutoff 99 \
+--max_color #460000
 ```
 ![](/figures/HiCtool_1mb_normalized.png)
 
+where:
+- ``--action``: action to perform (here ``plot_map``).
+- ``-i``: Input global contact matrix file.
+- ``-c``: Path to the folder ``chromSizes`` with trailing slash at the end ``/``.
+- ``-b``: The bin size (resolution) for the analysis.
+- ``-s``: Species name.
+- ``--isGlobal``: 1 if the input matrix is a global matrix, 0 otherwise.
+- ``--tab_sep``: 1 if the input matrix is in a tab separated format, 0 if it is in compressed format.
+- ``--data_type``: Data type to label your data, example: observed, normalized, etc.
+- ``--my_colormap``: Colormap to be used to plot the data. You can choose among any colorbar at https://matplotlib.org/examples/color/colormaps_reference.html, or input a list of colors if you want a custom colorbar. Example: [white, red, black]. Colors can be specified also HEX format. Default: [white,red].
+- ``--cutoff_type``: To select a type of cutoff (percentile or contact_number) or plot the full range of the data (not declared). Default: percentile.
+- ``--cutoff``: To set a maximum cutoff on the number of contacts for the colorbar based on ``--cutoff_type``. Default: 95.
+- ``--max_color``: To set the color of the bins with contact counts over ``--cutoff``. Default: #460000.
+
+The resolution in DPI of the output PDF file can be changed using ``--my_dpi``. Default is 2000. Be aware that very high DPI levels could not be feasible due to memory limitations.
+
 ### 4.2. Visualizing a single heatmap
 
-A single contact matrix can be plotted by passing as argument the chromosome in the rows (``chr_row``) and in the columns (``chr_col``). 
+A single contact matrix can be plotted by passing as argument the chromosome(s) in the rows (``--chr_row``) and in the columns (``--chr_col``) as a list between square brackets.
 
-To plot the **intra-chromosomal heatmap** of chromosome 6, run the following:
+**Tip!** Loading the global map to extract the single matrices to plot may require time especially at higher resolutions. If you wish to plot several single heatmaps either input them all at once using ``--chr_row`` and ``--chr_col`` as below, or extract them before using ``--action extract_single_map`` as above and then plot them.
+
+To plot the **intra-chromosomal heatmap** of chromosome 6 and **inter-chromosomal heatmap** (chr6-chr3), run the following:
 ```Python
-# Observed contact heatmap
-plot_map(input_matrix=global_observed, isGlobal=True,
-         chr_row='6', chr_col='6', bin_size=1000000, 
-         data_type="observed", species='hg38',
-         my_colormap=['white', 'red'], cutoff_type='perc',
-         cutoff=99, max_color='#460000')
+# Observed data
+python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
+--action plot_map \
+-i HiCtool_1mb_matrix_global_observed.txt \
+-c /HiCtool-master/scripts/chromSizes/ \
+-b 1000000 \
+-s hg38 \
+--isGlobal 1 \
+--tab_sep 0 \
+--data_type observed \
+--chr_row [6,6] \
+--chr_col [6,3] \
+--my_colormap [white,red] \
+--cutoff_type percentile \
+--cutoff 99 \
+--max_color #460000
 
 # Normalized contact heatmap
-plot_map(input_matrix=global_normalized, isGlobal=True,
-         chr_row='6', chr_col='6', bin_size=1000000, 
-         data_type="normalized", species='hg38',
-         my_colormap=['white', 'red'],
-         cutoff_type='perc', cutoff=99, max_color='#460000')
+python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
+--action plot_map \
+-i /output_ic_mes/output_normalized.txt \
+-c /HiCtool-master/scripts/chromSizes/ \
+-b 1000000 \
+-s hg38 \
+--isGlobal 1 \
+--tab_sep 1 \
+--data_type normalized \
+--chr_row [6,6] \
+--chr_col [6,3] \
+--my_colormap [white,red] \
+--cutoff_type percentile \
+--cutoff 99 \
+--max_color #460000
 ```
 Observed (chr 6)           |  Normalized (chr 6)
 :-------------------------:|:-------------------------:
 ![](/figures/HiCtool_chr6_chr6_1mb_observed.png)  |  ![](/figures/HiCtool_chr6_chr6_1mb_normalized.png)
 
-An **inter-chromosomal heatmap** can be also plotted (chr6-chr3) by setting the parameters ``chr_row`` and ``chr_col`` (we plot also the histogram of the contact distribution):
-```Python
-# Observed contact heatmap
-plot_map(input_matrix=global_observed, isGlobal=True,
-         chr_row='6', chr_col='3', bin_size=1000000, 
-         data_type="observed", species='hg38',
-         my_colormap=['white', 'red'],
-         cutoff_type='perc', cutoff=99, max_color='#460000',
-         plot_histogram=True)
 
-# Normalized contact heatmap
-plot_map(input_matrix=global_normalized, isGlobal=True,
-         chr_row='6', chr_col='3', bin_size=1000000, 
-         data_type="normalized", species='hg38',
-         my_colormap=['white', 'red'],
-         cutoff_type='perc', cutoff=99, max_color='#460000',
-         plot_histogram=True)
-```
 Observed (chr6-chr3)            |  Normalized (chr6-chr3)
 :-------------------------:|:-------------------------:
 ![](/figures/HiCtool_chr6_chr3_1mb_observed.png)  |  ![](/figures/HiCtool_chr6_chr3_1mb_normalized.png)
-![](/figures/HiCtool_chr6_chr3_1mb_observed_histogram.png)  |  ![](/figures/HiCtool_chr6_chr3_1mb_normalized_histogram.png)
 
-In addition, only a **region of the heatmap** can be plotted by setting the parameters ``chr_row_coord`` and ``chr_col_coord``. These are lists with two integers indicating the start and end coordinate of the chromosome on the rows and on the columns respectively.
-```Python
-# Intra-chromosomal map
-plot_map(input_matrix=global_normalized, isGlobal=True,
-         chr_row='6', chr_col='6', bin_size=1000000, 
-         chr_row_coord=[0,80000000], chr_col_coord=[0,80000000],
-         data_type="normalized", species='hg38',
-         my_colormap=['white', 'red'],
-         cutoff_type='perc', cutoff=99, max_color='#460000',
-         plot_histogram=False)
+A histogram of the contact data distribution can be plotted by setting ``--plot_histogram 1``. This can be used only when single heatmaps are plotted.
 
-# Inter-chromosomal map
-plot_map(input_matrix=global_normalized, isGlobal=True,
-         chr_row='6', chr_col='3', bin_size=1000000, 
-         chr_row_coord=[0,50000000], chr_col_coord=[0,80000000],
-         data_type="normalized", species='hg38',
-         my_colormap=['white', 'red'],
-         cutoff_type='perc', cutoff=99, max_color='#460000',
-         plot_histogram=False)
+In addition, only a **region of the heatmap** can be plotted by setting the parameters ``--chr_row_coord`` and ``--chr_col_coord``. These are lists with two integers indicating the start and end coordinate of the chromosome on the rows and on the columns respectively. If several single maps are inputed at once, these parameters can be lists of lists, each with coordinates corresponding to a single heatmap (see below).
+```unix
+python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
+--action plot_map \
+-i /output_ic_mes/output_normalized.txt \
+-c /HiCtool-master/scripts/chromSizes/ \
+-b 1000000 \
+-s hg38 \
+--isGlobal 1 \
+--tab_sep 1 \
+--data_type normalized \
+--chr_row [6,6] \
+--chr_col [6,3] \
+--chr_row_coord [[0,80000000],[0,50000000]] \
+--chr_col_coord [[0,80000000],[0,80000000]] \
+--my_colormap [white,red] \
+--cutoff_type percentile \
+--cutoff 99 \
+--max_color #460000
 ```
 Normalized (chr6) 0-80 Mb         |  Normalized (chr6-chr3) 0-50Mb; 0-80Mb
 :-------------------------:|:-------------------------:
 ![](/figures/HiCtool_chr6_chr6_1mb_0-80mb_normalized.png)  |  ![](/figures/HiCtool_chr6_chr3_1mb_0-50_0-80mb_normalized.png)
+
+
+### 4.3. Visualizing maps on a side-by-side view
+
+
