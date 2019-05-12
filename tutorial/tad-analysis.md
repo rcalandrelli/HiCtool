@@ -1,10 +1,10 @@
 # TAD analysis
 
-This pipeline illustrates the procedure to calculate topologically associated domain (TAD) coordinates and visualize TADs. Topological domain coordinates should be calculated on the normalized data (as we do here) but, if you wish, you can also use this pipeline to calculate TAD coordinates on the observed data. Default species that you can use are human *hg38* and mouse *mm10*. For other species use the specific function arguments (see [API documentation](https://sysbio.ucsd.edu/public/rcalandrelli/HiCtool_API_documentation.pdf)).
+This pipeline illustrates the procedure to calculate topologically associated domain (TAD) coordinates and visualize TADs. Topological domain coordinates should be calculated on the normalized data (as we do here) but, if you wish, you can also use this pipeline to calculate TAD coordinates on the observed data.
 
 For more information about the Python functions used here check the [API documentation](https://sysbio.ucsd.edu/public/rcalandrelli/HiCtool_API_documentation.pdf).
 
-**Note!** Contact data must be at 40 kb resolution to perform TAD analysis!
+**Note!** Contact data must be at 40 kb bin size or lower to perform TAD analysis!
 
 - [Section 1 (Performing TAD analysis)](#1-performing-tad-analysis) is a pipeline to compute TAD coordinates and plot TADs on the heatmap.
 - [Section 2 (Supplementary TAD analysis)](#2-supplementary-tad-analysis) gives additional details about the analysis performed in Section 1.
@@ -23,7 +23,7 @@ For more information about the Python functions used here check the [API documen
 
 TAD coordinates, as well as DI values and true DI values (HMM states), are calculated as described by [Dixon et al., (2012)](http://www.nature.com/nature/journal/v485/n7398/abs/nature11082.html). More details about this are reported in [Supplementary TAD analysis](#2-supplementary-tad-analysis).
 
-**Note!** Contact data must be at 40 kb resolution to perform TAD analysis!
+**Note!** Contact data must be at 40 kb bin size or lower to perform TAD analysis!
 
 ### 1.1. Data normalized with Yaffe-Tanay method
 

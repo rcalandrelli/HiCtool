@@ -423,9 +423,13 @@ if __name__ == '__main__':
     
     print "Generating the global observed contact matrix in parallel using " + str(threads) + " threads..."
     print "Start: " + strftime("%Y-%m-%d %H:%M:%S", gmtime())
-    pool = Pool(processes=threads)             
-    pool.map(compute_matrix_data_full_observed_parallel, chromosomes_list)
-
+    if threads > 1:
+        pool = Pool(processes=threads)             
+        pool.map(compute_matrix_data_full_observed_parallel, chromosomes_list)
+    else:
+        for c in chromosomes_list:
+            compute_matrix_data_full_observed_parallel(c)
+    
     matrix_global_observed = load_matrix_rectangular(output_path + 'matrix_full_line_' + chromosomes_list[0] + '.txt', d_chr_dim[chromosomes_list[0]], np.sum(chr_dim))
     os.remove(output_path + 'matrix_full_line_' + chromosomes_list[0] + '.txt')
     for i in chromosomes_list[1:]:
@@ -435,16 +439,16 @@ if __name__ == '__main__':
     
     print "Building global matrix... "
     if bin_size >= 1000000:
-        bin_size_str = str(bin_size/1000000)
-        my_filename = 'HiCtool_' + bin_size_str + 'mb_'
+        bin_size_str = str(bin_size/1000000) + 'mb_'
+        my_filename = 'HiCtool_' + bin_size_str
     elif bin_size < 1000000:
-        bin_size_str = str(bin_size/1000)
-        my_filename = 'HiCtool_' + bin_size_str + 'kb_'
+        bin_size_str = str(bin_size/1000) + 'kb_'
+        my_filename = 'HiCtool_' + bin_size_str
     
     save_matrix(matrix_global_observed, output_path + my_filename + 'matrix_global_observed.txt')
     save_matrix_tab(matrix_global_observed, output_path + my_filename + 'matrix_global_observed_tab.txt')
     print "Done!"
-    with open (output_path + 'info.txt', 'w') as f:
+    with open (output_path + 'info' + bin_size_str + '.txt', 'w') as f:
         f.write('Rows: ' + str(len(matrix_global_observed)) + '\n')
         f.write('Rowsum (average matrix * rows): ' + str(int(np.mean(matrix_global_observed) * len(matrix_global_observed))))
         

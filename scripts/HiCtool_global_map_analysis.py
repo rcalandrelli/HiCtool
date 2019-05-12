@@ -1048,7 +1048,7 @@ if __name__ == '__main__':
     parser.add_option('--plot_histogram', dest='plot_histogram', type='int', default=0, help='Insert 1 to plot the histogram of the contact distribution of the single contact matrices, 0 otherwise. Default: 0.')  
     parser.add_option('--topological_domains', dest='topological_domains', type='str', help='Topological domain coordinates file (as generated from HiCtool_TAD_analysis.py) to visualize domains on the heatmap (only if a single map is selected).')  
     parser.add_option('--domain_color', dest='domain_color', type='str', default='#0000ff', help='To set the color for topological domains on the heatmap. Default: #0000ff.')  
-    parser.add_option('--samples', dest='samples', type='str', help='If action is "plot_side_by_side_map", insert here the time point labels between square brackets.')  
+    parser.add_option('--samples', dest='samples', type='str', help='If action is "plot_side_by_side_map", insert here the sample labels between square brackets.')  
     (options, args) = parser.parse_args( )
     
     if options.action == None:
