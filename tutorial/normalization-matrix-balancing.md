@@ -1,8 +1,6 @@
 # Data normalization with the matrix balancing approach of Hi-Corrector
 
-This pipeline illustrates the procedure to generate and normalize a **global Hi-C contact map** (intra- and inter-chromosomal interactions) following the matrix balancing approach of [Hi-Corrector](http://www.nature.com/ng/journal/v43/n11/abs/ng.947.html). Visualization functions are also implemented.
-
-For more information about the Python functions used here check the [API documentation](https://sysbio.ucsd.edu/public/rcalandrelli/HiCtool_API_documentation.pdf).
+This pipeline illustrates the procedure to generate and normalize a **global Hi-C contact map** (intra- and inter-chromosomal interactions) following the matrix balancing approach of [Hi-Corrector](http://www.nature.com/ng/journal/v43/n11/abs/ng.947.html). Visualization functionalities are also implemented.
 
 ## Table of Contents
 
@@ -36,7 +34,7 @@ python /HiCtool-master/scripts/HiCtool_hifive.py \
 ```
 where:
 
-- ``-f`` is the FEND file from preprocessing.
+- ``-f`` is the FEND file in bed format from preprocessing.
 - ``--b1`` is the first bam file from preprocessing.
 - ``--b2`` is the second bam file from preprocessing.
 - ``-e`` is the restriction enzyme or enzymes names between square brackets (example [MboI,Hinfl]).
@@ -51,7 +49,7 @@ where:
 
 ## 2. Generating the global observed contact matrix
 
-This section will allow you to generate a **global square observed contact matrix** (24-by-24 chromosomes for hg38). The total number of bins of this big matrix will depend on the resolution of the data (for hg38 at 1Mb resolution is 3078x3078). The observed data contain the observed read count per each bin.
+This section allows to generate a **global square observed contact matrix** (24-by-24 chromosomes for hg38). The total number of bins of this big matrix will depend on the resolution of the data (for hg38 at 1Mb resolution is 3078x3078). The observed data contain the observed read count per each bin.
 
 Especially at higher resolution, the generation of the global observed contact matrix may be computationally expensive and require long time. Therefore, we implemented a code to allow job parallelization (if your machine allows that). Each row of the contact matrix is computed in parallel, meaning all the contact matrices per each chromosome, and finally they are merged together to generate the global matrix. Each row of the matrix is saved in a temporary file, which is automatically deleted after the job is done.
 
@@ -73,14 +71,14 @@ where:
 - ``-b``: The bin size (resolution) for the analysis.
 - ``-s``: Species name.
 - ``-c``: Path to the folder ``chromSizes`` with trailing slash at the end ``/``.
-- ``--save_each``: Set to 1 to save each single contact matrix, 0 otherwise.
-- ``-p``: Number of parallel threads to use. It has to be less or equal than the number of chromosomes of your species. If you do not have a multi-core machine, insert 1 here (note that it may take a long time at higher resolutions).
+- ``--save_each``: Set to 1 to save each single contact matrix (for hg38, 576 matrices in total), 0 otherwise.
+- ``-p``: Number of parallel threads to use. It has to be less or equal than the number of chromosomes of your species. If you do not have a multi-core machine, insert 1 here (note that it takes longer time at higher resolutions).
 
 **The following output files are generated:**
 
 - ``HiCtool_1mb_matrix_global_observed.txt``, the global matrix saved using a compressed format ([see here for more details](/tutorial/HiCtool_compressed_format.md)).
 - ``HiCtool_1mb_matrix_global_observed_tab.txt``, the global matrix saved in tab separated format. This matrix will be used in the next section to normalize the data, since Hi-Corrector required the input data in a tab separated format.
-- ``info.txt``, which contains the number of rows of the global matrix and the average rowsum.
+- ``info.txt``, which contains the number of rows of the global matrix and the average rowsum (also printed in the console).
 
 ### 2.1. Extracting single contact matrices
 
@@ -145,7 +143,7 @@ chmod u+x /HiCtool-master/scripts/HiCtool_run_ic_mes.sh
 where:
 
 - ``-q``: maximum number of iterations performed in the algorithm.
-- ``-m``: the memory size. Its unit is Megabytes (MB). The bigger memory you allocate for the normalization process, the faster it is. Even 100 Mb is fine for 1 Mb resolution map, suggested at least 16000 Mb (16 GB) for 40 kb resolution.
+- ``-m``: the memory size in Megabytes (MB). The bigger memory you allocate for the normalization process, the faster it is. Even 100 Mb is fine for 1 Mb resolution map, suggested at least 16000 Mb (16 GB) for 40 kb resolution.
 - ``-r``: the number of rows or columns of the input chromatin contact frequency matrix to be normalized (provided in  ``info.txt`` generated in [section 2](#2-generating-the-global-observed-contact-matrix)).
 - ``-s``: the row sum after normalization. The iterative correction algorithm can allow users to specify the row sum after the normalization, because this method is a matrix scaling approach that normalizes the matrix to be a doubly stochastic matrix (rows and columns sums equal to 1). Then we can multiple each element of this normalized matrix by the given value of this parameter, say 10.0 or 100.0 or whatever you choose. In such a way, the row sums of normalized matrix becomes this number (10.0 or 100.0 or whatever you choose). In ``info.txt`` we provide a row sum value that you could use calculated as "the average number of contacts of the observed matrix multiplied by the number of rows" to make the normalized data counts "comparable" with the observed ones. The choice is arbitrary.
 - ``-h``: the path to the Hi-Corrector source code with the final trailing slash ``/``.
@@ -193,7 +191,7 @@ python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --my_colormap [white,red] \
 --cutoff_type percentile \
 --cutoff 99 \
---max_color #460000
+--max_color "#460000"
 
 ```
 ![](/figures/HiCtool_1mb_observed.png)
@@ -231,6 +229,11 @@ where:
 - ``--max_color``: To set the color of the bins with contact counts over ``--cutoff``. Default: "#460000".
 
 The resolution in DPI of the output PDF file can be changed using ``--my_dpi``. Default is 2000. Be aware that very high DPI levels could not be feasible due to memory limitations.
+
+To emphasize the inter-chromosomal contacts in the global matrix you may use a lower cut-off setting ``--cutoff 95``:
+
+![](/figures/HiCtool_1mb_normalized_95th.png)
+
 
 ### 4.2. Visualizing a single heatmap
 
