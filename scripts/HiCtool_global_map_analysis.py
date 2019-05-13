@@ -27,7 +27,7 @@
 #  --plot_histogram          Insert 1 to plot the histogram of the contact distribution of the single contact matrices, 0 otherwise. Default: 0. 
 #  --topological_domains     Topological domain coordinates file (as generated from HiCtool_TAD_analysis.py) to visualize domains on the heatmap (only if a single map is selected).
 #  --domain_color            To set the color for topological domains on the heatmap. Default: #0000ff.
-#  --samples             If action is "plot_side_by_side_map", insert here the time point labels between square brackets.
+#  --samples                 If action is "plot_side_by_side_map", insert here the samples labels between square brackets.
 
 from optparse import OptionParser
 import numpy as np
@@ -35,7 +35,6 @@ import os
 
 parameters = {'action': None,
               'input_file': None,
-              #'output_path': None,
               'chromSizes_path': None,
               'isGlobal': None,
               'tab_sep': None,
@@ -809,7 +808,28 @@ def plot_side_by_side_map(inputFiles,
                           cutoff=95,
                           max_color='#460000',
                           my_dpi=2000):
-    
+    """
+    Plot the same contact maps from different samples on a side-by-side view, stacked on each other.
+    Arguments:
+        inputFiles (list): List of global contact matrices for each sample.
+        tab_sep (bool): True if the input global matrices are in tab separated format, False otherwise.
+        chr_row (list): list of chromosomes in the rows of each single contact matrix.
+        chr_col (list): list of chromosomes in the columns of each single contact matrix.
+        samples (list): list of the samples labels.
+        bin_size (int): bin size in bp of the contact matrix.
+        data_type (str): which kind of data type you are extracting ("observed" or "normalized").
+        species (str): species label in string format.
+        my_colormap (str | list): colormap to be used to plot the data. 1) Use a string if you choose among any colorbar here 
+        https://matplotlib.org/examples/color/colormaps_reference.html 2) Use a list of strings with colors if you want
+        a custom colorbar. Example: ['white', 'red', 'black']. Colors can be specified also in this format: '#000000'.
+        cutoff_type (str): to select a type of cutoff ('percentile' or 'contact_number') or plot the full range of the data (set the 
+        parameter as None).
+        cutoff (int): percentile to set a maximum cutoff on the number of contacts for the colorbar.
+        max_color (str): to set the color of the bins with contact counts over "cutoff".
+        my_dpi (int): resolution of the contact map in dpi.
+    Output:
+        Heatmap saved in pdf format.
+    """
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
@@ -1056,7 +1076,7 @@ if __name__ == '__main__':
     parser.add_option('--plot_histogram', dest='plot_histogram', type='int', default=0, help='Insert 1 to plot the histogram of the contact distribution of the single contact matrices, 0 otherwise. Default: 0.')  
     parser.add_option('--topological_domains', dest='topological_domains', type='str', help='Topological domain coordinates file (as generated from HiCtool_TAD_analysis.py) to visualize domains on the heatmap (only if a single map is selected).')  
     parser.add_option('--domain_color', dest='domain_color', type='str', default='#0000ff', help='To set the color for topological domains on the heatmap. Default: #0000ff.')  
-    parser.add_option('--samples', dest='samples', type='str', help='If action is "plot_side_by_side_map", insert here the sample labels between square brackets.')  
+    parser.add_option('--samples', dest='samples', type='str', help='If action is "plot_side_by_side_map", insert here the samples labels between square brackets.')  
     (options, args) = parser.parse_args( )
     
     if options.action == None:

@@ -1,12 +1,12 @@
 # Program to perform TAD analysis:
-# - Calculate the topological domains coordinates.
-# - Calculate and plot the observed DI and true DI (Hidden Markov Model).
+# - Calculate the DI, HMM states and topological domains coordinates.
+# - Plot the observed DI and true DI (Hidden Markov Model).
 
 # Usage: python2.7 HiCtool_TAD_analysis.py [-h] [options]
 # Options:
 #  -h, --help                show this help message and exit
 #  --action                  Action to perform: full_tad_analysis, plot_chromosome_DI. 
-#  -i INPUT_FILE             Input contact matrix file.
+#  -i INPUT_FILE             Input contact matrix file if action is "full_tad_analysis" or DI values if action is "plot_chromosome_DI".
 #  -c CHROMSIZES_PATH        Path to the folder chromSizes with trailing slash at the end.
 #  -s SPECIES                Species. It has to be one of those present under the chromSizes path.
 #  --isGlobal                Insert 1 if the input matrix is a global matrix, 0 otherwise.  
@@ -261,7 +261,7 @@ def extract_single_map(input_global_matrix,
         chr_row (str): chromosome in the rows of the output contact matrix.
         chr_col (str): chromosome in the columns of the output contact matrix. If chr_col is 
         equal to chr_row then the intra-chromosomal map is extracted.
-        species (str): 'hg38' or 'mm10' or any other species label in string format.
+        species (str): species label in string format.
         bin_size (int): bin size in bp of the contact matrix.
         data_type (str): which kind of data type you are extracting: "observed" or "normalized".
         save_output (bool): if True, save the contact matrix in HiCtool compressed txt file.
@@ -369,8 +369,7 @@ def calculate_chromosome_DI(input_contact_matrix,
         isGlobal (bool): set True if your input matrix is a global matrix (all-by-all chromosomes).
         tab_sep (bool): set True if your input matrix is in a tab separated format. If the matrix is passed as an
         object, this parameter is not taken into consideration.
-        species (str): 'hg38' or 'mm10' or any other species label in string format.
-
+        species (str): species label in string format.
         save_file (bool): if True, saves the DI values to txt file.
     Returns: List with the DI values.
     Output: Txt file with the DI values if "save_file=True".
@@ -535,7 +534,6 @@ def plot_chromosome_DI(input_file_DI,
         input_file_hmm (str | obj): txt file of the true DI values generated with the function "calculate_chromosome_hmm_states" or
         object with the true DI values returned by "calculate_chromosome_hmm_states".
         species (str): species name (hg38, mm10, etc.).
-
         plot_legend (bool): if True, plot the legend.
         plot_grid (bool): if True, plot the grid.
     Output:
@@ -781,7 +779,7 @@ def full_tad_analysis(input_contact_matrix,
         tab_sep (bool): set True if your input matrix is in a tab separated format. If the matrix is passed as an
         object, this parameter is not taken into consideration.
         species (str): 'hg38' or 'mm10' or any other species label in string format.
-
+        data_type (str): data type, "observed" or "normalized".
         save_di (bool): if True, save the DI values to txt file.
         save_hmm (bool): if True, save the HMM states to txt file.
     Returns: List of lists with topological domain coordinates.
@@ -789,6 +787,7 @@ def full_tad_analysis(input_contact_matrix,
         Txt file containing topological domain coordinates.
         Txt file with the DI values if "save_di=True".
         Txt file with the HMM states if "save_hmm=True".
+        Single chromosome contact matrix in compressed format if the input matrix is a global matrix.
     """        
     import copy
     
@@ -837,7 +836,7 @@ if __name__ == '__main__':
     
     usage = 'Usage: python2.7 HiCtool_TAD_analysis.py [-h] [options]'
     parser = OptionParser(usage = 'python2.7 %prog --action action -i input_file [options]')
-    parser.add_option('--action', dest='action', type='string', help='Action to perform: full_tad_analysis or plot_chromosome_di.')
+    parser.add_option('--action', dest='action', type='string', help='Action to perform: full_tad_analysis or plot_chromosome_DI.')
     parser.add_option('-i', dest='input_file', type='string', help='Input contact matrix file if action is "full_tad_analysis" or DI values if action is "plot_chromosome_DI".')
     parser.add_option('-c', dest='chromSizes_path', type='string', help='Path to the folder chromSizes with trailing slash at the end.')
     parser.add_option('-s', dest='species', type='string', help='Species. It has to be one of those present under the chromSizes path.')  
