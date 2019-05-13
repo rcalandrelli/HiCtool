@@ -212,7 +212,7 @@ python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --my_colormap [white,red] \
 --cutoff_type percentile \
 --cutoff 99 \
---max_color #460000
+--max_color "#460000"
 ```
 ![](/figures/HiCtool_1mb_normalized.png)
 
@@ -228,7 +228,7 @@ where:
 - ``--my_colormap``: Colormap to be used to plot the data. You can choose among any colorbar at https://matplotlib.org/examples/color/colormaps_reference.html, or input a list of colors if you want a custom colorbar. Example: [white, red, black]. Colors can be specified also HEX format. Default: [white,red].
 - ``--cutoff_type``: To select a type of cutoff (percentile or contact_number) or plot the full range of the data (not declared). Default: percentile.
 - ``--cutoff``: To set a maximum cutoff on the number of contacts for the colorbar based on ``--cutoff_type``. Default: 95.
-- ``--max_color``: To set the color of the bins with contact counts over ``--cutoff``. Default: #460000.
+- ``--max_color``: To set the color of the bins with contact counts over ``--cutoff``. Default: "#460000".
 
 The resolution in DPI of the output PDF file can be changed using ``--my_dpi``. Default is 2000. Be aware that very high DPI levels could not be feasible due to memory limitations.
 
@@ -255,7 +255,7 @@ python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --my_colormap [white,red] \
 --cutoff_type percentile \
 --cutoff 99 \
---max_color #460000
+--max_color "#460000"
 
 # Normalized data
 python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
@@ -272,7 +272,7 @@ python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --my_colormap [white,red] \
 --cutoff_type percentile \
 --cutoff 99 \
---max_color #460000
+--max_color "#460000"
 ```
 Observed (chr 6)           |  Normalized (chr 6)
 :-------------------------:|:-------------------------:
@@ -303,7 +303,7 @@ python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --my_colormap [white,red] \
 --cutoff_type percentile \
 --cutoff 99 \
---max_color #460000
+--max_color "#460000"
 ```
 Normalized (chr6) 0-80 Mb         |  Normalized (chr6-chr3) 0-50Mb; 0-80Mb
 :-------------------------:|:-------------------------:

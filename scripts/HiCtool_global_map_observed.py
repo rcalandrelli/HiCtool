@@ -451,5 +451,6 @@ if __name__ == '__main__':
     with open (output_path + 'info' + bin_size_str + '.txt', 'w') as f:
         f.write('Rows: ' + str(len(matrix_global_observed)) + '\n')
         f.write('Rowsum (average matrix * rows): ' + str(int(np.mean(matrix_global_observed) * len(matrix_global_observed))))
-        
+    print 'Rows: ' + str(len(matrix_global_observed))
+    print 'Rowsum (average matrix * rows): ' + str(int(np.mean(matrix_global_observed) * len(matrix_global_observed)))
     print "End: " + strftime("%Y-%m-%d %H:%M:%S", gmtime())

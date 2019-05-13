@@ -5,15 +5,19 @@
 # Usage: python2.7 HiCtool_TAD_analysis.py [-h] [options]
 # Options:
 #  -h, --help                show this help message and exit
-#  --action ACTION                 Action to perform: extract_single_map, plot_map, plot_side_by_side_map.
+#  --action                  Action to perform: full_tad_analysis, plot_chromosome_DI. 
 #  -i INPUT_FILE             Input contact matrix file.
 #  -c CHROMSIZES_PATH        Path to the folder chromSizes with trailing slash at the end.
-#  -b BIN_SIZE               Bin size (resolution) of the contact matrix.
 #  -s SPECIES                Species. It has to be one of those present under the chromSizes path.
 #  --isGlobal                Insert 1 if the input matrix is a global matrix, 0 otherwise.  
 #  --tab_sep                 Insert 1 if the input matrix is in a tab separated format, 0 if it is in compressed format.
-#  --chr                     Chromosome or list of chromosomes between square brackets to select specific maps for the analysis.
+#  --chr                     If action is "full_tad_analysis": chromosome or list of chromosomes between square brackets to select specific maps for the analysis. If action is "plot_chromosome_DI" insert a single chromosome to plot the DI values.
 #  --data_type               Data type to label your data, example: observed, normalized, etc.
+#  --full_chromosome         Insert 1 to plot DI and HMM states for the entire chromosome, 0 otherwise.
+#  --coord                   List of two integers with start and end coordinates to plot the DI values and HMM values.
+#  --input_file_hmm          Input HMM states file if action is "plot_chromosome_DI" to plot also the HMM states.
+#  --plot_legend             If action is "plot_chromosome_DI", insert 1 to plot the legend, 0 otherwise.
+#  --plot_grid               If action is "plot_chromosome_DI", insert 1 to plot the grid, 0 otherwise.
 
 from optparse import OptionParser
 import numpy as np
@@ -26,11 +30,9 @@ parameters = {'action': None,
               'tab_sep': None,
               'chr': None,
               'species': None,
-              'bin_size': None,
               'data_type': None,
               'full_chromosome': None,
-              'start_pos': None,
-              'end_pos': None,
+              'coord': None,
               'input_file_hmm': None,
               'plot_legend': None,
               'plot_grid': None
@@ -354,7 +356,6 @@ def calculate_chromosome_DI(input_contact_matrix,
                             a_chr,
                             isGlobal,
                             tab_sep=False,
-                            bin_size=40000,
                             data_type='normalized',
                             species='hg38',
                             save_file=True):
@@ -391,7 +392,7 @@ def calculate_chromosome_DI(input_contact_matrix,
                                             chr_row=a_chr,
                                             chr_col=a_chr,
                                             species=species,
-                                            bin_size=bin_size,
+                                            bin_size=40000,
                                             data_type=data_type,
                                             save_output=False,
                                             save_tab=False)
@@ -401,7 +402,7 @@ def calculate_chromosome_DI(input_contact_matrix,
 
     # Calculation of the DI
     DI = [] # list of the DI for each bin
-    len_var = 2000000/bin_size # range of upstream or downstream bins to calculate DI
+    len_var = 2000000/40000 # range of upstream or downstream bins to calculate DI
 
     for locus in xrange(n): # 'locus' refers to a bin
         if locus < len_var:
@@ -518,7 +519,6 @@ def plot_chromosome_DI(input_file_DI,
                        full_chromosome,
                        start_pos=0, 
                        end_pos=0,
-                       bin_size=40000,
                        input_file_hmm=None,
                        species='hg38',
                        plot_legend=True,
@@ -546,6 +546,7 @@ def plot_chromosome_DI(input_file_DI,
     import matplotlib
     matplotlib.use('Agg')
 
+    bin_size = 40000
     chromosomes = open(parameters['chromSizes_path'] + parameters['species'] + '.chrom.sizes', 'r')
     chromosomes_list = []
     chr_dim = []
@@ -606,7 +607,7 @@ def plot_chromosome_DI(input_file_DI,
         plt.ylabel("Directionality Index (DI) values")
         plt.grid(plot_grid)
         if plot_legend == True:
-            plt.legend()
+            plt.legend(prop={'size': 8})
         plt.savefig("HiCtool_chr" + a_chr + "_DI.pdf", format = 'pdf')
         print "Done!"
     
@@ -647,8 +648,8 @@ def plot_chromosome_DI(input_file_DI,
         plt.ylabel("Directionality Index (DI) values")
         plt.grid(plot_grid)
         if plot_legend == True:
-            plt.legend()
-        plt.savefig("HiCtool_chr" + a_chr + "_DI_full.pdf", format = 'pdf')
+            plt.legend(prop={'size': 8})
+        plt.savefig("HiCtool_chr" + a_chr + "_DI_HMM.pdf", format = 'pdf')
         print "Done!"
 
 def save_topological_domains(a_matrix, output_file):
@@ -690,8 +691,7 @@ def load_topological_domains(input_file):
     
 
 def calculate_chromosome_topological_domains(input_file_hmm,
-                                             a_chr,
-                                             bin_size=40000):
+                                             a_chr):
     """
     Function to calculate the topological domains coordinates of a chromosome. It takes the
     HMM states as input. Topological domains are stored in each line with tab separated start and end coordinates.
@@ -704,6 +704,7 @@ def calculate_chromosome_topological_domains(input_file_hmm,
     """
     import numpy as np    
     
+    bin_size = 40000
     print "Calculating topological domain coordinates..."
     if isinstance(input_file_hmm,str):
         likelystates = load_hmm_states(input_file_hmm)
@@ -766,7 +767,6 @@ def full_tad_analysis(input_contact_matrix,
                       a_chr,
                       isGlobal,
                       tab_sep,
-                      bin_size=40000,
                       species='hg38',
                       data_type='normalized',
                       save_di=True,
@@ -792,6 +792,7 @@ def full_tad_analysis(input_contact_matrix,
     """        
     import copy
     
+    bin_size = 40000
     if isGlobal == False:
         if isinstance(input_contact_matrix, str):
             if tab_sep == False:
@@ -808,7 +809,7 @@ def full_tad_analysis(input_contact_matrix,
                                             species=species,
                                             bin_size=bin_size,
                                             data_type=data_type,
-                                            save_output=False,
+                                            save_output=True,
                                             save_tab=False)
 
     # DI VALUES
@@ -816,7 +817,6 @@ def full_tad_analysis(input_contact_matrix,
                                  a_chr=a_chr,
                                  isGlobal=False,
                                  tab_sep=False,
-                                 bin_size=bin_size,
                                  data_type=data_type,
                                  species=species,
                                  save_file=save_di)
@@ -828,9 +828,9 @@ def full_tad_analysis(input_contact_matrix,
     
     # TOPOLOGICAL DOMAIN COORDINATES
     tad = calculate_chromosome_topological_domains(input_file_hmm=HMM,
-                                                   a_chr=a_chr,
-                                                   bin_size=bin_size)
+                                                   a_chr=a_chr)
     return tad
+
 
 
 if __name__ == '__main__':
@@ -838,14 +838,18 @@ if __name__ == '__main__':
     usage = 'Usage: python2.7 HiCtool_TAD_analysis.py [-h] [options]'
     parser = OptionParser(usage = 'python2.7 %prog --action action -i input_file [options]')
     parser.add_option('--action', dest='action', type='string', help='Action to perform: full_tad_analysis or plot_chromosome_di.')
-    parser.add_option('-i', dest='input_file', type='string', help='Input contact matrix file.')
+    parser.add_option('-i', dest='input_file', type='string', help='Input contact matrix file if action is "full_tad_analysis" or DI values if action is "plot_chromosome_DI".')
     parser.add_option('-c', dest='chromSizes_path', type='string', help='Path to the folder chromSizes with trailing slash at the end.')
-    parser.add_option('-b', dest='bin_size', type='int', help='Bin size (resolution) of the contact matrix.')
     parser.add_option('-s', dest='species', type='string', help='Species. It has to be one of those present under the chromSizes path.')  
     parser.add_option('--isGlobal', dest='isGlobal', type='int', help='Insert 1 if the input matrix is a global matrix, 0 otherwise.')  
     parser.add_option('--tab_sep', dest='tab_sep', type='int', help='Insert 1 if the input matrix is in a tab separated format, 0 if it is in compressed format.')  
-    parser.add_option('--chr', dest='chr', type='str', help='Chromosome or list of chromosomes between square brackets to select specific maps for the analysis.')  
+    parser.add_option('--chr', dest='chr', type='str', help='If action is "full_tad_analysis": chromosome or list of chromosomes between square brackets to select specific maps for the analysis. If action is "plot_chromosome_DI" insert a single chromosome to plot the DI values.')  
     parser.add_option('--data_type', dest='data_type', type='str', default='normalized', help='Data type to label your data, example: observed, normalized, etc.')  
+    parser.add_option('--full_chromosome', dest='full_chromosome', type='int', help='Insert 1 to plot DI and HMM states for the entire chromosome, 0 otherwise.')  
+    parser.add_option('--coord', dest='coord', type='str', help='List of two integers with start and end coordinates to plot the DI values and HMM values.')  
+    parser.add_option('--input_file_hmm', dest='input_file_hmm', type='string', help='Input HMM states file if action is "plot_chromosome_DI" to plot also the HMM states.')
+    parser.add_option('--plot_legend', dest='plot_legend', type='int', default=1, help='If action is "plot_chromosome_DI", insert 1 to plot the legend, 0 otherwise.')  
+    parser.add_option('--plot_grid', dest='plot_grid', type='int', default=1, help='If action is "plot_chromosome_DI", insert 1 to plot the grid, 0 otherwise.')  
     (options, args) = parser.parse_args( )
     
     if options.action == None:
@@ -853,15 +857,7 @@ if __name__ == '__main__':
     else:
         pass
     if options.input_file == None:
-        parser.error('-h for help or provide the input contact matrix!')
-    else:
-        pass
-#    if options.output_path == None:
-#        parser.error('-h for help or provide the output path!')
-#    else:
-#        pass
-    if options.bin_size == None:
-        parser.error('-h for help or provide the bin size of the contact matrix!')
+        parser.error('-h for help or provide the input contact matrix or the DI values file!')
     else:
         pass
     if options.chromSizes_path == None:
@@ -872,16 +868,11 @@ if __name__ == '__main__':
         parser.error('-h for help or provide the species!')
     else:
         pass
-    if options.tab_sep == None:
-        parser.error('-h for help or insert 1 if the contact matrix is in tab separated format, 0 otherwise!')
-    else:
-        pass
-    if options.data_type == None:
-        parser.error('-h for help or insert a custom label for the data type (observed, normalized, etc.)!')
+    if options.chr == None:
+        parser.error('-h for help or provide the input chromosomes (list of chromosomes accepted if action is "full_tad_analysis", single chromosome only for "plot_chromosome_DI")!')
     else:
         pass
 
-    
     parameters['action'] = options.action
     parameters['input_file'] = options.input_file
     parameters['chromSizes_path'] = options.chromSizes_path
@@ -889,35 +880,31 @@ if __name__ == '__main__':
     parameters['tab_sep'] = options.tab_sep
     parameters['chr'] = options.chr
     parameters['species'] = options.species
-    parameters['bin_size'] = options.bin_size
     parameters['data_type'] = options.data_type
+    parameters['full_chromosome'] = options.full_chromosome
+    parameters['coord'] = options.coord
+    parameters['input_file_hmm'] = options.input_file_hmm
+    parameters['plot_legend'] = options.plot_legend
+    parameters['plot_grid'] = options.plot_grid
     
     if parameters['species'] + ".chrom.sizes" not in os.listdir(parameters['chromSizes_path']):
         available_species = ', '.join([x.split('.')[0] for x in  os.listdir(parameters['chromSizes_path'])])
         parser.error('Wrong species inserted! Check the species spelling or insert an available species: ' + available_species + '. If your species is not listed, please contact Riccardo Calandrelli at <rcalandrelli@eng.ucsd.edu>.')
     
-    chromosomes = open(parameters['chromSizes_path'] + parameters['species'] + '.chrom.sizes', 'r')
-    chromosomes_list = []
-    chr_dim = []
-    d_chr_dim = {}
-    while True:
-        try:
-            line2list = next(chromosomes).split('\n')[0].split('\t')
-            chromosomes_list.append(line2list[0])
-            chr_dim.append(int(line2list[1])/parameters['bin_size'])
-            d_chr_dim[line2list[0]] = int(line2list[1])/parameters['bin_size']
-        except StopIteration:
-            break
     
     if parameters['action'] == 'full_tad_analysis':
-#        if options.chr_row == None:
-#            parser.error('-h for help or insert a chromosome or a list of chromosomes for the rows of the contact matrices!')
-#        else:
-#            pass
-#        if options.chr_col == None:
-#            parser.error('-h for help or insert a chromosome or a list of chromosomes for the columns of the contact matrices!')
-#        else:
-#            pass
+        if options.isGlobal == None:
+            parser.error('-h for help or insert 1 if the contact matrix is global (all-by-all chromosomes), 0 otherwise!')
+        else:
+            pass
+        if options.tab_sep == None:
+            parser.error('-h for help or insert 1 if the contact matrix is in tab separated format, 0 otherwise!')
+        else:
+            pass
+        if options.data_type == None:
+            parser.error('-h for help or insert a custom label for the data type (observed, normalized, etc.)!')
+        else:
+            pass
         
         chr_list = map(str, parameters['chr'].strip('[]').split(','))
         
@@ -927,118 +914,49 @@ if __name__ == '__main__':
             else:
                 pass
             
-            if isinstance(input_contact_matrix, str):
-                if tab_sep == False:
-                    contact_matrix = load_matrix(input_contact_matrix)
-                else:
-                    contact_matrix = load_matrix_tab(input_contact_matrix)
-            else:
-                contact_matrix = copy.deepcopy(input_contact_matrix)
-        
-        
+        if bool(parameters['tab_sep']) == False:
+            contact_matrix = load_matrix(parameters['input_file'])
         else:
-            contact_matrix = extract_single_map(input_global_matrix=input_contact_matrix,
-                                                tab_sep=tab_sep,
-                                                chr_row=a_chr,
-                                                chr_col=a_chr,
-                                                species=species,
-                                                bin_size=bin_size,
-                                                data_type=data_type,
-                                                save_output=False,
-                                                save_tab=False)
+            contact_matrix = load_matrix_tab(parameters['input_file'])
         
-        
-        if bool(parameters['tab_sep']) == True:
-            matrix_global = load_matrix_tab(parameters['input_file'])
-        elif bool(parameters['tab_sep']) == False:
-            matrix_global = load_matrix(parameters['input_file'])
-        
-        for c_row, c_col in zip(chr_row_list, chr_col_list):
-            print "Extracting chr" + c_row + "xchr" + c_col + " contact matrix..."
-            extract_single_map(matrix_global,
-                               bool(parameters['tab_sep']),
-                               c_row, 
-                               c_col,
-                               parameters['species'],
-                               parameters['bin_size'],
-                               parameters['data_type'],
-                               True, 
-                               True)
+        for c in chr_list:
+            print "Performing TAD analysis on chr" + c + " ..."
+            full_tad_analysis(contact_matrix,
+                              c,
+                              parameters['isGlobal'],
+                              parameters['tab_sep'],
+                              parameters['species'],
+                              parameters['data_type'],
+                              True,
+                              True)
             print "Done!"
     
-    
-    
-    
-    
-    
-    
-    elif parameters['action'] == 'plot_map':
-        if options.isGlobal == None:
-            parser.error('-h for help or insert 1 if the contact matrix is a global all-by-all chromosomes, 0 if it is a single contact matrix!')
+
+    elif parameters['action'] == 'plot_chromosome_DI':
+        
+        if options.full_chromosome == None:
+            parser.error('-h for help or insert 1 if you wish to plot the DI for the entire chromosome, 0 otherwise!')
         else:
             pass
         
-        my_cmap = map(str, parameters['my_colormap'].strip('[]').split(','))
-        if len(my_cmap) == 1:
-            my_cmap = my_cmap[0]
+        chr_list = map(str, parameters['chr'].strip('[]').split(','))
+        if  len(chr_list) > 1:
+            parser.error("Only a single chromosome is accepted if action is plot_chromosome_DI!")
         
-        plot_map(parameters['input_file'],
-                 bool(parameters['isGlobal']),
-                 bool(parameters['tab_sep']),
-                 parameters['chr_row'],
-                 parameters['chr_col'],
-                 parameters['bin_size'],
-                 parameters['chr_row_coord'],
-                 parameters['chr_col_coord'],
-                 parameters['data_type'],
-                 parameters['species'],
-                 my_cmap,
-                 parameters['cutoff_type'],
-                 float(parameters['cutoff']),
-                 parameters['max_color'],
-                 parameters['my_dpi'],
-                 bool(parameters['plot_histogram']),
-                 parameters['topological_domains'],
-                 parameters['domain_color'])
-    
-    elif parameters['action'] == 'plot_side_by_side_map':
-        if options.samples == None:
-            parser.error('-h for help or insert the label for each data point between square brackets!')
+        if bool(parameters["full_chromosome"]) == False:
+            coord = map(int, parameters['coord'].strip('[]').split(','))
+            start_pos = coord[0]
+            end_pos = coord[1]
         else:
-            pass
-        if options.chr_row == None:
-            parser.error('-h for help or insert a chromosome or a list of chromosomes for the rows of the contact matrices!')
-        else:
-            pass
-        if options.chr_col == None:
-            parser.error('-h for help or insert a chromosome or a list of chromosomes for the columns of the contact matrices!')
-        else:
-            pass
+            start_pos = 0
+            end_pos = 0
         
-        input_files = map(str, parameters['input_file'].strip('[]').split(','))
-        if len(input_files) <= 1:
-            parser.error('Insert at least two input files between square brackets!')
-        else:
-            pass
-        
-        chr_row_list = map(str, parameters['chr_row'].strip('[]').split(','))
-        chr_col_list = map(str, parameters['chr_col'].strip('[]').split(','))
-        samples_list = map(str, parameters['samples'].strip('[]').split(','))
-        
-        my_cmap = map(str, parameters['my_colormap'].strip('[]').split(','))
-        if len(my_cmap) == 1:
-            my_cmap = my_cmap[0]
-        
-        plot_side_by_side_map(input_files,
-                              bool(parameters['tab_sep']),
-                              chr_row_list,
-                              chr_col_list,
-                              samples_list,
-                              parameters['bin_size'],  
-                              parameters['data_type'],
-                              parameters['species'],
-                              my_cmap,
-                              parameters['cutoff_type'],
-                              float(parameters['cutoff']),
-                              parameters['max_color'],
-                              parameters['my_dpi'])
+        plot_chromosome_DI(parameters["input_file"], 
+                           parameters["chr"],
+                           bool(parameters["full_chromosome"]),
+                           start_pos, 
+                           end_pos,
+                           parameters["input_file_hmm"],
+                           parameters["species"],
+                           bool(parameters["plot_legend"]),
+                           bool(parameters["plot_grid"]))

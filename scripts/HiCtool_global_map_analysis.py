@@ -7,7 +7,7 @@
 # Usage: python2.7 HiCtool_global_map_analysis.py [-h] [options]
 # Options:
 #  -h, --help                show this help message and exit
-#  --action ACTION                 Action to perform: extract_single_map, plot_map, plot_side_by_side_map.
+#  --action                  Action to perform: extract_single_map, plot_map, plot_side_by_side_map.
 #  -i INPUT_FILE             Input contact matrix file.
 #  -c CHROMSIZES_PATH        Path to the folder chromSizes with trailing slash at the end.
 #  -b BIN_SIZE               Bin size (resolution) of the contact matrix.
@@ -591,7 +591,7 @@ def plot_map(input_matrix,
                 matrix_global = load_matrix(input_matrix)
             
             for c_row, c_col in zip(chr_row_list, chr_col_list):
-                matrix_data_full_list.append(extract_single_map(matrix_global,tab_sep,c_row,c_col,species,bin_size,data_type,False,False))
+                matrix_data_full_list.append(extract_single_map(matrix_global,tab_sep,c_row,c_col,species,bin_size,data_type,True,False))
         # Plotting one single heatmaps from single file
         else:
             if isinstance(input_matrix,str):
@@ -645,9 +645,13 @@ def plot_map(input_matrix,
             if chr_row_coord != None and chr_col_coord != None:
                 chr_row_coord_list = json.loads(chr_row_coord)
                 chr_col_coord_list = json.loads(chr_col_coord)
-        
-                chr_row_coord_temp = chr_row_coord_list[m_index]
-                chr_col_coord_temp = chr_col_coord_list[m_index]
+                
+                if len(chr_row_list) > 1 and len(chr_col_list) > 1:
+                    chr_row_coord_temp = chr_row_coord_list[m_index]
+                    chr_col_coord_temp = chr_col_coord_list[m_index]
+                else:
+                    chr_row_coord_temp = chr_row_coord_list
+                    chr_col_coord_temp = chr_col_coord_list
                 
                 if len(chr_row_coord_temp) == 1 or len(chr_col_coord_temp) == 1:
                     print "ERROR! Start and end coordinate for each chromosome in position " + str(m_index) + " should be declared."
@@ -656,6 +660,7 @@ def plot_map(input_matrix,
                     print "ERROR! Only two coordinates (start and end) for each chromosome in position " + str(m_index) + " should be declared."
                     return
                 if len(chr_row_coord_temp) == 2 and len(chr_col_coord_temp) == 2:
+                    print "Selecting part of heatmap: [" + str(chr_row_coord_temp[0]) + ":" + str(chr_row_coord_temp[1]) + "-" + str(chr_col_coord_temp[0]) + ":" + str(chr_col_coord_temp[1]) + "] ..."
                     chr_row_bin = map(lambda x: x/bin_size, chr_row_coord_temp)
                     chr_col_bin = map(lambda x: x/bin_size, chr_col_coord_temp)
             
@@ -739,7 +744,10 @@ def plot_map(input_matrix,
                     format_ticks_col = [format_e(i) for i in ticks_col.tolist()]
                     plt.yticks(np.arange(0, row, row/4), format_ticks_row)
                     plt.xticks(np.arange(0, col, col/4), format_ticks_col)
-                    my_filename += '_part'
+                    if chromosome_row != chromosome_col:
+                        my_filename += '_' + str(chr_row_coord_temp[0]) + "_" + str(chr_row_coord_temp[1]) + "-" + str(chr_col_coord_temp[0]) + "_" + str(chr_col_coord_temp[1])
+                    else:
+                        my_filename += '_' + str(chr_row_coord_temp[0]) + "_" + str(chr_row_coord_temp[1])
                 else:
                     ticks_row = (np.arange(0, row, row/4) * bin_size)
                     ticks_col = (np.arange(0, col, col/4) * bin_size)
