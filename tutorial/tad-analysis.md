@@ -1,8 +1,6 @@
 # TAD analysis
 
-This pipeline illustrates the procedure to calculate topologically associated domain (TAD) coordinates and visualize TADs. Topological domain coordinates should be calculated on the normalized data (as we do here).
-
-For more information about the Python functions used here check the [API documentation](https://sysbio.ucsd.edu/public/rcalandrelli/HiCtool_API_documentation.pdf).
+This pipeline illustrates the procedure to calculate topologically associated domain (TAD) coordinates and visualize TADs and other features. Topological domain coordinates should be calculated on the normalized data (as we do here).
 
 **Note!** Contact data must be at 40 kb bin size to perform TAD analysis!
 
@@ -19,13 +17,13 @@ TAD coordinates, as well as DI values and true DI values (HMM states), are calcu
 
 **Note!** Contact data must be at 40 kb bin size to perform TAD analysis!
 
-To perform a full TAD analysis (calculating DI, HMM states and topological domain coordinates) we use the function ``full_tad_analysis`` of [HiCtool_TAD_analysis.py](/scripts/HiCtool_TAD_analysis.py). You can either input a global matrix and perform the analysis for multiple chromosomes at once (only if you normalized your data using the Hi-Corrector approach), or input a single contact matrix and perform the analysis for only that specific chromosome.
+To perform TAD analysis (calculating DI, HMM states and topological domain coordinates) we use the function ``full_tad_analysis`` of [HiCtool_TAD_analysis.py](/scripts/HiCtool_TAD_analysis.py). You can either input a global matrix and perform the analysis for multiple chromosomes at once (only if you normalized your data using the Hi-Corrector approach), or input a single contact matrix and perform the analysis for only that specific chromosome.
 
 **Performing the analysis starting from the global matrix for all the chromosomes**
 
-For this case, you should have normalized the data using the Hi-Corrector approach. We renamed the global matrix ``/output_ic_mes/output_normalized.txt`` as ``HiCtool_40kb_matrix_global_normalized_tab.txt``.
+In this case, you should have normalized the data using the Hi-Corrector approach. We renamed the global matrix ``/output_ic_mes/output_normalized.txt`` as ``HiCtool_40kb_matrix_global_normalized_tab.txt``.
 
-**Note!** Since the global matrix at 40kb is pretty big (several GBs), it may take sometime to load it. Therefore it is suggested to run the analysis for all the chromosomes in this case taking advantage of the matrix already loaded in the workspace (as we do below). However, you may select the chromosomes you want with the parameter ``--chr``.
+**Note!** Since the global matrix at 40kb is pretty big (53 GB for this dataser), it may take sometime to load it. Therefore, it is suggested to run the analysis for all the chromosomes, taking advantage of the matrix already loaded in the workspace (as we do below). However, you may select the chromosomes you want with the parameter ``--chr``.
 ```unix
 chromosomes=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y]
 
@@ -46,8 +44,8 @@ where:
 - ``-c``: Path to the folder ``chromSizes`` with trailing slash at the end ``/``.
 - ``-s``: Species name.
 - ``--isGlobal``: 1 if the input matrix is a global matrix, 0 otherwise.
-- ``--tab_sep``: 1 if the input matrix is in a tab separated format, 0 otherwise.
-- ``--chr``: Chromosome or chromosomes to perform the TAD analysis.
+- ``--tab_sep``: 1 if the input matrix is in a tab separated format, 0 in compressed format.
+- ``--chr``: Chromosome or chromosomes to perform the TAD analysis in a list between square brackets.
 - ``--data_type``: Data type to label your data, here ``normalized``.
 
 This script will produce four output files per each chromosome (here example for a random chromosome R):
@@ -97,7 +95,7 @@ This section allows you to plot TADs over the heatmap and also DI values and HMM
 
 ### 2.1. Plotting TADs on the heatmap
 
-To plot the topological domains on the heatmap, use the function ``plot_map`` of [HiCtool_global_map_analysis.py](/scripts/HiCtool_global_map_analysis.py) and pass the topological domain coordinates with the argument ``topological_domains``. Here we plot the heatmap for chr6: 80,000,000-120,000,000. The color of the domains can be changed by using the parameter ``domain_color``.
+To plot the topological domains on the heatmap, use the function ``plot_map`` of [HiCtool_global_map_analysis.py](/scripts/HiCtool_global_map_analysis.py) and pass the topological domain coordinates with the argument ``--topological_domains``. Here we plot the heatmap for chr6: 80,000,000-120,000,000. The color of the domains can be changed by using the parameter ``--domain_color``.
 
 **Note!** To plot topological domains on the heatmap this should be with a bin size of 40kb or lower!
 
@@ -184,7 +182,7 @@ where:
 
 To compute DI, we need the fend normalized contact data at a bin size of 40 kb. Since the bin size is 40 kb (here we used 40 kbpb which stands for 40 kb per bin), hence the detection region of upstream or downstream biases 2 Mb is converted to 50 bins (2 Mb / 40 kbpb = 50 bins).
 
-To **plot the DI values** use the function ``plot_chromosome_DI`` of [HiCtool_TAD_analysis.py](/scripts/HiCtool_TAD_analysis.py) as following (in this case we plot DI values for chromosome 6):
+To **plot the DI values** use the function ``plot_chromosome_DI`` of [HiCtool_TAD_analysis.py](/scripts/HiCtool_TAD_analysis.py) as following (in this case we plot DI values for chromosome 6, from 50 to 54 Mb):
 ```unix
 python /HiCtool-master/scripts/HiCtool_TAD_analysis.py \
 --action plot_chromosome_DI \
@@ -196,7 +194,7 @@ python /HiCtool-master/scripts/HiCtool_TAD_analysis.py \
 --coord [50000000,54000000]
 ```
 where:
-- ``--action``: action to perform (here ``plot_chromosome_DI``).
+- ``--action``: Action to perform (here ``plot_chromosome_DI``).
 - ``-i``: Input DI file.
 - ``-c``: Path to the folder ``chromSizes`` with trailing slash at the end ``/``.
 - ``-b``: The bin size (resolution) for the analysis.
@@ -228,21 +226,10 @@ python /HiCtool-master/scripts/HiCtool_TAD_analysis.py \
 
 ![](/figures/HiCtool_chr6_DI_HMM.png)
 
-### 2.3. Calculating TAD coordinates
+**TAD coordinates**
 
 The true DI values allow to infer the locations of the topological domains in the genome. A domain is initiated at the beginning of a single downstream biased HMM state (red color in the above figure). The domain is continuous throughout any consecutive downstream biased state. The domain will then end when the last in a series of upstream biased states (green color in the above figure) is reached, with the domain ending at the end of the last HMM upstream biased state.
 
 To calculate the topological domains coordinates, first we extract all the potential start and end coordinates according to the definition, and then we evaluate a list of conditions to take into account the possible presence of gaps between a series of positive or negative states values. The figure below shows a summary of the procedure:
 
 ![](/figures/HiCtool_topological_domains_flowchart.png)
-
-Topological domain coordinates are calculated using the function ``calculate_chromosome_topological_domains`` of [HiCtool_TAD_analysis.py](/scripts/HiCtool_TAD_analysis.py) and passing as input the HMM states:
-```Python
-execfile('HiCtool_TAD_analysis.py')
-domains_chr6 = calculate_chromosome_topological_domains(input_file_hmm='HiCtool_chr6_hmm_states.txt', a_chr='6')
-```
-Topological domain coordinates are saved in a tab separated file. Each line is a topological domain, with two elements that are the start and end coordinate of the domain.
-Previously calculated topological domain coordinates and saved to file can be loaded using the function ``load_topological_domains``:
-```Python
-domains_chr6 = load_topological_domains('HiCtool_chr6_topological_domains.txt')
-```
