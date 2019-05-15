@@ -408,6 +408,8 @@ def plot_chromosome_data(contact_matrix,
             print "ERROR! Both start and end coordinate has to be declared! Otherwise leave both undeclared to plot the entire contact matrix."
             return
         else:
+            print "Selecting part [" + str(coord[0]) + "-" + str(coord[1]) + "] ..."
+            output_filename += "_" + str(coord[0]) + "_" + str(coord[1]) 
             start_bin = coord[0]/bin_size
             end_bin = coord[1]/bin_size
         
@@ -514,11 +516,11 @@ def plot_chromosome_data(contact_matrix,
         plt.close("all")
         histogram_bins = int(pow(len(histogram),0.3))
         plt.hist(histogram, bins=histogram_bins)
-        plt.title(data_type + ' contact counts distribution', fontsize=18)
-        plt.xlabel(data_type + ' contact counts', fontsize=16)
-        plt.ylabel('Number of bins', fontsize=16)
-        plt.xticks(fontsize=16)
-        plt.yticks(fontsize=16)
+        plt.title(data_type + ' contact counts distribution', fontsize=16)
+        plt.xlabel(data_type + ' contact counts', fontsize=14)
+        plt.ylabel('Number of bins', fontsize=14)
+        plt.xticks(fontsize=14)
+        plt.yticks(fontsize=14)
         plt.tight_layout()
         plt.savefig(output_filename + '_histogram.pdf', format = 'pdf')
     print "Done!"
@@ -686,6 +688,8 @@ def plot_chromosome_enrich_data(contact_matrix,
             print "ERROR! Both start and end coordinate has to be declared! Otherwise leave both undeclared to plot the entire contact matrix."
             return
         else:
+            print "Selecting part [" + str(coord[0]) + "-" + str(coord[1]) + "] ..."
+            output_filename += "_" + str(coord[0]) + "_" + str(coord[1]) 
             start_bin = coord[0]/bin_size
             end_bin = coord[1]/bin_size
         
@@ -842,11 +846,11 @@ def plot_chromosome_enrich_data(contact_matrix,
         plt.close("all")
         histogram_bins = int(pow(len(histogram),0.3))
         plt.hist(histogram, bins=histogram_bins)
-        plt.title('O/E contact counts distribution', fontsize=18)
-        plt.xlabel('log2(O/E) contact counts', fontsize=16)
-        plt.ylabel('Number of bins', fontsize=16)
-        plt.xticks(fontsize=16)
-        plt.yticks(fontsize=16)
+        plt.title('O/E contact counts distribution', fontsize=16)
+        plt.xlabel('log2(O/E) contact counts', fontsize=14)
+        plt.ylabel('Number of bins', fontsize=14)
+        plt.xticks(fontsize=14)
+        plt.yticks(fontsize=14)
         plt.tight_layout()
         plt.savefig(output_filename + '_histogram.pdf', format = 'pdf')
     print "Done!"
@@ -1001,6 +1005,8 @@ if __name__ == '__main__':
         
         if parameters['coord'] != None:
             coord = map(int, parameters['coord'].strip('[]').split(','))
+        else:
+            coord = None
         
         plot_chromosome_data(parameters['input_file'],
                              chr_list[0],
@@ -1025,6 +1031,8 @@ if __name__ == '__main__':
             
         if parameters['coord'] != None:
             coord = map(int, parameters['coord'].strip('[]').split(','))
+        else:
+            coord = None
         
         if parameters['cutoff_max'] != None:
             cutoff_max = float(parameters['cutoff_max'])

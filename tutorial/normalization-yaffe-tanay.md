@@ -84,7 +84,7 @@ python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 where:
 
 - ``--action``: action to perform (here ``normalize_fend``).
-- ``-i``:  Output norm binning file in ``.hdf5`` format obtained with ``HiCtool_hifive.py`` above.
+- ``-i``:  Norm binning file in ``.hdf5`` format obtained with ``HiCtool_hifive.py`` above.
 - ``-c``: Path to the folder ``chromSizes`` with trailing slash at the end ``/``.
 - ``-b``: The bin size (resolution) for the analysis.
 - ``-s``: Species name.
@@ -125,7 +125,7 @@ python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 where:
 
 - ``--action``: action to perform (here ``normalize_enrich``).
-- ``-i``:  Output norm binning file in ``.hdf5`` format obtained with ``HiCtool_hifive.py`` above.
+- ``-i``:  Norm binning file in ``.hdf5`` format obtained with ``HiCtool_hifive.py`` above.
 - ``-c``: Path to the folder ``chromSizes`` with trailing slash at the end ``/``.
 - ``-b``: The bin size (resolution) for the analysis.
 - ``-s``: Species name.
@@ -145,64 +145,76 @@ python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 -s hg38 \
 --chr $chromosomes \
 --save_obs 1 \
---save_expect 0
+--save_expect 0 \
 -p 24
 ```
 
 ## 3. Visualizing the data
 
-To plot the contact maps, first execute the script [HiCtool_yaffe_tanay.py](/tutorial/HiCtool_yaffe_tanay.py) in the Python or iPython console:
-```Python
-execfile('HiCtool_yaffe_tanay.py')
-```
+This section allows to plot the contact data (observed, expected or normalized fend) and the enrichment "observed over expected" data.
+
+For plotting functionalities, the script [HiCtool_yaffe_tanay.py](/scripts/HiCtool_yaffe_tanay.py) is used.
+
 ### 3.1. Visualizing the contact data
 
-This part is to plot heatmaps and histograms of the contact data. 
+This part is to plot heatmaps and histograms of the contact data. You can use this to plot observed, fend normalized contact data or expected data, either fend expected or enrichment expected (see above for definitions).
 
-To plot and save the heatmap and histogram use the function ```plot_chromosome_data```:
-```Python
-plot_chromosome_data('HiCtool_chr6_40kb_normalized_fend.txt', 
-                     a_chr='6', bin_size=40000, full_matrix=False, 
-                     start_coord=50000000, end_coord=54000000, 
-                     species='hg38', 
-                     data_type="normalized_fend", 
-                     my_colormap=['white', 'red'], 
-                     cutoff_type='percentile', cutoff=95, max_color='#460000', 
-                     my_dpi=1000, 
-                     plot_histogram=True)
+To plot and save the heatmap and histogram of the normalized data at 40 kb resolution run the following:
+```unix
+python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
+--action plot_map \
+-i HiCtool_chr6_40kb_normalized_fend.txt \
+-c /HiCtool-master/scripts/chromSizes/ \
+-b 40000 \
+-s hg38 \
+--chr 6 \
+--coord [50000000,54000000] \
+--data_type normalized \
+--my_colormap [white,red] \
+--cutoff_type percentile \
+--cutoff 95 \
+--max_color "#460000" \
+--plot_histogram 1
 ```
-Instead of ``'HiCtool_chr6_40kb_normalized_fend.txt'``, the object containing the contact matrix calculated above ``fend_normalized_chr6`` can be passed as well.
+where:
 
-This function can be used also to plot observed data, expected fend and enrichment data by simply passing a different input matrix as first parameter.
+- ``--action``: action to perform (here ``plot_map``).
+- ``-i``:  Input contact matrix.
+- ``-c``: Path to the folder ``chromSizes`` with trailing slash at the end ``/``.
+- ``-b``: The bin size (resolution) for the analysis.
+- ``-s``: Species name.
+- ``--chr``: chromosome.
+- ``--coord``: List of two integers with start and end coordinates for the chromosome to be plotted.
+- ``--data_type``: Data type to label your data, example: observed, normalized, expected_fend etc.
+- ``--my_colormap``: Colormap to be used to plot the data. You can choose among any colorbar at https://matplotlib.org/examples/color/colormaps_reference.html, or input a list of colors if you want a custom colorbar. Example: [white, red, black]. Colors can be specified also HEX format. Default: [white,red].
+- ``--cutoff_type``: To select a type of cutoff (percentile or contact_number) or plot the full range of the data (not declared). Default: percentile.
+- ``--cutoff``: To set a maximum cutoff on the number of contacts for the colorbar based on ``--cutoff_type``. Default: 95.
+- ``--max_color``: To set the color of the bins with contact counts over ``--cutoff``. Default: "#460000".
+- ``--plot_histogram``: Set to 1 to plot the histogram of the data distribution, 0 otherwise.
 
 Heatmap             |  Histogram
 :-------------------------:|:-------------------------:
-![](/figures/HiCtool_chr6_40kb_normalized_fend.png)  |  ![](/figures/HiCtool_chr6_40kb_normalized_fend_histogram.png)
+![](/figures/HiCtool_chr6_40kb_normalized_fend_50000000_54000000.png)  |  ![](/figures/HiCtool_chr6_40kb_normalized_fend_histogram_50000000_54000000.png)
 
 
 **Additional example of the contact matrix for chromosome 6 at 1 Mb resolution**
 
-In order to change the heatmap resolution, first data have to be normalized at the desired resolution set with the parameter ``bin_size`` of ``normalize_chromosome_fend_data`` ([see section 2.1.](#21-normalizing-fend-data)):
-```Python
-fend_normalized_chr6 = normalize_chromosome_fend_data(a_chr='6', 
-                                                      bin_size=1000000, 
-                                                      input_file='HiC_norm_binning.hdf5', 
-                                                      species='hg38',
-                                                      save_obs=True, 
-                                                      save_expect=False)
-```
-Then, we plot the entire heatmap (we also change here the color map to white and blue):
-```Python
-plot_chromosome_data(fend_normalized_chr6, 
-                     a_chr='6', 
-                     bin_size=1000000, 
-                     full_matrix=True, 
-                     species='hg38', 
-                     data_type="normalized_fend", 
-                     my_colormap=['white', 'blue'], 
-                     cutoff_type='percentile', cutoff=95, max_color='#460000', 
-                     my_dpi=1000, 
-                     plot_histogram=False)
+In order to change the heatmap resolution, first data have to be normalized at the desired resolution set with the parameter ``-b`` above ([see section 2.1.](#21-normalizing-fend-data)):
+
+Then, we plot the entire heatmap (we also change here the colormap to white and blue):
+```unix
+python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
+--action plot_map \
+-i HiCtool_chr6_1mb_normalized_fend.txt \
+-c /HiCtool-master/scripts/chromSizes/ \
+-b 1000000 \
+-s hg38 \
+--chr 6 \
+--data_type normalized \
+--my_colormap [white,blue] \
+--cutoff_type percentile \
+--cutoff 95 \
+--max_color "#460000"
 ```
 ![](/figures/HiCtool_chr6_1mb_normalized_fend.png)
 
@@ -210,44 +222,40 @@ plot_chromosome_data(fend_normalized_chr6,
 
 This part is to plot the heatmap and histogram for the enrichment normalized data ("observed over expected"). The **log2 of the data** is plotted to quantify the positive enrichment (red) and the negative enrichment (blue). Loci (pixels) equal to zero before performing the log2 (deriving from zero observed contacts) are shown in gray. Loci (pixels) where enrichment expected contact was zero before performing the ratio (observed / expected) are shown in black.
 
-To plot and save the heatmap and histogram use the function ```plot_chromosome_enrich_data```:
-```Python
-plot_chromosome_enrich_data('HiCtool_chr6_40kb_normalized_enrich.txt', 
-                            a_chr='6', 
-                            bin_size=40000, 
-                            full_matrix=False, 
-                            start_coord=50000000, end_coord=54000000, 
-                            species='hg38', 
-                            my_dpi=1000, 
-                            plot_histogram=True)
+To plot and save the heatmap and histogram use the following code:
 ```
-Instead of ``'HiCtool_chr6_40kb_normalized_enrich.txt'``, the object containing the contact matrix calculated above ``enrich_normalized_chr6`` can be passed as well.
+unix
+python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
+--action plot_enrich \
+-i HiCtool_chr6_40kb_normalized_enrich.txt \
+-c /HiCtool-master/scripts/chromSizes/ \
+-b 40000 \
+-s hg38 \
+--chr 6 \
+--coord [50000000,100000000] \
+--plot_histogram 1
+```
 
 Heatmap             |  Histogram
 :-------------------------:|:-------------------------:
-![](/figures/HiCtool_chr6_40kb_normalized_enrich.png)  |  ![](/figures/HiCtool_chr6_40kb_normalized_enrich_histogram.png)
+![](/figures/HiCtool_chr6_40kb_normalized_enrich_50000000_54000000.png)  |  ![](/figures/HiCtool_chr6_40kb_normalized_enrich_histogram_50000000_54000000.png)
 
 **Additional example of the enrichment contact matrix for chromosome 6 at 1 Mb resolution**
 
-In order to change the heatmap resolution, first data have to be calculated at the desired resolution set with the parameter ``bin_size`` of ``normalize_chromosome_enrich_data`` ([see section 2.2.](#22-normalized-enrichment-data)):
-```Python
-enrich_normalized_chr6 = normalize_chromosome_enrich_data(a_chr='6', 
-                                                          bin_size=1000000, 
-                                                          input_file='HiC_norm_binning.hdf5', 
-                                                          species='hg38',
-                                                          save_obs=False, 
-                                                          save_expect=False)
-```
+In order to change the heatmap resolution, first data have to be normalized at the desired resolution set with the parameter ``-b`` above ([see section 2.2.](#21-normalizing-enrichment-data)):
+
 Then, we plot the entire heatmap with a maximum and minimum cutoff for the log2 at 4 and -4 respectively:
 ```Python
-plot_chromosome_enrich_data(enrich_normalized_chr6, 
-                            a_chr='6', 
-                            bin_size=1000000, 
-                            full_matrix=True, 
-                            species='hg38',
-                            cutoff_max=4,
-                            cutoff_min=-4,
-                            plot_histogram=True)
+python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
+--action plot_enrich \
+-i HiCtool_chr6_1mb_normalized_enrich.txt \
+-c /HiCtool-master/scripts/chromSizes/ \
+-b 1000000 \
+-s hg38 \
+--chr 6 \
+--cutoff_max 4 \
+--cutoff_min -4 \
+--plot_histogram 1
 ```
 Heatmap             |  Histogram
 :-------------------------:|:-------------------------:

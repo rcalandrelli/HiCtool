@@ -102,7 +102,7 @@ where:
 - ``-c``: Path to the folder ``chromSizes`` with trailing slash at the end ``/``.
 - ``-b``: The bin size (resolution) for the analysis.
 - ``-s``: Species name.
-- ``--tab_sep``: 1 if the input matrix is in a tab separated format, 0 if it is in compressed format.
+- ``--tab_sep``: Set to 1 if the input matrix is in a tab separated format, 0 if it is in compressed format.
 - ``--chr_row``: Chromosome or chromosomes in the rows between square brackets, to select specific maps for extraction.
 - ``--chr_col``: Chromosome or chromosomes in the columns between square brackets, to select specific maps for extraction.
 - ``--data_type``: Data type to label your data, example: observed, normalized, etc.
@@ -220,8 +220,8 @@ where:
 - ``-c``: Path to the folder ``chromSizes`` with trailing slash at the end ``/``.
 - ``-b``: The bin size (resolution) for the analysis.
 - ``-s``: Species name.
-- ``--isGlobal``: 1 if the input matrix is a global matrix, 0 otherwise.
-- ``--tab_sep``: 1 if the input matrix is in a tab separated format, 0 if it is in compressed format.
+- ``--isGlobal``: Set to 1 if the input matrix is a global matrix, 0 otherwise.
+- ``--tab_sep``: Set to 1 if the input matrix is in a tab separated format, 0 if it is in compressed format.
 - ``--data_type``: Data type to label your data, example: observed, normalized, etc.
 - ``--my_colormap``: Colormap to be used to plot the data. You can choose among any colorbar at https://matplotlib.org/examples/color/colormaps_reference.html, or input a list of colors if you want a custom colorbar. Example: [white, red, black]. Colors can be specified also HEX format. Default: [white,red].
 - ``--cutoff_type``: To select a type of cutoff (percentile or contact_number) or plot the full range of the data (not declared). Default: percentile.
