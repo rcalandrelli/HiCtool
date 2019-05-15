@@ -358,7 +358,7 @@ if __name__ == '__main__':
     parser.add_option('-s', dest='species', type='string', help='Species. It has to be one of those present under the chromSizes path. Example: for human hg38 type here "hg38".')  
     parser.add_option('-c', dest='chromSizes_path', type='string', help='Path to the folder chromSizes with trailing slash at the end.')
     parser.add_option('--save_each', dest='save_single_matrix', type='int', default=0, help='Insert 1 to save each single contact matrix, 0 otherwise (default: 0).')  
-    parser.add_option('-p', dest='threads', type='int', help='Number of parallel threads to use. It has to be less or equal than the number of chromosomes.')
+    parser.add_option('-p', dest='threads', type='int', help='Number of threads to use. It has to be less or equal than the number of chromosomes.')
     (options, args) = parser.parse_args( )
     
     if options.input_file == None:
@@ -421,12 +421,14 @@ if __name__ == '__main__':
     
     output_path = parameters['output_path']
     
-    print "Generating the global observed contact matrix in parallel using " + str(threads) + " threads..."
-    print "Start: " + strftime("%Y-%m-%d %H:%M:%S", gmtime())
     if threads > 1:
+        print "Generating the global observed contact matrix in parallel using " + str(threads) + " threads..."
+        print "Start: " + strftime("%Y-%m-%d %H:%M:%S", gmtime())
         pool = Pool(processes=threads)             
         pool.map(compute_matrix_data_full_observed_parallel, chromosomes_list)
     else:
+        print "Generating the global observed contact matrix with a single thread..."
+        print "Start: " + strftime("%Y-%m-%d %H:%M:%S", gmtime())
         for c in chromosomes_list:
             compute_matrix_data_full_observed_parallel(c)
     

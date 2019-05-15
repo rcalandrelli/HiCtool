@@ -1,6 +1,7 @@
 # Program to:
 # - Normalize the contact data with Yaffe-Tanay approach (fend and enrichment ("observed / expected")).
-# - Plot contact matrix and histogram of contact distribution.
+# - Plot normalized fend contact matrix and histogram of contact distribution.
+# - Plot enrichement contact matrix and histogram of contact distribution.
 #
 # To use this code, fend correction values must be provided (see HiCtool_hifive.py, -m Yaffe-Tanay)
 
@@ -32,39 +33,31 @@
 from optparse import OptionParser
 import numpy as np
 import os
+from time import gmtime, strftime
+from multiprocessing import Pool
 
 parameters = {'action': None,
               'input_file': None,
               'chromSizes_path': None,
-              'isGlobal': None,
-              'tab_sep': None,
-              'chr_row': None,
-              'chr_col': None,
+              'chr': None,
               'species': None,
+              'processors': None,
               'bin_size': None,
+              'save_obs': None,
+              'save_expect': None,
               'data_type': None,
-              'chr_row_coord': None,
-              'chr_col_coord': None,
+              'coord': None,
               'my_colormap': None,
               'cutoff_type': None,
               'cutoff': None,
+              'cutoff_max': None,
+              'cutoff_min': None,
               'max_color': None,
               'my_dpi': None,
               'plot_histogram': None,
               'topological_domains': None,
-              'domain_color': None,
-              'samples': None
+              'domain_color': None              
               }
-
-
-"""
-Program to:
-1) Normalize the contact data (fend and enrichment ("observed / expected")).
-2) Plot contact matrix and histogram of contact distribution.
-
-To use this code, fend correction values must be provided (see HiCtool_hifive.py)
-"""
-
 
 
 def save_matrix(a_matrix, output_file):
@@ -212,12 +205,7 @@ def load_topological_domains(input_file):
         return topological_domains
     
 
-def normalize_chromosome_fend_data(a_chr, 
-                                   bin_size, 
-                                   input_file='HiC_norm_binning.hdf5',
-                                   species='hg38',
-                                   save_obs=True, 
-                                   save_expect=False):
+def normalize_chromosome_fend_data(a_chr):
     """
     Normalize the contact data by calculating the corrected reads count for each 
     bin. Observed data and expected fend data (correction data) can be saved to txt file.
@@ -239,8 +227,13 @@ def normalize_chromosome_fend_data(a_chr,
     import hifive
     import numpy as np
     
-    print "Normalizing fend data..."
+    bin_size = parameters['bin_size']
+    input_file = parameters['input_file']
+    save_obs = bool(parameters['save_obs'])
+    save_expect = bool(parameters['save_expect'])
+    
     chromosome = 'chr' + a_chr
+    print "Normalizing fend data " + chromosome + " ..."
     
     if bin_size >= 1000000:
         bin_size_str = str(bin_size/1000000)
@@ -321,9 +314,7 @@ def normalize_chromosome_fend_data(a_chr,
 def plot_chromosome_data(contact_matrix,
                         a_chr,
                         bin_size,
-                        full_matrix=True,
-                        start_coord=0, 
-                        end_coord=0,
+                        coord=None, 
                         species='hg38',
                         data_type='normalized_fend',
                         my_colormap=['white', 'red'],
@@ -340,24 +331,20 @@ def plot_chromosome_data(contact_matrix,
         contact_matrix (str | obj): txt file of the HiCtool compressed contact matrix or contact matrix object.
         a_chr (str): chromosome number (example for chromosome 1: '1').
         bin_size (int): bin size in bp of the contact matrix.
-        full_matrix (bool): if True plot the entire matrix. If False, insert start_coord and end_coord.
-        start_coord (int): start coordinate for the plot in bp.
-        end_coord (int): end coordinate for the plot in bp.
-        species (str): 'hg38' or 'mm10' or any other species label in string format.
+        coord (list): list with two integers start and end coordinate for the plot in bp.
+        species (str): species label in string format.
         data_type (str): type of data to plot either "observed", "normalized_fend", "expected_fend", "expected_enrich".
-        custom_species_sizes (dict): dictionary containing the sizes of the chromosomes of your custom species. The keys of the dictionary are chromosomes in string
-        format (example for chromosome 1: '1'), the values are chromosome lengths as integers.
         my_colormap (str | list): colormap to be used to plot the data. 1) Use a string if you choose among any colorbar here 
         https://matplotlib.org/examples/color/colormaps_reference.html 2) Use a list of strings with colors if you want
         a custom colorbar. Example: ['white', 'red', 'black']. Colors can be specified also in this format: '#000000'.
         cutoff_type (str): to select a type of cutoff ('percentile' or 'contact_number') or plot the full range of the data (set the 
-        parameter as 'None').
+        parameter as None).
         cutoff (int): percentile to set a maximum cutoff on the number of contacts for the colorbar.
         max_color (str): to set the color of the bins with contact counts over "cutoff".
         my_dpi (int): resolution of the contact map in dpi.
         plot_histogram (bool): if True, plot and save to file the histogram of the contact distribution.
         topological_domains (str | obj): topological domain coordinates to visualize domains on the heatmap. 
-        They can be passed either as a txt file or object (as generated from HiCtool_TAD_analysis.py) If empty string, no topological domains.
+        They can be passed either as a txt file or object (as generated from HiCtool_TAD_analysis.py) If None, no topological domains.
         domain_color (str): to set the color for topological domains on the heatmap.
     Outputs:
         Contact map saved to pdf format.
@@ -394,13 +381,13 @@ def plot_chromosome_data(contact_matrix,
         matrix_data_full = load_matrix(contact_matrix)
         print "Plotting " + contact_matrix + "..."
     else:
-        print "Plotting contact matrix..."
+        print "Plotting contact matrix " + chromosome + " ..."
         matrix_data_full = copy.deepcopy(contact_matrix)
     
     # Update matrix values to plot topological domains
     if topological_domains != None:
         if bin_size > 40000:
-            print "ERROR! To plot topological domains the bin size should be 40000 or lower."
+            print "ERROR! To plot topological domains on the heatmap the bin size should be 40000 or lower."
             return
         if isinstance(topological_domains, str):
             domains = load_topological_domains(topological_domains)
@@ -416,23 +403,26 @@ def plot_chromosome_data(contact_matrix,
             matrix_data_full[(diag_index[0][temp_start:temp_end],diag_index[1][temp_start:temp_end])] = -1
     
     # Selecting a part
-    if full_matrix == False:
-        start_bin = start_coord/bin_size
-        end_bin = end_coord/bin_size
-    
-        if start_coord >= end_coord:
-            print "ERROR! Start coordinate should be lower than end coordinate"
+    if coord != None:
+        if len(coord) != 2:
+            print "ERROR! Both start and end coordinate has to be declared! Otherwise leave both undeclared to plot the entire contact matrix."
             return
+        else:
+            start_bin = coord[0]/bin_size
+            end_bin = coord[1]/bin_size
         
-        if start_bin >= end_bin:
-            print "ERROR! Start coordinate should be much lower than the end coordinate given the bin size"
-            return
-    
-        if end_coord > end_pos:
-            print "ERROR! End coordinate is larger than chromosome size " + str(end_pos) + " bp"
-            return
+            if coord[0] >= coord[1]:
+                print "ERROR! Start coordinate should be lower than end coordinate"
+                return
+            
+            if start_bin >= end_bin:
+                print "ERROR! Start coordinate should be much lower than the end coordinate given the bin size"
+                return
         
-    else:
+            if coord[1] > end_pos:
+                print "ERROR! End coordinate is larger than chromosome size " + str(end_pos) + " bp"
+                return
+    else: # Full contact matrix
         start_bin = 0
         end_bin = d_chr_dim[a_chr]
 
@@ -474,8 +464,8 @@ def plot_chromosome_data(contact_matrix,
     plt.close("all")
     #plt.gcf().subplots_adjust(left=0.15)
     #plt.gcf().subplots_adjust(bottom=0.15)
-    if cutoff_type == 'None':
-        if topological_domains == '':
+    if cutoff_type == None:
+        if topological_domains == None:
             plt.imshow(matrix_data_full, cmap=my_cmap, interpolation='nearest')
             cbar = plt.colorbar()
         else:
@@ -498,7 +488,10 @@ def plot_chromosome_data(contact_matrix,
     plt.xlabel(chromosome + ' coordinate (bp)', fontsize=10)
     plt.ylabel(chromosome + ' coordinate (bp)', fontsize=10)
     cbar.ax.set_ylabel(data_type + ' contact counts', rotation=270, labelpad=20)
-    ticks = (np.arange(0, n, n/4) * bin_size) + start_coord
+    if coord != None:
+        ticks = (np.arange(0, n, n/4) * bin_size) + coord[0]
+    else:
+        ticks = (np.arange(0, n, n/4) * bin_size)
     format_ticks = [format_e(i) for i in ticks.tolist()]
     plt.xticks(np.arange(0, n, n/4), format_ticks)
     plt.yticks(np.arange(0, n, n/4), format_ticks)
@@ -531,13 +524,7 @@ def plot_chromosome_data(contact_matrix,
     print "Done!"
 
 
-def normalize_chromosome_enrich_data(a_chr, 
-                                     bin_size,
-                                     input_file='HiC_norm_binning.hdf5',
-                                     species='hg38', 
-                                     custom_species_sizes={},
-                                     save_obs=True, 
-                                     save_expect=False):
+def normalize_chromosome_enrich_data(a_chr):
     """
     Calculate the enrichment data as "observed/expected" where the expected reads
     count is for each bin considering the linear distance between read pairs and the learned
@@ -548,9 +535,7 @@ def normalize_chromosome_enrich_data(a_chr,
         bin_size (int): bin size in bp of the contact matrix.
         input_file (str): object containing learned correction parameters in hdf5 format obtained with
         HiCtool_hifive.py (default: 'HiC_norm_binning.hdf5').
-        species (str): 'hg38' or 'mm10' or any other species label in string format.
-        custom_species_sizes (dict): dictionary containing the sizes of the chromosomes of your custom species. The keys of the dictionary are chromosomes in string
-        format (example for chromosome 1: '1'), the values are chromosome lengths as integers.
+        species (str): species label in string format.
         save_obs (bool): if True, save the observed contact data.
         save_expect (bool): if True, save the expected contact data.
     Return: 
@@ -563,6 +548,11 @@ def normalize_chromosome_enrich_data(a_chr,
     """
     import hifive
     import numpy as np
+    
+    bin_size = parameters['bin_size']
+    input_file = parameters['input_file']
+    save_obs = bool(parameters['save_obs'])
+    save_expect = bool(parameters['save_expect'])
     
     print "Normalizing enrichment data..."
     chromosome = 'chr' + a_chr
@@ -623,13 +613,10 @@ def normalize_chromosome_enrich_data(a_chr,
 def plot_chromosome_enrich_data(contact_matrix,
                                 a_chr,
                                 bin_size,
-                                full_matrix=True,
-                                start_coord=0, 
-                                end_coord=0,
+                                coord=None, 
                                 species='hg38',
-                                custom_species_sizes={},
-                                cutoff_max=0,
-                                cutoff_min=0,
+                                cutoff_max=None,
+                                cutoff_min=None,
                                 my_dpi=1000,
                                 plot_histogram=False):
     """
@@ -641,15 +628,14 @@ def plot_chromosome_enrich_data(contact_matrix,
         a_chr (str): chromosome number (example for chromosome 1: '1').
         bin_size (int): bin size in bp of the contact matrix.
         full_matrix (bool): if True plot the entire matrix. If False, insert start_coord and end_coord.
-        start_coord (int): start coordinate for the plot in bp.
-        end_coord (int): end coordinate for the plot in bp.
+        coord (list): list with two integers start and end coordinate for the plot in bp.
         species (str): 'hg38' or 'mm10' or any other species label in string format.
         custom_species_sizes (dict): dictionary containing the sizes of the chromosomes of your custom species. The keys of the dictionary are chromosomes in string
         format (example for chromosome 1: '1'), the values are chromosome lengths as integers.
         cutoff_max (float): log2 upper cutoff for the colorbar (every enrichment value above cutoff_max 
-        is plotted in red). Set to 0 to do not have any cutoff.
+        is plotted in red). Set to None to do not have any cutoff.
         cutoff_min (float): log2 lower cutoff (negative value) for the colorbar (every enrichment value 
-        below cutoff_min is plotted in blue). Set to 0 to do not have any cutoff.
+        below cutoff_min is plotted in blue). Set to None to do not have any cutoff.
         my_dpi (int): resolution of the contact map in dpi.
         plot_histogram (bool): if True, plot the histogram.
     Outputs:
@@ -691,26 +677,30 @@ def plot_chromosome_enrich_data(contact_matrix,
         matrix_data_full = load_matrix(contact_matrix)
         print "Plotting " + contact_matrix + "..."
     else:
-        print "Plotting contact matrix..."
+        print "Plotting contact matrix " + chromosome + " ..."
         matrix_data_full = copy.deepcopy(contact_matrix)
 
     # Selecting a part
-    if full_matrix==False:
-        start_bin = start_coord/bin_size
-        end_bin = end_coord/bin_size
-    
-        if start_coord >= end_coord:
-            print "ERROR! Start coordinate should be lower than end coordinate"
+    if coord != None:
+        if len(coord) != 2:
+            print "ERROR! Both start and end coordinate has to be declared! Otherwise leave both undeclared to plot the entire contact matrix."
             return
+        else:
+            start_bin = coord[0]/bin_size
+            end_bin = coord[1]/bin_size
         
-        if start_bin >= end_bin:
-            print "ERROR! Start coordinate should be much lower than the end coordinate given the bin size"
-            return
-    
-        if end_coord > end_pos:
-            print "ERROR! End coordinate is larger than chromosome size " + str(end_pos) + " bp"
-            return
-    else:
+            if coord[0] >= coord[1]:
+                print "ERROR! Start coordinate should be lower than end coordinate"
+                return
+            
+            if start_bin >= end_bin:
+                print "ERROR! Start coordinate should be much lower than the end coordinate given the bin size"
+                return
+        
+            if coord[1] > end_pos:
+                print "ERROR! End coordinate is larger than chromosome size " + str(end_pos) + " bp"
+                return
+    else: # Full contact matrix
         start_bin = 0
         end_bin = d_chr_dim[a_chr]
     
@@ -794,10 +784,10 @@ def plot_chromosome_enrich_data(contact_matrix,
             if value != -1 and value != 0:
                 matrix_data_full[i][j] = math.log(value,2)
     
-    if cutoff_max != 0:
+    if cutoff_max != None:
         x_cutoff_max,y_cutoff_max = np.where(matrix_data_full > cutoff_max)
         matrix_data_full[x_cutoff_max,y_cutoff_max] = cutoff_max
-    if cutoff_min != 0:
+    if cutoff_min != None:
         x_cutoff_min,y_cutoff_min = np.where(matrix_data_full < cutoff_min)
         matrix_data_full[x_cutoff_min,y_cutoff_min] = cutoff_min
     
@@ -825,7 +815,10 @@ def plot_chromosome_enrich_data(contact_matrix,
     cbar.cmap.set_over('black') # loci where expected enrich values are zero (log not existing)
     cbar.cmap.set_under('gray') # loci where observed values are zero (log equal to minus infinity)
     cbar.ax.set_ylabel('log2(O/E) contact counts', rotation=270, labelpad = 20)
-    ticks = (np.arange(0, n, n/4) * bin_size) + start_coord
+    if coord != None:
+        ticks = (np.arange(0, n, n/4) * bin_size) + coord[0]
+    else:
+        ticks = (np.arange(0, n, n/4) * bin_size)
     format_ticks = [format_e(i) for i in ticks.tolist()]
     plt.xticks(np.arange(0, n, n/4), format_ticks)
     plt.yticks(np.arange(0, n, n/4), format_ticks)
@@ -857,3 +850,198 @@ def plot_chromosome_enrich_data(contact_matrix,
         plt.tight_layout()
         plt.savefig(output_filename + '_histogram.pdf', format = 'pdf')
     print "Done!"
+
+
+if __name__ == '__main__':
+    
+    usage = 'Usage: python2.7 HiCtool_yaffe_tanay.py [-h] [options]'
+    parser = OptionParser(usage = 'python2.7 %prog --action action -i input_file [options]')
+    parser.add_option('--action', dest='action', type='string', help='Action to perform: normalize_fend, plot_map, normalize_enrich, plot_enrich')
+    parser.add_option('-i', dest='input_file', type='string', help='Input contact matrix file if you are plotting, final hdf5 object from HiFive if you are normalizing.')
+    parser.add_option('-c', dest='chromSizes_path', type='string', help='Path to the folder chromSizes with trailing slash at the end.')
+    parser.add_option('-b', dest='bin_size', type='int', help='Bin size (resolution) for the analysis.')
+    parser.add_option('-s', dest='species', type='string', help='Species. It has to be one of those present under the chromSizes path.')
+    parser.add_option('-p', dest='processors', type='int', default=1, help='Processors to be used to normalize the data in parallel.')
+    parser.add_option('--chr', dest='chr', type='str', help='Chromosome for normalization or plotting or list of chromosomes between square brackets for normalization.')  
+    parser.add_option('--data_type', dest='data_type', type='str', help='Data type to label your data, example: observed, normalized_fend, normalized_enrich.')  
+    parser.add_option('--save_obs', dest='save_obs', type='int', default=1, help='Insert 1 to save the observed data when normalizing, 0 otherwise. Default: 1.')  
+    parser.add_option('--save_expect', dest='save_expect', type='int', default=0, help='Insert 1 to save the expected data when normalizing, 0 otherwise (unless needed this is not suggested for the big dimension of the data and long computing time). Default: 0.')  
+    parser.add_option('--coord', dest='coord', type='str', help='List of two integers with start and end coordinates for the chromosome to be plotted.')  
+    parser.add_option('--my_colormap', dest='my_colormap', type='str', default='[white,red]', help='Colormap to be used to plot the data. You can choose among any colorbar here https://matplotlib.org/examples/color/colormaps_reference.html, or input a list of colors if you want a custom colorbar. Example: [white, red, black]. Colors can be specified also HEX format. Default: [white,red]')  
+    parser.add_option('--cutoff_type', dest='cutoff_type', type='str', default='percentile', help='To select a type of cutoff (percentile or contact_number) or plot the full range of the data (leave it empty). Default: percentile.')  
+    parser.add_option('--cutoff', dest='cutoff', type='str', default='95', help='When plotting contact data, to set a maximum cutoff on the number of contacts for the colorbar based on cutoff_type. Default: 95.')  
+    parser.add_option('--cutoff_max', dest='cutoff_max', type='str', help='When plotting enrichment data, log2 upper cutoff for the colorbar (every enrichment value above cutoff_max is plotted in red).')  
+    parser.add_option('--cutoff_min', dest='cutoff_min', type='str', help='When plotting enrichment data, log2 lower cutoff (negative value) for the colorbar (every enrichment value below cutoff_min is plotted in blue)')  
+    parser.add_option('--max_color', dest='max_color', type='str', default='#460000', help='When plotting contact data, to set the color of the bins with contact counts over "cutoff". Default: #460000.')  
+    parser.add_option('--my_dpi', dest='my_dpi', type='int', default=1000, help='Resolution of the contact map in dpi. Default: 1000.')  
+    parser.add_option('--plot_histogram', dest='plot_histogram', type='int', default=0, help='Insert 1 to plot the histogram of the data distribution, 0 otherwise. Default: 0.')  
+    parser.add_option('--topological_domains', dest='topological_domains', type='str', help='Topological domain coordinates file (as generated from HiCtool_TAD_analysis.py) to visualize domains on the heatmap.')  
+    parser.add_option('--domain_color', dest='domain_color', type='str', default='#0000ff', help='To set the color for topological domains on the heatmap. Default: #0000ff.')  
+    (options, args) = parser.parse_args( )
+    
+    if options.action == None:
+        parser.error('-h for help or provide the action command (normalize_fend, plot_map, normalize_enrich, plot_enrich)!')
+    else:
+        pass
+    if options.input_file == None:
+        parser.error('-h for help or provide the input file!')
+    else:
+        pass
+    if options.bin_size == None:
+        parser.error('-h for help or provide the bin size of the contact matrix!')
+    else:
+        pass
+    if options.chromSizes_path == None:
+        parser.error('-h for help or provide the chromSizes path!')
+    else:
+        pass
+    if options.chr == None:
+        parser.error('-h for help or provide the input chromosome (or eventually chromosomes if you are normalizing)!')
+    else:
+        pass
+    if options.species == None:
+        parser.error('-h for help or provide the species!')
+    else:
+        pass
+
+    
+    parameters['action'] = options.action
+    parameters['input_file'] = options.input_file
+    parameters['chromSizes_path'] = options.chromSizes_path
+    parameters['chr'] = options.chr
+    parameters['species'] = options.species
+    parameters['processors'] = options.processors
+    parameters['bin_size'] = options.bin_size
+    parameters['data_type'] = options.data_type
+    parameters['save_obs'] = options.save_obs
+    parameters['save_expect'] = options.save_expect
+    parameters['coord'] = options.coord
+    parameters['my_colormap'] = options.my_colormap
+    parameters['cutoff_type'] = options.cutoff_type
+    parameters['cutoff'] = options.cutoff
+    parameters['cutoff_max'] = options.cutoff_max   
+    parameters['cutoff_min'] = options.cutoff_min
+    parameters['max_color'] = options.max_color
+    parameters['my_dpi'] = options.my_dpi
+    parameters['plot_histogram'] = options.plot_histogram
+    parameters['topological_domains'] = options.topological_domains
+    parameters['domain_color'] = options.domain_color
+    
+    if parameters['species'] + ".chrom.sizes" not in os.listdir(parameters['chromSizes_path']):
+        available_species = ', '.join([x.split('.')[0] for x in  os.listdir(parameters['chromSizes_path'])])
+        parser.error('Wrong species inserted! Check the species spelling or insert an available species: ' + available_species + '. If your species is not listed, please contact Riccardo Calandrelli at <rcalandrelli@eng.ucsd.edu>.')
+    
+    chromosomes = open(parameters['chromSizes_path'] + parameters['species'] + '.chrom.sizes', 'r')
+    chromosomes_list = []
+    chr_dim = []
+    d_chr_dim = {}
+    while True:
+        try:
+            line2list = next(chromosomes).split('\n')[0].split('\t')
+            chromosomes_list.append(line2list[0])
+            chr_dim.append(int(line2list[1])/parameters['bin_size'])
+            d_chr_dim[line2list[0]] = int(line2list[1])/parameters['bin_size']
+        except StopIteration:
+            break
+    
+    if parameters['action'] == 'normalize_fend':
+        
+        chr_list = map(str, parameters['chr'].strip('[]').split(','))
+        
+        if len(chr_list) > 1:
+            if parameters['processors'] != None and parameters['processors'] > 1:
+                print "Normalizing fend data in parallel for chromosomes " + parameters['chr'] + " in parallel using " + str(parameters['processors']) + " threads..."
+                print "Start: " + strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                pool = Pool(processes=parameters['processors'])             
+                pool.map(normalize_chromosome_fend_data, chr_list)
+                print "End: " + strftime("%Y-%m-%d %H:%M:%S", gmtime())
+            else:
+                print "Normalizing fend data for chromosomes " + parameters['chr'] + " using a single core..."
+                print "Start: " + strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                for c in chr_list:
+                    normalize_chromosome_fend_data(c)
+                print "End: " + strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        else:
+            normalize_chromosome_fend_data(chr_list[0])
+    
+    elif parameters['action'] == 'normalize_enrich':
+        
+        chr_list = map(str, parameters['chr'].strip('[]').split(','))
+        
+        if len(chr_list) > 1:
+            if parameters['processors'] != None and parameters['processors'] > 1:
+                print "Normalizing enrichment data in parallel for chromosomes " + parameters['chr'] + " in parallel using " + str(parameters['processors']) + " threads..."
+                print "Start: " + strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                pool = Pool(processes=parameters['processors'])             
+                pool.map(normalize_chromosome_enrich_data, chr_list)
+                print "End: " + strftime("%Y-%m-%d %H:%M:%S", gmtime())
+            else:
+                print "Normalizing enrichment data for chromosomes " + parameters['chr'] + " using a single core..."
+                print "Start: " + strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                for c in chr_list:
+                    normalize_chromosome_enrich_data(c)
+                print "End: " + strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        else:
+            normalize_chromosome_enrich_data(chr_list[0])
+    
+
+    elif parameters['action'] == 'plot_map':
+        if options.data_type == None:
+            parser.error('-h for help or insert a custom label for the data type (observed, normalized_fend, normalized_enrich)!')
+        else:
+            pass
+        
+        my_cmap = map(str, parameters['my_colormap'].strip('[]').split(','))
+        if len(my_cmap) == 1:
+            my_cmap = my_cmap[0]
+        
+        chr_list = map(str, parameters['chr'].strip('[]').split(','))
+        if len(chr_list) > 1:
+            parser.error("Insert a single chromosome to be plotted.")
+        
+        if parameters['coord'] != None:
+            coord = map(int, parameters['coord'].strip('[]').split(','))
+        
+        plot_chromosome_data(parameters['input_file'],
+                             chr_list[0],
+                             parameters['bin_size'],
+                             coord,
+                             parameters['species'],
+                             parameters['data_type'],
+                             my_cmap,
+                             parameters['cutoff_type'],
+                             float(parameters['cutoff']),
+                             parameters['max_color'],
+                             parameters['my_dpi'],
+                             bool(parameters['plot_histogram']),
+                             parameters['topological_domains'],
+                             parameters['domain_color'])
+    
+    elif parameters['action'] == 'plot_enrich':
+        
+        chr_list = map(str, parameters['chr'].strip('[]').split(','))
+        if len(chr_list) > 1:
+            parser.error("Insert a single chromosome to be plotted.")
+            
+        if parameters['coord'] != None:
+            coord = map(int, parameters['coord'].strip('[]').split(','))
+        
+        if parameters['cutoff_max'] != None:
+            cutoff_max = float(parameters['cutoff_max'])
+        else:
+            cutoff_max = None
+            
+        if parameters['cutoff_min'] != None:
+            cutoff_min = float(parameters['cutoff_in'])
+        else:
+            cutoff_min = None
+            
+        plot_chromosome_enrich_data(parameters['input_file'],
+                                    chr_list[0],
+                                    parameters['bin_size'],  
+                                    coord,
+                                    parameters['species'],                              
+                                    cutoff_max,
+                                    cutoff_min,
+                                    parameters['my_dpi'],
+                                    bool(parameters['plot_histogram']))
