@@ -1,3 +1,62 @@
+# Program to:
+# - Normalize the contact data with Yaffe-Tanay approach (fend and enrichment ("observed / expected")).
+# - Plot contact matrix and histogram of contact distribution.
+#
+# To use this code, fend correction values must be provided (see HiCtool_hifive.py, -m Yaffe-Tanay)
+
+# Usage: python2.7 HiCtool_yaffe-tanay.py [-h] [options]
+# Options:
+#  -h, --help                show this help message and exit
+#  --action                  Action to perform: extract_single_map, plot_map, plot_side_by_side_map.
+#  -i INPUT_FILE             Input contact matrix file.
+#  -c CHROMSIZES_PATH        Path to the folder chromSizes with trailing slash at the end.
+#  -b BIN_SIZE               Bin size (resolution) of the contact matrix.
+#  -s SPECIES                Species. It has to be one of those present under the chromSizes path.
+#  --isGlobal                Insert 1 if the input matrix is a global matrix, 0 otherwise.  
+#  --tab_sep                 Insert 1 if the input matrix is in a tab separated format, 0 if it is in compressed format.
+#  --chr_row                 Chromosome or list of chromosomes between square brackets in the rows to select specific maps for extraction for plotting.
+#  --chr_col                 Chromosome or list of chromosomes between square brackets in the columns to select specific maps for extraction for plotting.
+#  --data_type               Data type to label your data, example: observed, normalized, etc.
+#  --chr_row_coord           List of two integers with start and end coordinates for the chromosome on the rows to be plotted. It can also be a list of lists of two elements if multiple single maps are plotted.
+#  --chr_col_coord           List of two integers with start and end coordinates for the chromosome on the columns to be plotted. It can also be a list of lists of two elements if multiple single maps are plotted.
+#  --my_colormap             Colormap to be used to plot the data. You can choose among any colorbar here https://matplotlib.org/examples/color/colormaps_reference.html, or input a list of colors if you want a custom colorbar. Example: [white, red, black]. Colors can be specified also HEX format. Default: [white,red].  
+#  --cutoff_type             To select a type of cutoff (percentile or contact_number) or plot the full range of the data (leave it empty). Default: percentile.  
+#  --cutoff                  Percentile to set a maximum cutoff on the number of contacts for the colorbar. Default: 95.  
+#  --max_color               To set the color of the bins with contact counts over "cutoff". Default: #460000. 
+#  --my_dpi                  Resolution of the contact map in dpi. Default: 2000.  
+#  --plot_histogram          Insert 1 to plot the histogram of the contact distribution of the single contact matrices, 0 otherwise. Default: 0. 
+#  --topological_domains     Topological domain coordinates file (as generated from HiCtool_TAD_analysis.py) to visualize domains on the heatmap (only if a single map is selected).
+#  --domain_color            To set the color for topological domains on the heatmap. Default: #0000ff.
+#  --samples                 If action is "plot_side_by_side_map", insert here the samples labels between square brackets.
+
+from optparse import OptionParser
+import numpy as np
+import os
+
+parameters = {'action': None,
+              'input_file': None,
+              'chromSizes_path': None,
+              'isGlobal': None,
+              'tab_sep': None,
+              'chr_row': None,
+              'chr_col': None,
+              'species': None,
+              'bin_size': None,
+              'data_type': None,
+              'chr_row_coord': None,
+              'chr_col_coord': None,
+              'my_colormap': None,
+              'cutoff_type': None,
+              'cutoff': None,
+              'max_color': None,
+              'my_dpi': None,
+              'plot_histogram': None,
+              'topological_domains': None,
+              'domain_color': None,
+              'samples': None
+              }
+
+
 """
 Program to:
 1) Normalize the contact data (fend and enrichment ("observed / expected")).
@@ -6,51 +65,7 @@ Program to:
 To use this code, fend correction values must be provided (see HiCtool_hifive.py)
 """
 
-chromosomes = {'hg38':{'1':248956422,
-               '2':242193529,
-               '3':198295559,
-               '4':190214555,
-               '5':181538259,
-               '6':170805979,
-               '7':159345973,
-               '8':145138636,
-               '9':138394717,
-               '10':133797422,
-               '11':135086622,
-               '12':133275309,
-               '13':114364328,
-               '14':107043718,
-               '15':101991189,
-               '16':90338345,
-               '17':83257441,
-               '18':80373285,
-               '19':58617616,
-               '20':64444167,
-               '21':46709983,
-               '22':50818468,
-               'X':156040895,
-               'Y':57227415},
-               'mm10':{'1':195471971,
-               '2':182113224,
-               '3':160039680,
-               '4':156508116,
-               '5':151834684,
-               '6':149736546,
-               '7':145441459,
-               '8':129401213,
-               '9':124595110,
-               '10':130694993,
-               '11':122082543,
-               '12':120129022,
-               '13':120421639,
-               '14':124902244,
-               '15':104043685,
-               '16':98207768,
-               '17':94987271,
-               '18':90702639,
-               '19':61431566,
-               'X':171031299,
-               'Y':91744698}}
+
 
 def save_matrix(a_matrix, output_file):
     """
@@ -200,8 +215,7 @@ def load_topological_domains(input_file):
 def normalize_chromosome_fend_data(a_chr, 
                                    bin_size, 
                                    input_file='HiC_norm_binning.hdf5',
-                                   species='hg38', 
-                                   custom_species_sizes={},
+                                   species='hg38',
                                    save_obs=True, 
                                    save_expect=False):
     """
@@ -212,9 +226,7 @@ def normalize_chromosome_fend_data(a_chr,
         bin_size (int): bin size in bp of the contact matrix.
         input_file (str): object containing learned correction parameters in hdf5 format obtained with
         HiCtool_hifive.py (default: 'HiC_norm_binning.hdf5')
-        species (str): 'hg38' or 'mm10' or any other species label in string format.
-        custom_species_sizes (dict): dictionary containing the sizes of the chromosomes of your custom species. The keys of the dictionary are chromosomes in string
-        format (example for chromosome 1: '1'), the values are chromosome lengths as integers.
+        species (str): species label in string format.
         save_obs (bool): if True, save the observed contact data.
         save_expect (bool): if True, save the expected (correction) contact data.
     Return:
@@ -237,11 +249,17 @@ def normalize_chromosome_fend_data(a_chr,
         bin_size_str = str(bin_size/1000)
         output_filename = 'HiCtool_' + chromosome + '_' + bin_size_str + 'kb_'    
     
+    chromosomes = open(parameters['chromSizes_path'] + parameters['species'] + '.chrom.sizes', 'r')
+    d_chr_dim = {}
+    while True:
+        try:
+            line2list = next(chromosomes).split('\n')[0].split('\t')
+            d_chr_dim[line2list[0]] = int(line2list[1])/bin_size
+        except StopIteration:
+            break
+    
     start_pos = 0
-    if species in chromosomes.keys():
-        end_pos = (chromosomes[species][a_chr]/bin_size)*bin_size
-    else:
-        end_pos = (custom_species_sizes[a_chr]/bin_size)*bin_size
+    end_pos = d_chr_dim[a_chr]*bin_size
         
     # Expected raw (number of possible fend interactions). 
     # These are needed to scale the fend expected data by the mean fend pairs 
@@ -308,14 +326,13 @@ def plot_chromosome_data(contact_matrix,
                         end_coord=0,
                         species='hg38',
                         data_type='normalized_fend',
-                        custom_species_sizes={},
                         my_colormap=['white', 'red'],
                         cutoff_type='percentile',
                         cutoff=95,
                         max_color='#460000',
                         my_dpi=1000,
                         plot_histogram=False,
-                        topological_domains='',
+                        topological_domains=None,
                         domain_color='#0000ff'):
     """
     Plot a contact map and histogram of the contact distribution for observed data, normalized fend data, expected fend and enrichment data.
@@ -361,10 +378,16 @@ def plot_chromosome_data(contact_matrix,
         bin_size_str = str(bin_size/1000)
         output_filename = 'HiCtool_' + chromosome + '_' + bin_size_str + 'kb_' + data_type
     
-    if species in chromosomes.keys():
-        end_pos = (chromosomes[species][a_chr]/bin_size)*bin_size
-    else:
-        end_pos = (custom_species_sizes[a_chr]/bin_size)*bin_size
+    chromosomes = open(parameters['chromSizes_path'] + parameters['species'] + '.chrom.sizes', 'r')
+    d_chr_dim = {}
+    while True:
+        try:
+            line2list = next(chromosomes).split('\n')[0].split('\t')
+            d_chr_dim[line2list[0]] = int(line2list[1])/bin_size
+        except StopIteration:
+            break
+    
+    end_pos = d_chr_dim[a_chr]*bin_size
     
     # Plotting of the data
     if isinstance(contact_matrix, str):
@@ -375,9 +398,9 @@ def plot_chromosome_data(contact_matrix,
         matrix_data_full = copy.deepcopy(contact_matrix)
     
     # Update matrix values to plot topological domains
-    if topological_domains != '':
-        if bin_size != 40000:
-            print "ERROR! To plot topological domains the bin size should be 40000"
+    if topological_domains != None:
+        if bin_size > 40000:
+            print "ERROR! To plot topological domains the bin size should be 40000 or lower."
             return
         if isinstance(topological_domains, str):
             domains = load_topological_domains(topological_domains)
@@ -386,8 +409,8 @@ def plot_chromosome_data(contact_matrix,
         output_filename = output_filename + '_domains'
         diag_index = np.diag_indices(len(matrix_data_full))
         for domain in domains:
-            temp_start = domain[0]/40000
-            temp_end = domain[1]/40000
+            temp_start = domain[0]/bin_size
+            temp_end = domain[1]/bin_size
             matrix_data_full[temp_start,temp_start:temp_end] = -1
             matrix_data_full[temp_start:temp_end,temp_end-1] = -1
             matrix_data_full[(diag_index[0][temp_start:temp_end],diag_index[1][temp_start:temp_end])] = -1
@@ -406,19 +429,13 @@ def plot_chromosome_data(contact_matrix,
             return
     
         if end_coord > end_pos:
-            if species in chromosomes.keys():
-                print "ERROR! End coordinate is larger than chromosome size " + str((chromosomes[species][a_chr]/bin_size)*bin_size) + " bp"
-                return
-            else:
-                print "ERROR! End coordinate is larger than chromosome size " + str((custom_species_sizes[a_chr]/bin_size)*bin_size) + " bp"
-                return
+            print "ERROR! End coordinate is larger than chromosome size " + str(end_pos) + " bp"
+            return
+        
     else:
         start_bin = 0
-        if species in chromosomes.keys():   
-            end_bin = chromosomes[species][a_chr]/bin_size
-        else:
-            end_bin = custom_species_sizes[a_chr]/bin_size
-    
+        end_bin = d_chr_dim[a_chr]
+
     matrix_data_full = matrix_data_full[start_bin:end_bin+1,start_bin:end_bin+1] 
     
     n = len(matrix_data_full)
@@ -558,10 +575,16 @@ def normalize_chromosome_enrich_data(a_chr,
         output_filename = 'HiCtool_' + chromosome + '_' + bin_size_str + 'kb_'
     
     start_pos = 0
-    if species in chromosomes.keys():
-        end_pos = (chromosomes[species][a_chr]/bin_size)*bin_size
-    else:
-        end_pos = (custom_species_sizes[a_chr]/bin_size)*bin_size
+    chromosomes = open(parameters['chromSizes_path'] + parameters['species'] + '.chrom.sizes', 'r')
+    d_chr_dim = {}
+    while True:
+        try:
+            line2list = next(chromosomes).split('\n')[0].split('\t')
+            d_chr_dim[line2list[0]] = int(line2list[1])/bin_size
+        except StopIteration:
+            break
+    
+    end_pos = d_chr_dim[a_chr]*bin_size
 
     # Enrichment data
     hic = hifive.HiC(input_file)
@@ -652,10 +675,16 @@ def plot_chromosome_enrich_data(contact_matrix,
         bin_size_str = str(bin_size/1000)
         output_filename = 'HiCtool_' + chromosome + '_' + bin_size_str + 'kb_normalized_enrich'
     
-    if species in chromosomes.keys():
-        end_pos = (chromosomes[species][a_chr]/bin_size)*bin_size
-    else:
-        end_pos = (custom_species_sizes[a_chr]/bin_size)*bin_size
+    chromosomes = open(parameters['chromSizes_path'] + parameters['species'] + '.chrom.sizes', 'r')
+    d_chr_dim = {}
+    while True:
+        try:
+            line2list = next(chromosomes).split('\n')[0].split('\t')
+            d_chr_dim[line2list[0]] = int(line2list[1])/bin_size
+        except StopIteration:
+            break
+    
+    end_pos = d_chr_dim[a_chr]*bin_size
     
     # Plotting the enrichment contact data
     if isinstance(contact_matrix, str):
@@ -679,15 +708,11 @@ def plot_chromosome_enrich_data(contact_matrix,
             return
     
         if end_coord > end_pos:
-            if species == 'hg38' or species == 'mm10':
-                print "ERROR! End coordinate is larger than chromosome size " + str((chromosomes[species][a_chr]/bin_size)*bin_size) + " bp"
-                return
-            else:
-                print "ERROR! End coordinate is larger than chromosome size " + str((custom_species_sizes[a_chr]/bin_size)*bin_size) + " bp"
-                return
+            print "ERROR! End coordinate is larger than chromosome size " + str(end_pos) + " bp"
+            return
     else:
         start_bin = 0
-        end_bin = chromosomes[species][a_chr]/bin_size
+        end_bin = d_chr_dim[a_chr]
     
     matrix_data_full = matrix_data_full[start_bin:end_bin+1,start_bin:end_bin+1]
     n = len(matrix_data_full)
