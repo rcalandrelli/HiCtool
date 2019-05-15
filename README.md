@@ -7,7 +7,6 @@ HiCtool is an open-source bioinformatic tool based on Python, which integrates s
 - [Overview](#overview)
 - [Installation](#installation)
 - [Tutorial](#tutorial)
-- [API documentation](#api-documentation)
 - [Version history](#version-history)
 - [Reference](#reference)
 - [Support](#support)
@@ -60,17 +59,13 @@ HiCtool is in a pipeline format based on single unix commands to allow easy usag
 
 We have compiled a full tutorial to show the usage of the pipeline. Please check the [Tutorial Homepage](./tutorial/ReadMe.md).
 
-## API documentation
-
-All the functions used in this documentation are reported with all the input parameters in the [API documentation](https://sysbio.ucsd.edu/public/rcalandrelli/HiCtool_API_documentation.pdf).
-
 ## Version history
 
 ### Date
 
 - Version 2.1 released:
 
-   - HiCtool is now based only on unix commands. A Python script is left containing utility functions for I/O of files generated with HiCtool in the Python console.
+   - HiCtool is now based only on unix commands. A Python script is given which contains utility functions for I/O of files generated with HiCtool in the Python console.
    - The entire pre-processing is now performed with a single-command.
    - Possibility of processing Hi-C data generated with a cocktail of restriction enzymes (i.e. as in the Arima Kit) or with restriction enzymes including "N" in their sequence.
    - HiCtool includes now additional species besides hg38 and mm10: hg19, mm9, dm6, susScr3, susScr11.

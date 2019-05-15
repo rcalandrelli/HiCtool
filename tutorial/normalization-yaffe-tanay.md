@@ -245,7 +245,7 @@ Heatmap             |  Histogram
 In order to change the heatmap resolution, first data have to be normalized at the desired resolution set with the parameter ``-b`` above ([see section 2.2.](#21-normalizing-enrichment-data)):
 
 Then, we plot the entire heatmap with a maximum and minimum cutoff for the log2 at 4 and -4 respectively:
-```Python
+```unix
 python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 --action plot_enrich \
 -i HiCtool_chr6_1mb_normalized_enrich.txt \

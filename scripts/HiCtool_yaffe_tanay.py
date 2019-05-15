@@ -8,27 +8,28 @@
 # Usage: python2.7 HiCtool_yaffe-tanay.py [-h] [options]
 # Options:
 #  -h, --help                show this help message and exit
-#  --action                  Action to perform: extract_single_map, plot_map, plot_side_by_side_map.
-#  -i INPUT_FILE             Input contact matrix file.
+#  --action                  Action to perform: normalize_fend, plot_map, normalize_enrich, plot_enrich.
+#  -i INPUT_FILE             Input contact matrix for plotting actions, norm binning hdf5 object from HiFive for normalizing actions.
 #  -c CHROMSIZES_PATH        Path to the folder chromSizes with trailing slash at the end.
 #  -b BIN_SIZE               Bin size (resolution) of the contact matrix.
 #  -s SPECIES                Species. It has to be one of those present under the chromSizes path.
-#  --isGlobal                Insert 1 if the input matrix is a global matrix, 0 otherwise.  
-#  --tab_sep                 Insert 1 if the input matrix is in a tab separated format, 0 if it is in compressed format.
-#  --chr_row                 Chromosome or list of chromosomes between square brackets in the rows to select specific maps for extraction for plotting.
-#  --chr_col                 Chromosome or list of chromosomes between square brackets in the columns to select specific maps for extraction for plotting.
-#  --data_type               Data type to label your data, example: observed, normalized, etc.
-#  --chr_row_coord           List of two integers with start and end coordinates for the chromosome on the rows to be plotted. It can also be a list of lists of two elements if multiple single maps are plotted.
-#  --chr_col_coord           List of two integers with start and end coordinates for the chromosome on the columns to be plotted. It can also be a list of lists of two elements if multiple single maps are plotted.
-#  --my_colormap             Colormap to be used to plot the data. You can choose among any colorbar here https://matplotlib.org/examples/color/colormaps_reference.html, or input a list of colors if you want a custom colorbar. Example: [white, red, black]. Colors can be specified also HEX format. Default: [white,red].  
-#  --cutoff_type             To select a type of cutoff (percentile or contact_number) or plot the full range of the data (leave it empty). Default: percentile.  
-#  --cutoff                  Percentile to set a maximum cutoff on the number of contacts for the colorbar. Default: 95.  
-#  --max_color               To set the color of the bins with contact counts over "cutoff". Default: #460000. 
-#  --my_dpi                  Resolution of the contact map in dpi. Default: 2000.  
-#  --plot_histogram          Insert 1 to plot the histogram of the contact distribution of the single contact matrices, 0 otherwise. Default: 0. 
-#  --topological_domains     Topological domain coordinates file (as generated from HiCtool_TAD_analysis.py) to visualize domains on the heatmap (only if a single map is selected).
+#  --processors              Processors to be used to normalize the data in parallel.  
+#  --chr                     Single chromosome for normalization or plotting, or list of chromosomes between square brackets for normalization of multiple chromosomes at once.
+#  --data_type               Data type to label your data, example: observed, normalized_fend, normalized_enrich.
+#  --coord                   List of two integers with start and end coordinates for the chromosome to be plotted.
+#  --save_obs                Insert 1 to save the observed data when normalizing, 0 otherwise. Default: 1.
+#  --save_expect             Insert 1 to save the expected data when normalizing, 0 otherwise. Default: 0.
+#  --my_colormap             Colormap to be used to plot the contact data. You can choose among any colorbar here https://matplotlib.org/examples/color/colormaps_reference.html, or input a list of colors if you want a custom colorbar. Example: [white, red, black]. Colors can be specified also HEX format. Default: [white,red].  
+#  --cutoff_type             When plotting the contact data, to select a type of cutoff (percentile or contact_number) or plot the full range of the data (leave it empty). Default: percentile. 
+#  --cutoff                  When plotting the contact data, to set a maximum cutoff on the number of contacts for the colorbar based on cutoff_type. Default: 95.
+#  --cutoff_max              When plotting the enrichment data, log2 upper cutoff for the colorbar (every enrichment value above cutoff_max is plotted in red).
+#  --cutoff_min              When plotting the enrichment data, log2 lower cutoff (negative value) for the colorbar (every enrichment value below cutoff_min is plotted in blue).  
+#  --max_color               When plotting the contact data, to set the color of the bins with contact counts over "cutoff". Default: #460000.
+#  --my_dpi                  Resolution of the contact map in dpi. Default: 1000.  
+#  --plot_histogram          Insert 1 to plot the histogram of the data distribution, 0 otherwise. Default: 0.
+#  --topological_domains     Topological domain coordinates file (as generated from HiCtool_TAD_analysis.py) to visualize domains on the heatmap if action is "plot_map".
 #  --domain_color            To set the color for topological domains on the heatmap. Default: #0000ff.
-#  --samples                 If action is "plot_side_by_side_map", insert here the samples labels between square brackets.
+
 
 from optparse import OptionParser
 import numpy as np
@@ -211,12 +212,6 @@ def normalize_chromosome_fend_data(a_chr):
     bin. Observed data and expected fend data (correction data) can be saved to txt file.
     Arguments:
         a_chr (str): chromosome number (example for chromosome 1: '1').
-        bin_size (int): bin size in bp of the contact matrix.
-        input_file (str): object containing learned correction parameters in hdf5 format obtained with
-        HiCtool_hifive.py (default: 'HiC_norm_binning.hdf5')
-        species (str): species label in string format.
-        save_obs (bool): if True, save the observed contact data.
-        save_expect (bool): if True, save the expected (correction) contact data.
     Return:
         Normalized fend contact matrix.
     Outputs:
@@ -534,12 +529,6 @@ def normalize_chromosome_enrich_data(a_chr):
     to txt files.
     Arguments:
         a_chr (str): chromosome number (example for chromosome 1: '1').
-        bin_size (int): bin size in bp of the contact matrix.
-        input_file (str): object containing learned correction parameters in hdf5 format obtained with
-        HiCtool_hifive.py (default: 'HiC_norm_binning.hdf5').
-        species (str): species label in string format.
-        save_obs (bool): if True, save the observed contact data.
-        save_expect (bool): if True, save the expected contact data.
     Return: 
         Normalized enrichment contact matrix.
     Outputs:
@@ -861,25 +850,25 @@ if __name__ == '__main__':
     usage = 'Usage: python2.7 HiCtool_yaffe_tanay.py [-h] [options]'
     parser = OptionParser(usage = 'python2.7 %prog --action action -i input_file [options]')
     parser.add_option('--action', dest='action', type='string', help='Action to perform: normalize_fend, plot_map, normalize_enrich, plot_enrich')
-    parser.add_option('-i', dest='input_file', type='string', help='Input contact matrix file if you are plotting, final hdf5 object from HiFive if you are normalizing.')
+    parser.add_option('-i', dest='input_file', type='string', help='Input contact matrix for plotting actions, norm binning hdf5 object from HiFive for normalizing actions.')
     parser.add_option('-c', dest='chromSizes_path', type='string', help='Path to the folder chromSizes with trailing slash at the end.')
     parser.add_option('-b', dest='bin_size', type='int', help='Bin size (resolution) for the analysis.')
     parser.add_option('-s', dest='species', type='string', help='Species. It has to be one of those present under the chromSizes path.')
     parser.add_option('-p', dest='processors', type='int', default=1, help='Processors to be used to normalize the data in parallel.')
-    parser.add_option('--chr', dest='chr', type='str', help='Chromosome for normalization or plotting or list of chromosomes between square brackets for normalization.')  
+    parser.add_option('--chr', dest='chr', type='str', help='Single chromosome for normalization or plotting, or list of chromosomes between square brackets for normalization of multiple chromosomes at once.')  
     parser.add_option('--data_type', dest='data_type', type='str', help='Data type to label your data, example: observed, normalized_fend, normalized_enrich.')  
     parser.add_option('--save_obs', dest='save_obs', type='int', default=1, help='Insert 1 to save the observed data when normalizing, 0 otherwise. Default: 1.')  
-    parser.add_option('--save_expect', dest='save_expect', type='int', default=0, help='Insert 1 to save the expected data when normalizing, 0 otherwise (unless needed this is not suggested for the big dimension of the data and long computing time). Default: 0.')  
+    parser.add_option('--save_expect', dest='save_expect', type='int', default=0, help='Insert 1 to save the expected data when normalizing, 0 otherwise. Default: 0.')  
     parser.add_option('--coord', dest='coord', type='str', help='List of two integers with start and end coordinates for the chromosome to be plotted.')  
-    parser.add_option('--my_colormap', dest='my_colormap', type='str', default='[white,red]', help='Colormap to be used to plot the data. You can choose among any colorbar here https://matplotlib.org/examples/color/colormaps_reference.html, or input a list of colors if you want a custom colorbar. Example: [white, red, black]. Colors can be specified also HEX format. Default: [white,red]')  
-    parser.add_option('--cutoff_type', dest='cutoff_type', type='str', default='percentile', help='To select a type of cutoff (percentile or contact_number) or plot the full range of the data (leave it empty). Default: percentile.')  
-    parser.add_option('--cutoff', dest='cutoff', type='str', default='95', help='When plotting contact data, to set a maximum cutoff on the number of contacts for the colorbar based on cutoff_type. Default: 95.')  
-    parser.add_option('--cutoff_max', dest='cutoff_max', type='str', help='When plotting enrichment data, log2 upper cutoff for the colorbar (every enrichment value above cutoff_max is plotted in red).')  
-    parser.add_option('--cutoff_min', dest='cutoff_min', type='str', help='When plotting enrichment data, log2 lower cutoff (negative value) for the colorbar (every enrichment value below cutoff_min is plotted in blue)')  
-    parser.add_option('--max_color', dest='max_color', type='str', default='#460000', help='When plotting contact data, to set the color of the bins with contact counts over "cutoff". Default: #460000.')  
+    parser.add_option('--my_colormap', dest='my_colormap', type='str', default='[white,red]', help='Colormap to be used to plot the contact data. You can choose among any colorbar here https://matplotlib.org/examples/color/colormaps_reference.html, or input a list of colors if you want a custom colorbar. Example: [white, red, black]. Colors can be specified also HEX format. Default: [white,red]')  
+    parser.add_option('--cutoff_type', dest='cutoff_type', type='str', default='percentile', help='When plotting the contact data, to select a type of cutoff (percentile or contact_number) or plot the full range of the data (leave it empty). Default: percentile.')  
+    parser.add_option('--cutoff', dest='cutoff', type='str', default='95', help='When plotting the contact data, to set a maximum cutoff on the number of contacts for the colorbar based on cutoff_type. Default: 95.')  
+    parser.add_option('--cutoff_max', dest='cutoff_max', type='str', help='When plotting the enrichment data, log2 upper cutoff for the colorbar (every enrichment value above cutoff_max is plotted in red).')  
+    parser.add_option('--cutoff_min', dest='cutoff_min', type='str', help='When plotting the enrichment data, log2 lower cutoff (negative value) for the colorbar (every enrichment value below cutoff_min is plotted in blue).')  
+    parser.add_option('--max_color', dest='max_color', type='str', default='#460000', help='When plotting the contact data, to set the color of the bins with contact counts over "cutoff". Default: #460000.')  
     parser.add_option('--my_dpi', dest='my_dpi', type='int', default=1000, help='Resolution of the contact map in dpi. Default: 1000.')  
     parser.add_option('--plot_histogram', dest='plot_histogram', type='int', default=0, help='Insert 1 to plot the histogram of the data distribution, 0 otherwise. Default: 0.')  
-    parser.add_option('--topological_domains', dest='topological_domains', type='str', help='Topological domain coordinates file (as generated from HiCtool_TAD_analysis.py) to visualize domains on the heatmap.')  
+    parser.add_option('--topological_domains', dest='topological_domains', type='str', help='Topological domain coordinates file (as generated from HiCtool_TAD_analysis.py) to visualize domains on the heatmap if action is "plot_map".')  
     parser.add_option('--domain_color', dest='domain_color', type='str', default='#0000ff', help='To set the color for topological domains on the heatmap. Default: #0000ff.')  
     (options, args) = parser.parse_args( )
     
