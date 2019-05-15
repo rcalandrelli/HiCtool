@@ -969,7 +969,7 @@ if __name__ == '__main__':
         chr_list = map(str, parameters['chr'].strip('[]').split(','))
         
         if len(chr_list) > 1:
-            if parameters['processors'] != None and parameters['processors'] > 1:
+            if parameters['processors'] > 1:
                 print "Normalizing enrichment data in parallel for chromosomes " + parameters['chr'] + " in parallel using " + str(parameters['processors']) + " threads..."
                 print "Start: " + strftime("%Y-%m-%d %H:%M:%S", gmtime())
                 pool = Pool(processes=parameters['processors'])             

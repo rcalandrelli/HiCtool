@@ -2,15 +2,12 @@
 
 This pipeline illustrates the procedure to normalize and visualize Hi-C **intra-chromosomal contact data only** following the explicit-factor model of [Yaffe and Tanay](http://www.nature.com/ng/journal/v43/n11/abs/ng.947.html).
 
-For more information about the Python functions used here check the [API documentation](https://sysbio.ucsd.edu/public/rcalandrelli/HiCtool_API_documentation.pdf).
-
 ## Table of contents
 
 1. [Running HiFive functions](#1-running-hifive-functions)
 2. [Normalizing the data](#2-normalizing-the-data)
-   - [2.1. Normalized fend data](#21-normalized-fend-data)
-   - [2.2. Normalized enrichment data](#22-normalized-enrichment-data)
-   - [2.3. Multi-processing normalization](#23-multi-processing-normalization)
+   - [2.1. Normalizing fend data](#21-normalizing-fend-data)
+   - [2.2. Normalizing enrichment data](#22-normalizing-enrichment-data)
 3. [Visualizing the data](#3-visualizing-the-data)
    - [3.1. Visualizing the contact data](#31-visualizing-the-contact-data)
    - [3.2. Visualizing the enrichment data](#32-visualizing-the-enrichment-data)
@@ -57,9 +54,7 @@ where:
 
 For the normalization, observed data and correction parameters to remove biases to obtain the corrected read counts are required. Therefore, the observed contact matrix and the fend expected contact matrix are calculated. In addition, the enrichment expected contact matrix is calculated to compute the observed over expected enrichment values, considering also the distance between fends.
 
-For each chromosome, the following five matrices are computed at a bin size of 40 kb (the bin size can be changed with a function parameter). Every contact matrix is AUTOMATICALLY saved in txt format using the function ``save_matrix``.
-
-Data are compressed in a format to reduce storage occupation and improving saving and loading time ([see here for more details](/tutorial/HiCtool_compressed_format.md)).
+For each chromosome, the following five matrices can be computed and saved to file. Data are compressed in a format to reduce storage occupation and improving saving and loading time ([see here for more details](/tutorial/HiCtool_compressed_format.md)).
 
 - The **observed data** contain the observed reads count for each bin.
 - The **fend expected data** contain the learned correction value to remove biases related to fends for each bin.
@@ -67,53 +62,93 @@ Data are compressed in a format to reduce storage occupation and improving savin
 - The **normalized fend data** contain the corrected read count for each bin.
 - The **normalized enrichment data** ("observed over expected" matrix) contain the enrichment value (O/E) for each bin.
 
-First execute the script [HiCtool_yaffe_tanay.py](/scripts/HiCtool_yaffe_tanay.py) in the Python or iPython console:
-```Python
-execfile('HiCtool_yaffe_tanay.py')
-```
-### 2.1. Normalized fend data
-
-To calculate and save the **normalized intra-chromosomal contact matrix** for a chromosome ``a_chr``, use the function ``normalize_chromosome_fend_data``:
-```Python
-fend_normalized_chr6 = normalize_chromosome_fend_data(a_chr='6', bin_size=40000, 
-                                                      input_file='HiC_norm_binning.hdf5', 
-                                                      species='hg38',
-                                                      save_obs=True, save_expect=False)
-```
-Data are compressed in a format to reduce storage occupation and improving saving and loading time ([see here for more details](/tutorial/HiCtool_compressed_format.md)). To load a previously generated contact matrix use the function ```load_matrix```:
-```Python
-my_contact_matrix = load_matrix('my_contact_matrix.txt')
-```
-where ``'my_contact_matrix.txt'`` is a contact matrix file saved using ``normalize_chromosome_fend_data`` .
-
-### 2.2. Normalized enrichment data
-
-To calculate and save the **"observed/expected" intra-chromosomal contact matrix** for a chromosome ``a_chr`` use the function ``normalize_chromosome_enrich_data`` (see API Documentation):
-```Python
-enrich_normalized_chr6 = normalize_chromosome_enrich_data(a_chr='6', bin_size=40000, 
-                                                          input_file='HiC_norm_binning.hdf5', 
-                                                          species='hg38',
-                                                          save_obs=True, save_expect=False)
-```
 **Note!**
 If you need only the normalized contact matrices, there is no need to calculate also the enrichment data. If you do not need the expected data, do not save it since they are the biggest files and the process may take time.
 
-Data are compressed in a format to reduce storage occupation and improving saving and loading time ([see here for more details](/tutorial/HiCtool_compressed_format.md)). To load a previously generated contact matrix use the function ```load_matrix```:
-```Python
-my_contact_matrix = load_matrix('my_contact_matrix.txt')
-```
-where ``'my_contact_matrix.txt'`` is a contact matrix file saved using ``normalize_chromosome_enrich_data``.
+To normalize the data, the script [HiCtool_yaffe_tanay.py](/scripts/HiCtool_yaffe_tanay.py) is used.
 
-### 2.3. Multi-processing normalization
+### 2.1. Normalizing fend data
 
-To calculate and save the normalized contact matrices in parallel for multiple chromosomes, use the script [HiCtool_normalize_fend_parallel.py](/scripts/HiCtool_normalize_fend_parallel.py). **Open the script, update the parameters on the top and save.** Then, just execute the script:
-```Python
-execfile('HiCtool_normalize_fend_parallel.py')
+To calculate and save the **normalized intra-chromosomal contact matrix** for a chromosome ``--chr`` do as following:
+```unix
+python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
+--action normalize_fend \
+-i HiC_norm_binning.hdf5 \
+-c /HiCtool-master/scripts/chromSizes/ \
+-b 40000 \
+-s hg38 \
+--chr 6 \
+--save_obs 1 \
+--save_expect 0
 ```
-To calculate and save the "observed/expected" contact matrices in parallel use the script [HiCtool_normalize_enrich_parallel.py](/scripts/HiCtool_normalize_enrich_parallel.py). **Open the script, update the parameters on the top and save.** Then, just execute the script:
-```Python
-execfile('HiCtool_normalize_enrich_parallel.py')
+where:
+
+- ``--action``: action to perform (here ``normalize_fend``).
+- ``-i``:  Output norm binning file in ``.hdf5`` format obtained with ``HiCtool_hifive.py`` above.
+- ``-c``: Path to the folder ``chromSizes`` with trailing slash at the end ``/``.
+- ``-b``: The bin size (resolution) for the analysis.
+- ``-s``: Species name.
+- ``--chr``: The chromosome to normalize.
+- ``--save_obs``: Set to 1 to save the observed contact matrix, 0 otherwise.
+- ``--save_expect``: Set to 1 to save the fend expected data with correction values, 0 otherwise.
+
+The parameter ``--chr`` can be used also to normalize multiple chromosomes (passed as a list between square brackets) at once and also multi-processing computation is provided if your machine supports it using the parameters ``-p``:
+```unix
+chromosomes=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y]
+
+python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
+--action normalize_fend \
+-i HiC_norm_binning.hdf5 \
+-c /HiCtool-master/scripts/chromSizes/ \
+-b 40000 \
+-s hg38 \
+--chr $chromosomes \
+--save_obs 1 \
+--save_expect 0
+-p 24
 ```
+
+### 2.2. Normalizing enrichment data
+
+To calculate and save the **"observed/expected" intra-chromosomal contact matrix** for a chromosome ``--chr`` do as following:
+```unix
+python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
+--action normalize_enrich \
+-i HiC_norm_binning.hdf5 \
+-c /HiCtool-master/scripts/chromSizes/ \
+-b 40000 \
+-s hg38 \
+--chr 6 \
+--save_obs 1 \
+--save_expect 0
+```
+where:
+
+- ``--action``: action to perform (here ``normalize_enrich``).
+- ``-i``:  Output norm binning file in ``.hdf5`` format obtained with ``HiCtool_hifive.py`` above.
+- ``-c``: Path to the folder ``chromSizes`` with trailing slash at the end ``/``.
+- ``-b``: The bin size (resolution) for the analysis.
+- ``-s``: Species name.
+- ``--chr``: The chromosome to normalize.
+- ``--save_obs``: Set to 1 to save the observed contact matrix, 0 otherwise.
+- ``--save_expect``: Set to 1 to save the expected data, 0 otherwise.
+
+The parameter ``--chr`` can be used also to normalize multiple chromosomes (passed as a list between square brackets) at once and also multi-processing computation is provided if your machine supports it using the parameters ``-p``:
+```unix
+chromosomes=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y]
+
+python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
+--action normalize_enrich \
+-i HiC_norm_binning.hdf5 \
+-c /HiCtool-master/scripts/chromSizes/ \
+-b 40000 \
+-s hg38 \
+--chr $chromosomes \
+--save_obs 1 \
+--save_expect 0
+-p 24
+```
+
 ## 3. Visualizing the data
 
 To plot the contact maps, first execute the script [HiCtool_yaffe_tanay.py](/tutorial/HiCtool_yaffe_tanay.py) in the Python or iPython console:
@@ -147,7 +182,7 @@ Heatmap             |  Histogram
 
 **Additional example of the contact matrix for chromosome 6 at 1 Mb resolution**
 
-In order to change the heatmap resolution, first data have to be normalized at the desired resolution set with the parameter ``bin_size`` of ``normalize_chromosome_fend_data`` ([see section 2.1.](#21-normalized-fend-data)):
+In order to change the heatmap resolution, first data have to be normalized at the desired resolution set with the parameter ``bin_size`` of ``normalize_chromosome_fend_data`` ([see section 2.1.](#21-normalizing-fend-data)):
 ```Python
 fend_normalized_chr6 = normalize_chromosome_fend_data(a_chr='6', 
                                                       bin_size=1000000, 
