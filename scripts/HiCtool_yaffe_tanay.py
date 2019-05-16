@@ -1029,7 +1029,7 @@ if __name__ == '__main__':
             cutoff_max = None
             
         if parameters['cutoff_min'] != None:
-            cutoff_min = float(parameters['cutoff_in'])
+            cutoff_min = float(parameters['cutoff_min'])
         else:
             cutoff_min = None
             
