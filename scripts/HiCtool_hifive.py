@@ -140,7 +140,7 @@ if __name__ == '__main__':
     parameters['model'] = options.model
 
     if parameters['model'] in ['Yaffe-Tanay', 'Hi-Corrector']:
-        print "Running HiFive functions for model " + parameters['model']
+        print "Running HiFive functions for the model " + parameters['model'] + " ..."
     else:
         parser.error("Please insert the correct model, one between Yaffe-Tanay and Hi-Corrector.")
         

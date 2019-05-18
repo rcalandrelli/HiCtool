@@ -56,7 +56,7 @@ Especially at higher resolution, the generation of the global observed contact m
 To calculate and save the global observed contact matrix use the script [HiCtool_global_map_observed.py](/scripts/HiCtool_global_map_observed.py) and run this command:
 ```unix
 python /HiCtool-master/scripts/HiCtool_global_map_observed.py \
--i HiCtool_project_object.hdf5 \
+-i HiC_project_object.hdf5 \
 -o /output_path/ \
 -b 1000000 \
 -s hg38 \
