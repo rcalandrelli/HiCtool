@@ -154,7 +154,7 @@ This command creates a **folder ``output_ic_mes``** with 2 files inside:
 - ``output.log``: a log file
 - ``output.bias``: a bias file used by the software to normalize the data
 
-The **global normalized contact matrix** in tab separated format is saved to your working directory as ``HiCtool_1mb_matrix_global_normalized_tab.txt``.
+The **global normalized contact matrix** in tab separated format is saved to your working directory as **``HiCtool_1mb_matrix_global_normalized_tab.txt``**.
 
 After having normalized the data, it is possible to extract and save to file a single contact matrix (either intra- or inter-chromosomal) using the function ``extract_single_map`` of [HiCtool_global_map_analysis.py](/scripts/HiCtool_global_map_analysis.py) as following (here we extract the chr1-chr1 map):
 ```unix
