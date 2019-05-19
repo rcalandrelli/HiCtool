@@ -78,7 +78,7 @@ where:
 
 - ``HiCtool_1mb_matrix_global_observed.txt``, the global matrix saved using a compressed format ([see here for more details](/tutorial/HiCtool_compressed_format.md)).
 - ``HiCtool_1mb_matrix_global_observed_tab.txt``, the global matrix saved in tab separated format. This matrix will be used in the next section to normalize the data, since Hi-Corrector required the input data in a tab separated format.
-- ``info.txt``, which contains the number of rows of the global matrix and the average rowsum (also printed in the console).
+- ``info_matrix_global_observed_1mb.txt``, which contains the number of rows of the global matrix and the average rowsum (also printed in the console).
 
 ### 2.1. Extracting single contact matrices
 
@@ -144,16 +144,17 @@ where:
 
 - ``-q``: maximum number of iterations performed in the algorithm.
 - ``-m``: the memory size in Megabytes (MB). The bigger memory you allocate for the normalization process, the faster it is. Even 100 Mb is fine for 1 Mb resolution map, suggested at least 16000 Mb (16 GB) for 40 kb resolution.
-- ``-r``: the number of rows or columns of the input chromatin contact frequency matrix to be normalized (provided in  ``info.txt`` generated in [section 2](#2-generating-the-global-observed-contact-matrix)).
+- ``-r``: the number of rows or columns of the input chromatin contact frequency matrix to be normalized (provided in  ``info_matrix_global_observed_1mb.txt`` generated in [section 2](#2-generating-the-global-observed-contact-matrix)).
 - ``-s``: the row sum after normalization. The iterative correction algorithm can allow users to specify the row sum after the normalization, because this method is a matrix scaling approach that normalizes the matrix to be a doubly stochastic matrix (rows and columns sums equal to 1). Then we can multiple each element of this normalized matrix by the given value of this parameter, say 10.0 or 100.0 or whatever you choose. In such a way, the row sums of normalized matrix becomes this number (10.0 or 100.0 or whatever you choose). In ``info.txt`` we provide a row sum value that you could use calculated as "the average number of contacts of the observed matrix multiplied by the number of rows" to make the normalized data counts "comparable" with the observed ones. The choice is arbitrary.
 - ``-h``: the path to the Hi-Corrector source code with the final trailing slash ``/``.
 - ``-i``: the observed global contact matrix in tab delimited format.
 
-This command creates a **folder ``output_ic_mes``** with 3 files inside:
+This command creates a **folder ``output_ic_mes``** with 2 files inside:
 
 - ``output.log``: a log file
 - ``output.bias``: a bias file used by the software to normalize the data
-- ``output_normalized.txt``: the **global normalized contact matrix** in tab separated format
+
+The **global normalized contact matrix** in tab separated format is saved to your working directory as ``HiCtool_1mb_matrix_global_normalized_tab.txt``.
 
 After having normalized the data, it is possible to extract and save to file a single contact matrix (either intra- or inter-chromosomal) using the function ``extract_single_map`` of [HiCtool_global_map_analysis.py](/scripts/HiCtool_global_map_analysis.py) as following (here we extract the chr1-chr1 map):
 ```unix

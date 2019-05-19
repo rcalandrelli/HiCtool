@@ -23,6 +23,7 @@ fi
 }
 
 echo "Start data normalization with Hi-Corrector: $(date)"
+start_time=$(date)
 
 output_dir=$dir"/output_ic_mes" # output directory
 checkMakeDirectory $output_dir
@@ -47,4 +48,8 @@ normalized_matrix="$output_dir/output_normalized.txt" # output file consists of 
 echo "$cmd $input_mat_file $total_rows $has_header_line $has_header_column $total_mem $bias_factor_file $row_sum_after_norm $normalized_matrix"
 $cmd $input_mat_file $total_rows $has_header_line $has_header_column $total_mem $bias_factor_file $row_sum_after_norm $normalized_matrix
 
-echo "End data normalization: $(date)"
+output_mat_file="$(echo "$(basename "$input_mat_file")" | sed s/observed/normalized/)"
+mv $normalized_matrix $dir"/$output_mat_file"
+
+echo "Start data normalization time: "$start_time
+echo "End data normalization time: $(date)"

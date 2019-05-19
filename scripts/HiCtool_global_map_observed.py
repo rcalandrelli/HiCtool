@@ -441,16 +441,16 @@ if __name__ == '__main__':
     
     print "Building global matrix... "
     if bin_size >= 1000000:
-        bin_size_str = str(bin_size/1000000) + 'mb_'
-        my_filename = 'HiCtool_' + bin_size_str
+        bin_size_str = str(bin_size/1000000) + 'mb'
+        my_filename = 'HiCtool_' + bin_size_str + "_"
     elif bin_size < 1000000:
-        bin_size_str = str(bin_size/1000) + 'kb_'
-        my_filename = 'HiCtool_' + bin_size_str
+        bin_size_str = str(bin_size/1000) + 'kb'
+        my_filename = 'HiCtool_' + bin_size_str + "_"
     
     save_matrix(matrix_global_observed, output_path + my_filename + 'matrix_global_observed.txt')
     save_matrix_tab(matrix_global_observed, output_path + my_filename + 'matrix_global_observed_tab.txt')
     print "Done!"
-    with open (output_path + 'info' + bin_size_str + '.txt', 'w') as f:
+    with open (output_path + 'info_matrix_global_observed_' + bin_size_str + '.txt', 'w') as f:
         f.write('Rows: ' + str(len(matrix_global_observed)) + '\n')
         f.write('Rowsum (average matrix * rows): ' + str(int(np.mean(matrix_global_observed) * len(matrix_global_observed))))
     print 'Rows: ' + str(len(matrix_global_observed))
