@@ -160,7 +160,7 @@ After having normalized the data, it is possible to extract and save to file a s
 ```unix
 python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --action extract_single_map \
--i /output_ic_mes/output_normalized.txt \
+-i HiCtool_1mb_matrix_global_normalized_tab.txt \
 -c /HiCtool-master/scripts/chromSizes/ \
 -b 1000000 \
 -s hg38 \
@@ -201,7 +201,7 @@ python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 # Normalized data
 python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --action plot_map \
--i /output_ic_mes/output_normalized.txt \
+-i HiCtool_1mb_matrix_global_normalized_tab.txt \
 -c /HiCtool-master/scripts/chromSizes/ \
 -b 1000000 \
 -s hg38 \
@@ -264,7 +264,7 @@ python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 # Normalized data
 python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --action plot_map \
--i /output_ic_mes/output_normalized.txt \
+-i HiCtool_1mb_matrix_global_normalized_tab.txt \
 -c /HiCtool-master/scripts/chromSizes/ \
 -b 1000000 \
 -s hg38 \
@@ -293,7 +293,7 @@ In addition, only a **region of the heatmap** can be plotted by setting the para
 ```unix
 python /HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --action plot_map \
--i /output_ic_mes/output_normalized.txt \
+-i HiCtool_1mb_matrix_global_normalized_tab.txt \
 -c /HiCtool-master/scripts/chromSizes/ \
 -b 1000000 \
 -s hg38 \
