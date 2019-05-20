@@ -1,3 +1,5 @@
+# HiCtool utility functions to work with HiCtool generated data.
+
 def save_matrix(a_matrix, output_file):
     """
     Save an intra-chromosomal contact matrix in the HiCtool compressed format to txt file.
