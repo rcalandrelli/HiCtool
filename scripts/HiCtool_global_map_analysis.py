@@ -496,10 +496,10 @@ def plot_map(input_matrix,
     if chr_row == None and chr_col == None and isGlobal == True:
         if bin_size >= 1000000:
             bin_size_str = str(bin_size/1000000) + 'mb'
-            my_filename = 'HiCtool_' + bin_size_str + '_' + data_type
+            my_filename = 'HiCtool_' + bin_size_str + '_' + data_type + "_heatmap"
         elif bin_size < 1000000:
             bin_size_str = str(bin_size/1000) + 'kb'
-            my_filename = 'HiCtool_' + bin_size_str + '_' + data_type     
+            my_filename = 'HiCtool_' + bin_size_str + '_' + data_type + "_heatmap"
         
         if isinstance(input_matrix,str):
             if tab_sep == False:
@@ -615,10 +615,10 @@ def plot_map(input_matrix,
             
             if bin_size >= 1000000:
                 bin_size_str = str(bin_size/1000000) + 'mb'
-                my_filename = 'HiCtool_' + chromosome_row + '_' + chromosome_col + '_' + bin_size_str + '_' + data_type
+                my_filename = 'HiCtool_' + chromosome_row + '_' + chromosome_col + '_' + bin_size_str + '_' + data_type + "_heatmap"
             elif bin_size < 1000000:
                 bin_size_str = str(bin_size/1000) + 'kb'
-                my_filename = 'HiCtool_' + chromosome_row + '_' + chromosome_col + '_' + bin_size_str + '_' + data_type
+                my_filename = 'HiCtool_' + chromosome_row + '_' + chromosome_col + '_' + bin_size_str + '_' + data_type + "_heatmap"
             
             # Update matrix values to plot topological domains
             if topological_domains != None:
@@ -893,10 +893,10 @@ def plot_side_by_side_map(inputFiles,
     
     if bin_size >= 1000000:
         bin_size_str = str(bin_size/1000000) + 'mb'
-        my_filename = 'HiCtool_' + '_'.join(samples) + '_' + bin_size_str + '_' + data_type
+        my_filename = 'HiCtool_' + '_'.join(samples) + '_' + bin_size_str + '_' + data_type + "_heatmap"
     elif bin_size < 1000000:
         bin_size_str = str(bin_size/1000) + 'kb'
-        my_filename = 'HiCtool_' + '_'.join(samples) + '_' + bin_size_str + '_' + data_type
+        my_filename = 'HiCtool_' + '_'.join(samples) + '_' + bin_size_str + '_' + data_type + "_heatmap"
     
 #    if topological_domains != None:
 #        topological_domains_list = json.loads(topological_domains) # list of lists

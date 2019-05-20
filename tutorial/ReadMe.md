@@ -16,6 +16,6 @@ The **explicit-factor correction model of Yaffe and Tanay** is applied to normal
 ***
 ## Supplementary information
 
-- ### [Python utility code](/tutorial/HiCtool_utility_code.md)
+- ### [HiCtool utility code](/tutorial/HiCtool_utility_code.md)
 - ### [HiCtool contact matrix compressed format](/tutorial/HiCtool_compressed_format.md)
 
