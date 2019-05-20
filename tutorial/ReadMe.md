@@ -4,7 +4,7 @@ This is a full tutorial of HiCtool. The tutorial steps have to be followed in se
 
 All the scripts used in the tutorial are inside the main folder [scripts](https://github.com/Zhong-Lab-UCSD/HiCtool/tree/master/scripts).
 
-![](/tutorial/HiCtool_workflow.png)
+![](/tutorial/HiCtool_flowchart.png)
 
 ## [1. Data preprocessing](/tutorial/data-preprocessing.md)
 ## 2. Data normalization and visualization
