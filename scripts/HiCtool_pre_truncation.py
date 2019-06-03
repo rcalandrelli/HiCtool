@@ -5,6 +5,7 @@
 #  -h, --help               show this help message and exit
 #  -i INPUTFILES            Input fastq file or input fastq files passed like a Python list. Example: [file1.fastq,file2.fastq].
 #  -e RESTRICTION_ENZYMES   Restriction enzyme (or restriction enzymes passed like a Python list: [enzyme1,enzyme2]). Choose between: HindIII, MboI, DpnII, Sau3AI, BglII, NcoI, Hinfl. Arima kit uses a combination of MboI and Hinfl.
+#  -p THREADS               Number of parallel threads to use.
 
 # Output files:
 #  Fastq files with pre-truncated reads.
@@ -12,12 +13,12 @@
 #  Plot of the distribution of truncated reads length.
 
 from optparse import OptionParser
-from collections import Counter
+#from collections import Counter
 import os
 import re
-from math import ceil
-import matplotlib.pyplot as plt
-from matplotlib import rcParams
+#from math import ceil
+#import matplotlib.pyplot as plt
+#from matplotlib import rcParams
 from time import gmtime, strftime
 from multiprocessing import Pool
 
@@ -79,38 +80,41 @@ def pre_truncation(input_fastq):
         with open (filename + '.trunc.fastq' ,'w') as fout:
             for i in xrange(len(lines)):
                 fout.write(lines[i])
-        print '100% completed.'
+        print '100% completed - ' + input_fastq 
         
-        perc_reads = ceil(float(count)/float(len(lines)/4)*10000)/100.0
-        result = str(len(lines)/4) + ' reads (length = ' + str(len(lines[1])-1) + ' bp); of these:\n  ' + str(count) + ' (' + str(perc_reads) + '%) contained a potential ligation junction and have been truncated.'
-        print result
+#        perc_reads = ceil(float(count)/float(len(lines)/4)*10000)/100.0
+#        result = str(len(lines)/4) + ' reads (length = ' + str(len(lines[1])-1) + ' bp); of these:\n  ' + str(count) + ' (' + str(perc_reads) + '%) contained a potential ligation junction and have been truncated.'
+#        print result
 
-        with open ('pre_truncation_log.txt', 'a') as fout:
-            if len(restriction_enzymes) == 1:
-                fout.write(input_fastq + ', ' + restriction_enzymes[0] + '\n' + result + '\n\n')
-            else:
-                fout.write(input_fastq + ', ' + ", ".join(restriction_enzymes) + '\n' + result + '\n\n')
-                
-        rcParams.update({'figure.autolayout': True})
-        cnt = Counter(lengths)
-        my_lengths = [k for k, v in cnt.iteritems() if v >= 1]
-        plt.close("all")
-        plt.hist(lengths, bins=len(my_lengths))
-        plt.title('Truncated reads (' + input_fastq + ')', fontsize=14)
-        plt.xlabel('Read length', fontsize=12)
-        plt.ylabel('Number of reads', fontsize=12)
-        plt.xticks(fontsize=10)
-        plt.yticks(fontsize=10)
-        plt.savefig(input_fastq + '_truncated_reads.pdf', format = 'pdf')
+#        with open ('pre_truncation_log.txt', 'a') as fout:
+#            if len(restriction_enzymes) == 1:
+#                fout.write(input_fastq + ', ' + restriction_enzymes[0] + '\n' + result + '\n\n')
+#            else:
+#                fout.write(input_fastq + ', ' + ", ".join(restriction_enzymes) + '\n' + result + '\n\n')
+        
+        with open (filename + '_log.txt', 'w') as outlog:
+            outlog.write(str(len(lines)/4) + "\t" + str(len(lines[1])-1) + "\t" + str(count) + "\n")
+        
+#        rcParams.update({'figure.autolayout': True})
+#        cnt = Counter(lengths)
+#        my_lengths = [k for k, v in cnt.iteritems() if v >= 1]
+#        plt.close("all")
+#        plt.hist(lengths, bins=len(my_lengths))
+#        plt.title('Truncated reads (' + input_fastq + ')', fontsize=14)
+#        plt.xlabel('Read length', fontsize=12)
+#        plt.ylabel('Number of reads', fontsize=12)
+#        plt.xticks(fontsize=10)
+#        plt.yticks(fontsize=10)
+#        plt.savefig(input_fastq + '_truncated_reads.pdf', format = 'pdf')
 
 
 if __name__ == '__main__':
     
     usage = 'Usage: python2.7 HiCtool_pre_truncation.py [-h] [options]'
-    parser = OptionParser(usage = 'python2.7 %prog -i inputFiles -e restriction_enzymes')
+    parser = OptionParser(usage = 'python2.7 %prog -i inputFiles -e restriction_enzymes -p threads')
     parser.add_option('-i', dest='inputFiles', type='string', help='Input fastq file or input fastq files passed like a Python list. Example: [file1.fastq,file2.fastq].')
     parser.add_option('-e', dest='restriction_enzymes', type='string', help='Restriction enzyme (or restriction enzymes passed like a Python list: [enzyme1,enzyme2]). Choose between: HindIII, MboI, DpnII, Sau3AI, BglII, NcoI, Hinfl. Arima kit uses both MboI and Hinfl.')
-    parser.add_option('-p', dest='threads', type='int', help='Number of threads to be used in the process.')
+    parser.add_option('-p', dest='threads', type='int', help='Number of parallel threads to use.')
     (options, args) = parser.parse_args()
 
     if options.inputFiles == None:
