@@ -184,43 +184,53 @@ echo "Done!"
 rm HiCfile1.sam
 rm HiCfile2.sam
 
-echo -n "Selecting reads that are paired ... "
+echo -n "Selecting paired reads ... "
 awk '{print $1}' HiCfile1_hq.sam | sort > readnames1.txt
 awk '{print $1}' HiCfile2_hq.sam | sort > readnames2.txt
 comm -12 readnames1.txt readnames2.txt > paired_reads.txt
+echo "Done!"
 
 if [ -z $max_lines ]
 then
 	# Select reads of the first sam file that are paires with the second sam file
+	echo -n "Extracting paired reads from the first sam file and convert it to bam format ..."
 	grep -Fwf paired_reads.txt HiCfile1_hq.sam | \
 	cat header1.txt - | \
 	samtools view -b -@ $threads - > HiCfile_pair1.bam
 	rm HiCfile1_hq.sam
+	echo "Done!"
 
 	# Select reads of the second sam file that are paired with the first sam file
+	echo -n "Extracting paired reads from the second sam file and convert it to bam format ..."
 	grep -Fwf paired_reads.txt HiCfile2_hq.sam | \
 	cat header2.txt - | \
 	samtools view -b -@ $threads - > HiCfile_pair2.bam
 	rm HiCfile2_hq.sam
+	echo "Done!"
 
 elif ! [ -z $max_lines ] && [ $max_lines -ge $fastq_lines ]
 then
 	# Select reads of the first sam file that are paires with the second sam file
+	echo -n "Extracting paired reads from the first sam file and convert it to bam format ..."
 	grep -Fwf paired_reads.txt HiCfile1_hq.sam | \
 	cat header1.txt - | \
 	samtools view -b -@ $threads - > HiCfile_pair1.bam
 	rm HiCfile1_hq.sam
+	echo "Done!"
 
 	# Select reads of the second sam file that are paired with the first sam file
+	echo -n "Extracting paired reads from the second sam file and convert it to bam format ..."
 	grep -Fwf paired_reads.txt HiCfile2_hq.sam | \
 	cat header2.txt - | \
 	samtools view -b -@ $threads - > HiCfile_pair2.bam
 	rm HiCfile2_hq.sam
+	echo "Done!"
 
 elif ! [ -z $max_lines ] && [ $max_lines -lt $fastq_lines ]
 then
 
 	# Splitting the paired reads file
+	echo -n "Using max_lines to split the paired read IDs file ..."
 	paired_reads=paired_reads.txt
 	paired_reads_lines=`wc -l $paired_reads | awk '{print $1}'`
 	max_lines_paired_reads=`expr $max_lines / 5`
@@ -236,8 +246,10 @@ then
 	done
 	start=`expr $k - $max_lines_paired_reads + 1`
 	sed -n "$start,"$paired_reads_lines"p" $paired_reads > "paired_reads_temp_"$count".txt"
-
+	echo "Done!"
+	
 	# Search for paired reads from each temporary file
+	echo "Extracting paired reads into temporary sam files and merging ..."
 	for i in "paired_reads_temp"*; do
 		grep -Fwf $i HiCfile1_hq.sam > "HiCfile1_${i%%.*}.sam"
 		grep -Fwf $i HiCfile2_hq.sam > "HiCfile2_${i%%.*}.sam"
@@ -247,21 +259,24 @@ then
 	cat "HiCfile2_paired_reads_temp"* > HiCfile2_paired.sam
 
 	rm *"temp"*
-
+	echo "Done!"
+	
+	echo -n "Converting the first sam file to bam format ..."
 	cat header1.txt HiCfile1_paired.sam | \
 	samtools view -b -@ $threads - > HiCfile_pair1.bam
 	rm HiCfile1_paired.sam
-
+	echo "Done!"
+	
+	echo -n "Converting the second sam file to bam format ..."
 	cat header2.txt HiCfile2_paired.sam | \
 	samtools view -b -@ $threads - > HiCfile_pair2.bam
 	rm HiCfile2_paired.sam
+	echo "Done!"
 
 	rm HiCfile1_hq.sam
 	rm HiCfile2_hq.sam
 
 fi
-
-echo "Done!"
 
 echo -n "Updating log files ... "
 n=`wc -l paired_reads.txt | awk '{print $1}'`

@@ -12,12 +12,8 @@
 #  Log files with pre-truncation information.
 
 from optparse import OptionParser
-#from collections import Counter
 import os
 import re
-#from math import ceil
-#import matplotlib.pyplot as plt
-#from matplotlib import rcParams
 from time import gmtime, strftime
 from multiprocessing import Pool
 
@@ -81,30 +77,8 @@ def pre_truncation(input_fastq):
                 fout.write(lines[i])
         print '100% completed - ' + input_fastq 
         
-#        perc_reads = ceil(float(count)/float(len(lines)/4)*10000)/100.0
-#        result = str(len(lines)/4) + ' reads (length = ' + str(len(lines[1])-1) + ' bp); of these:\n  ' + str(count) + ' (' + str(perc_reads) + '%) contained a potential ligation junction and have been truncated.'
-#        print result
-
-#        with open ('pre_truncation_log.txt', 'a') as fout:
-#            if len(restriction_enzymes) == 1:
-#                fout.write(input_fastq + ', ' + restriction_enzymes[0] + '\n' + result + '\n\n')
-#            else:
-#                fout.write(input_fastq + ', ' + ", ".join(restriction_enzymes) + '\n' + result + '\n\n')
-        
         with open (filename + '_log.txt', 'w') as outlog:
             outlog.write(str(len(lines)/4) + "\t" + str(len(lines[1])-1) + "\t" + str(count) + "\n")
-        
-#        rcParams.update({'figure.autolayout': True})
-#        cnt = Counter(lengths)
-#        my_lengths = [k for k, v in cnt.iteritems() if v >= 1]
-#        plt.close("all")
-#        plt.hist(lengths, bins=len(my_lengths))
-#        plt.title('Truncated reads (' + input_fastq + ')', fontsize=14)
-#        plt.xlabel('Read length', fontsize=12)
-#        plt.ylabel('Number of reads', fontsize=12)
-#        plt.xticks(fontsize=10)
-#        plt.yticks(fontsize=10)
-#        plt.savefig(input_fastq + '_truncated_reads.pdf', format = 'pdf')
 
 
 if __name__ == '__main__':
