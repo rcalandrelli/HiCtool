@@ -77,7 +77,7 @@ where:
 - ``-e``: the restriction enzyme or enzymes passed between square brackets (example: [MboI,Hinfl] for the cocktail of the Arima Kit).
 - ``-g``: Bowtie2 genome indexes. Only the filename should be passed here without extension, in this case ``index``.
 - ``-p``: the number of parallel threads (processors) to use for alignment and preprocessing. The more the fastest the process.
--``-m``: if the fastq files are very big, you may encounter a memory error when they are loaded to be pre-truncated. Thus, you may use this parameter in order to split the two fastq files into several temporary files with ``-m`` lines each, that are pre-truncated separately and finally merged together. The temporary files will be processed with multi-threads if you are using multiple processors (``-p``). Therefore, setting ``-m`` may help to speed up the pre-truncation process.
+- ``-m``: if the fastq files are very big, you may encounter a memory error when they are loaded to be pre-truncated. Thus, you may use this parameter in order to split the two fastq files into several temporary files with ``-m`` lines each, that are pre-truncated separately and finally merged together. The temporary files will be processed with multi-threads if you are using multiple processors (``-p``). Therefore, setting ``-m`` may help to speed up the pre-truncation process.
 
 The structure of the output directory is the following:
 ```unix
