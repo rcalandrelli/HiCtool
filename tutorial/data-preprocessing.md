@@ -1,6 +1,6 @@
 # Data preprocessing
 
-This is the first section of the pipeline and it allows to pre-process the raw Hi-C data (fastq files), in order to generate input files for the normalization step. For more information about the Python functions used here check the [API documentation](https://sysbio.ucsd.edu/public/rcalandrelli/HiCtool_API_documentation.pdf).
+This is the first section of the pipeline and it allows to pre-process the raw Hi-C data (fastq files), in order to generate input files for the normalization step.
 
 ## Table of Contents
 
@@ -55,17 +55,18 @@ bowtie2-build hg38.fa index
 
 ```unix
 # Make the bash script executable
-chmod u+x /HiCtool-master/scripts/HiCtool_run_preprocessing.sh
+chmod u+x ./HiCtool-master/scripts/HiCtool_run_preprocessing.sh
 
 # Run the script
-/HiCtool-master/scripts/HiCtool_run_preprocessing.sh \
--h /HiCtool-master/scripts/ \
+./HiCtool-master/scripts/HiCtool_run_preprocessing.sh \
+-h ./HiCtool-master/scripts/ \
 -o /your_output_directory/ \
 -1 /myfastq_path/file1.fastq \
 -2 /myfastq_path/file2.fastq \
 -e MboI \
 -g /path_to_the_genome_indexes/index \
--p 32
+-p 32 \
+-m 50000000
 ```
 where:
 
@@ -76,6 +77,7 @@ where:
 - ``-e``: the restriction enzyme or enzymes passed between square brackets (example: [MboI,Hinfl] for the cocktail of the Arima Kit).
 - ``-g``: Bowtie2 genome indexes. Only the filename should be passed here without extension, in this case ``index``.
 - ``-p``: the number of parallel threads (processors) to use for alignment and preprocessing. The more the fastest the process.
+-``-m``: if the fastq files are very big, you may encounter a memory error when they are loaded to be pre-truncated. Thus, you may use this parameter in order to split the two fastq files into several temporary files with ``-m`` lines each, that are pre-truncated separately and finally merged together. The temporary files will be processed with multi-threads if you are using multiple processors (``-p``). Therefore, setting ``-m`` may help to speed up the pre-truncation process.
 
 The structure of the output directory is the following:
 ```unix
@@ -83,8 +85,6 @@ The structure of the output directory is the following:
 	|___ file1.trunc.fastq
 	|___ file2.trunc.fastq
 	|___ pre_truncation_log.txt
-	|___ file1.fastq_truncated_reads.pdf
-	|___ file2.fastq_truncated_reads.pdf
 	|___ HiCfile1_pair1.bam
 	|___ HiCfile2_pair1.bam
 	|___ HiCfile1_log.txt
@@ -103,12 +103,6 @@ SRR1658570_2.fastq
 202095066 reads (length = 101 bp); of these:
 28681691 (14.2%) contained a potential ligation junction and have been truncated.
 ```
-- ``file1.fastq_truncated_reads.pdf`` and ``file2.fastq_truncated_reads.pdf`` are plots of the length distribution of the truncated reads, for both the fastq files:
-
-![](/figures/SRR1658570_1.fastq_truncated_reads.png)
-
-![](/figures/SRR1658570_2.fastq_truncated_reads.png)
-
 - ``HiCfile_pair1.bam`` and ``HiCfile_pair2.bam`` that are the bam files of the pre-truncated first and second reads in the pairs respectively, generated after alignment and filtering.
 - ``HiCfile1_log.txt`` and ``HiCfile2_log.txt`` are the log files with alignment and filtering statistics for the first and second reads in the pairs respectively.
 ```unix
@@ -168,7 +162,7 @@ where paired-end reads in ``SRRXXXXXXX.sra`` are split and stored into **``SRRXX
 
 ## 2. Creating the fragment-end (FEND) bed file
 
-The fragment-end (FEND) bed file is used to normalize the data and it contains restriction site coordinates and optional additional information related to fragment properties, such as GC content and mappability score (needed only if you wish to normalize your data using the [explicit-factor approach from Yaffe and Tanay](/tutorial/normalization-yaffe-tanay.md). Specifically, for each fragment the GC content of 200 bp upstream and downstream to the restriction site is computed. For the mappability score, the entire genome sequence is split into artificial reads (50 bp reads, starting every 10 bp) and then mapped back to the genome. For each fragment end the mappability score is then defined to be the portion of artificial reads mapped uniquely to the genome (MAPQ > 30) within a 500-bp window upstream and downstream to the fragment. Fragment ends with a mappability score less than 0.5 are then discarded (Yaffe and Tanay, 2011).
+The fragment-end (FEND) bed file is used to generate the observed contact matrices and normalize the data (if Yaffe-Tanay normalization approach is used). It contains restriction site coordinates and optional additional information related to fragment properties, such as GC content and mappability score (needed only if you wish to normalize your data using the [explicit-factor approach from Yaffe and Tanay](/tutorial/normalization-yaffe-tanay.md)). Specifically, for each fragment the GC content of 200 bp upstream and downstream to the restriction site is computed. For the mappability score, the entire genome sequence is split into artificial reads (50 bp reads, starting every 10 bp) and then mapped back to the genome. For each fragment end the mappability score is then defined to be the portion of artificial reads mapped uniquely to the genome (MAPQ > 30) within a 500-bp window upstream and downstream to the fragment. Fragment ends with a mappability score less than 0.5 are then discarded (Yaffe and Tanay, 2011).
 
 Since generating the FEND bed file may be time consuming, we provide the most common FEND files available for download (DpnII is the same restriction site than MboI):
 
@@ -178,6 +172,7 @@ Since generating the FEND bed file may be time consuming, we provide the most co
 - [NcoI-hg38](http://data.genomegitar.org/NcoI_hg38_gc_map_valid.zip)
 - [HindIII-mm10](http://data.genomegitar.org/HindIII_mm10_gc_map_valid.zip)
 - [MboI-mm10 (or DpnII-mm10)](http://data.genomegitar.org/MboI_mm10_gc_map_valid.zip)
+- [MboI-dm6 (or DpnII-dm6)](http://data.genomegitar.org/MboI_dm6_gc_map.zip)
 
 **Perform the following steps ONLY if you need to generate a new fragment end bed file (because you are using another species or a different restriction enzyme than those provided above). Otherwise, download the file of interest above and go to the [data normalization section](https://github.com/Zhong-Lab-UCSD/HiCtool/tree/master/tutorial#2-data-normalization-and-visualization).**
 
@@ -191,12 +186,12 @@ Since generating the FEND bed file may be time consuming, we provide the most co
 
 ```unix
 # Make the bash script executable
-chmod u+x /HiCtool-master/scripts/HiCtool_generate_fend_file.sh
+chmod u+x ./HiCtool-master/scripts/HiCtool_generate_fend_file.sh
 
 # Run the script
-/HiCtool-master/scripts/HiCtool_generate_fend_file.sh \
--h /HiCtool-master/scripts/ \
--o your_output_directory \
+./HiCtool-master/scripts/HiCtool_generate_fend_file.sh \
+-h ./HiCtool-master/scripts/ \
+-o /your_output_directory/ \
 -e MboI \
 -g /path_to_the_genome_indexes/index \
 -s hg38 \
@@ -228,7 +223,7 @@ The structure of the output directory is the following:
 
 ***
 
-You can decide if adding both the GC content and mappability score information or only one of them. Our suggestion is to add both at this point, so you will have a complete FEND file, then you may decide later on if not considering one of these features for normalization. This process is very time consuming, so we suggest to use the highest number of processors available. Using 24 threads, we took around 18 hours to add the GC content and mappability score information for hg38-MboI. This time may exponentially increase if you are using a mixture of restriction sites in your experiment: for the ARIMA kit cocktail (over 23 millions restriction sites for hg38) we took around ...
+You can decide if adding both the GC content and mappability score information or only one of them. Our suggestion is to add both at this point, so you will have a complete FEND file, then you may decide later on if not considering one of these features for normalization. This process is very time consuming, so we suggest to use the highest number of processors available. Using 24 threads, we took around 18 hours to add the GC content and mappability score information for hg38-MboI. This time will increase if you are using a mixture of restriction sites in your experiment, such as the ARIMA kit cocktail (over 23 millions restriction sites for hg38).
 
 **The update of the FEND file to add GC content and/or mappability score is performed with a single unix command line (replace parameters in the code below accordingly) and comprises the following steps:**
 
@@ -239,12 +234,12 @@ You can decide if adding both the GC content and mappability score information o
 
 ```unix
 # Make the bash script executable
-chmod u+x /HiCtool-master/scripts/HiCtool_fend_file_add_gc_map.sh
+chmod u+x ./HiCtool-master/scripts/HiCtool_fend_file_add_gc_map.sh
 
 # Run the script
-/HiCtool-master/scripts/HiCtool_fend_file_add_gc_map.sh \
--h /HiCtool-master/scripts/ \
--o your_output_directory \
+./HiCtool-master/scripts/HiCtool_fend_file_add_gc_map.sh \
+-h ./HiCtool-master/scripts/ \
+-o /your_output_directory/ \
 -s hg38 \
 -p 32 \
 -b /a_path/gc5Base.bw \

@@ -10,7 +10,6 @@
 # Output files:
 #  Fastq files with pre-truncated reads.
 #  Log files with pre-truncation information.
-#  Plot of the distribution of truncated reads length.
 
 from optparse import OptionParser
 #from collections import Counter

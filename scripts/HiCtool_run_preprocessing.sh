@@ -41,9 +41,9 @@ then
 	perc1=$(awk -v n1=$tot_trunc_reads_1 -v ntot1=$tot_reads_1 'BEGIN { print 100*n1/ntot1 }' | cut -c1-5)
 	perc2=$(awk -v n1=$tot_trunc_reads_2 -v ntot1=$tot_reads_2 'BEGIN { print 100*n1/ntot1 }' | cut -c1-5)
 
-	read_length=$(awk 'FNR == 1 {print $2}' Read_1_log.txt)
+	read_length=$(awk 'FNR == 1 {print $2}' "${fastq1%%.*}_log.txt")
 
-	printf $fastq1"\n"$tot_reads_1" reads (length = "$read_length" bp); of these:\n  "$tot_trunc_reads_1" ("$perc1"%%)\n" > pre_truncation_log.txt
+	printf $fastq1"\n"$tot_reads_1" reads (length = "$read_length" bp); of these:\n  "$tot_trunc_reads_1" ("$perc1"%%)\n\n" > pre_truncation_log.txt
 	printf $fastq2"\n"$tot_reads_2" reads (length = "$read_length" bp); of these:\n  "$tot_trunc_reads_2" ("$perc2"%%)" >> pre_truncation_log.txt
 
 	rm "${fastq1%%.*}_log.txt"
@@ -63,7 +63,7 @@ then
 	perc1=$(awk -v n1=$tot_trunc_reads_1 -v ntot1=$tot_reads_1 'BEGIN { print 100*n1/ntot1 }' | cut -c1-5)
 	perc2=$(awk -v n1=$tot_trunc_reads_2 -v ntot1=$tot_reads_2 'BEGIN { print 100*n1/ntot1 }' | cut -c1-5)
 
-	read_length=$(awk 'FNR == 1 {print $2}' Read_1_log.txt)
+	read_length=$(awk 'FNR == 1 {print $2}' "${fastq1%%.*}_log.txt")
 
 	printf $fastq1"\n"$tot_reads_1" reads (length = "$read_length" bp); of these:\n  "$tot_trunc_reads_1" ("$perc1"%%)\n\n" > pre_truncation_log.txt
 	printf $fastq2"\n"$tot_reads_2" reads (length = "$read_length" bp); of these:\n  "$tot_trunc_reads_2" ("$perc2"%%)" >> pre_truncation_log.txt
@@ -131,7 +131,7 @@ then
 	perc1=$(awk -v n1=$tot_trunc_reads_1 -v ntot1=$tot_reads_1 'BEGIN { print 100*n1/ntot1 }' | cut -c1-5)
 	perc2=$(awk -v n1=$tot_trunc_reads_2 -v ntot1=$tot_reads_2 'BEGIN { print 100*n1/ntot1 }' | cut -c1-5)
 
-	read_length=$(awk 'FNR == 1 {print $2}' Read_1_log.txt)
+	read_length=$(awk 'FNR == 1 {print $2}' "${fastq1%%.*}_log.txt")
 
 	printf $fastq1"\n"$tot_reads_1" reads (length = "$read_length" bp); of these:\n  "$tot_trunc_reads_1" ("$perc1"%%)\n\n" > pre_truncation_log.txt
 	printf $fastq2"\n"$tot_reads_2" reads (length = "$read_length" bp); of these:\n  "$tot_trunc_reads_2" ("$perc2"%%)" >> pre_truncation_log.txt
@@ -189,17 +189,77 @@ awk '{print $1}' HiCfile1_hq.sam | sort > readnames1.txt
 awk '{print $1}' HiCfile2_hq.sam | sort > readnames2.txt
 comm -12 readnames1.txt readnames2.txt > paired_reads.txt
 
-# Select reads that are paires with the second sam file
-grep -Fwf paired_reads.txt HiCfile1_hq.sam | \
-cat header1.txt - | \
-samtools view -b -@ $threads - > HiCfile_pair1.bam
-rm HiCfile1_hq.sam
+if [ -z $max_lines ]
+then
+	# Select reads of the first sam file that are paires with the second sam file
+	grep -Fwf paired_reads.txt HiCfile1_hq.sam | \
+	cat header1.txt - | \
+	samtools view -b -@ $threads - > HiCfile_pair1.bam
+	rm HiCfile1_hq.sam
 
-# Select reads that are paired with the first sam file
-grep -Fwf paired_reads.txt HiCfile2_hq.sam | \
-cat header2.txt - | \
-samtools view -b -@ $threads - > HiCfile_pair2.bam
-rm HiCfile2_hq.sam
+	# Select reads of the second sam file that are paired with the first sam file
+	grep -Fwf paired_reads.txt HiCfile2_hq.sam | \
+	cat header2.txt - | \
+	samtools view -b -@ $threads - > HiCfile_pair2.bam
+	rm HiCfile2_hq.sam
+
+elif ! [ -z $max_lines ] && [ $max_lines -ge $fastq_lines ]
+then
+	# Select reads of the first sam file that are paires with the second sam file
+	grep -Fwf paired_reads.txt HiCfile1_hq.sam | \
+	cat header1.txt - | \
+	samtools view -b -@ $threads - > HiCfile_pair1.bam
+	rm HiCfile1_hq.sam
+
+	# Select reads of the second sam file that are paired with the first sam file
+	grep -Fwf paired_reads.txt HiCfile2_hq.sam | \
+	cat header2.txt - | \
+	samtools view -b -@ $threads - > HiCfile_pair2.bam
+	rm HiCfile2_hq.sam
+
+elif ! [ -z $max_lines ] && [ $max_lines -lt $fastq_lines ]
+then
+
+	# Splitting the paired reads file
+	paired_reads=paired_reads.txt
+	paired_reads_lines=`wc -l $paired_reads | awk '{print $1}'`
+	max_lines_paired_reads=`expr $max_lines / 5`
+	k=$max_lines_paired_reads
+	count=1
+	while [ $k -lt $paired_reads_lines ]
+	do
+		start=`expr $k - $max_lines_paired_reads + 1`
+		quit=`expr $k + 1`
+		sed -n "$start,"$k"p;"$quit"q" $paired_reads > "paired_reads_temp_"$count".txt"
+		count=`expr $count + 1`
+		k=`expr $k + $max_lines_paired_reads`
+	done
+	start=`expr $k - $max_lines_paired_reads + 1`
+	sed -n "$start,"$paired_reads_lines"p" $paired_reads > "paired_reads_temp_"$count".txt"
+
+	# Search for paired reads from each temporary file
+	for i in "paired_reads_temp"*; do
+		grep -Fwf $i HiCfile1_hq.sam > "HiCfile1_${i%%.*}.sam"
+		grep -Fwf $i HiCfile2_hq.sam > "HiCfile2_${i%%.*}.sam"
+	done
+
+	cat "HiCfile1_paired_reads_temp"* > HiCfile1_paired.sam
+	cat "HiCfile2_paired_reads_temp"* > HiCfile2_paired.sam
+
+	rm *"temp"*
+
+	cat header1.txt HiCfile1_paired.sam | \
+	samtools view -b -@ $threads - > HiCfile_pair1.bam
+	rm HiCfile1_paired.sam
+
+	cat header2.txt HiCfile2_paired.sam | \
+	samtools view -b -@ $threads - > HiCfile_pair2.bam
+	rm HiCfile2_paired.sam
+
+	rm HiCfile1_hq.sam
+	rm HiCfile2_hq.sam
+
+fi
 
 echo "Done!"
 
