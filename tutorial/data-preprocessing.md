@@ -109,6 +109,7 @@ SRR1658570_2.fastq
 - ``HiCfile1_log.txt`` and ``HiCfile2_log.txt`` are the log files with alignment and filtering statistics for the first and second reads in the pairs respectively.
 ```unix
 HiCfile1_log.txt
+
 202095066 reads; of these:
 202095066 (100.00%) were unpaired; of these:
 5770798 (2.86%) aligned 0 times
@@ -120,8 +121,10 @@ HiCfile1_log.txt
 202095066 reads; of these:
 172973813 (85.59%) aligned with MAPQ>=30; of these:
 143415284 (82.91%) were paired and saved into HiCfile_pair1.bam
-
+```
+```unix
 HiCfile2_log.txt
+
 202095066 reads; of these:
 202095066 (100.00%) were unpaired; of these:
 13381441 (6.62%) aligned 0 times
