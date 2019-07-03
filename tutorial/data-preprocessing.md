@@ -53,7 +53,7 @@ bowtie2-build hg38.fa index
 1. Pre-truncation of the reads that contain potential ligation junctions to keep the longest piece without a junction sequence ([Ay et al., 2015](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0745-7)).
 2. Independent mapping of the read pairs to the reference genome to avoid any proximity constraint.
 3. Removing the unmapped reads and selecting reads that were uniquely mapped with a MAPQ >= 30, i.e. the estimated probability of mapping error is <= 0.1%.
-4. Deduplicating aligned reads.
+4. Deduplicating aligned reads. (Note that PCR duplicates were previously removed in the following section, while now this step has been also added here to allow the extraction of deduplicated data already from the bam or bedpe files).
 
 ```unix
 # Make the bash script executable
