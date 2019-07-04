@@ -9,7 +9,7 @@ o) outputPath=${OPTARG};; # The path where to save the output files.
 e) restrictionEnzyme=${OPTARG};; # The restriction enzyme or enzymes passed between square brackets (example: [enzyme1,enzyme2]).
 g) genomeIndex=${OPTARG};; # The Bowtie2 genome indexes of the reference genome (only filename without extension).
 p) threads=${OPTARG};; # The number of parallel threads to use for alignment and pre-processing. The more the fastest the process.
-c) chunk_size=${OPTARG};; # The number of lines per each temporary fastq file in order to avoid memory errors. Each temporary file is processed by a separate processor if multiple threads are used.
+c) chunk_size=${OPTARG};; # The number of lines per each temporary fastq file in order to avoid memory errors and multiprocessing to speed up the process. Each temporary file is processed by a separate processor if multiple threads are used.
 esac
 done
 
