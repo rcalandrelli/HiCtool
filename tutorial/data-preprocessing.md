@@ -111,31 +111,31 @@ SRR1658570_2.fastq
 HiCfile1_log.txt
 
 202095066 reads; of these:
-	202095066 (100.00%) were unpaired; of these:
-		5770798 (2.86%) aligned 0 times
-		156759009 (77.57%) aligned exactly 1 time
-		39565259 (19.58%) aligned >1 times
+  202095066 (100.00%) were unpaired; of these:
+    5770798 (2.86%) aligned 0 times
+	156759009 (77.57%) aligned exactly 1 time
+	39565259 (19.58%) aligned >1 times
 97.14% overall alignment rate
 
 ----------
 202095066 reads; of these:
-	172969992 (85.58%) aligned with MAPQ>=30 and are deduplicated; of these:
-		143408614 (82.90%) were paired and saved into HiCfile_pair1.bam
+  172969992 (85.58%) aligned with MAPQ>=30 and are deduplicated; of these:
+    143408614 (82.90%) were paired and saved into HiCfile_pair1.bam
 ```
 ```unix
 HiCfile2_log.txt
 
 202095066 reads; of these:
-	202095066 (100.00%) were unpaired; of these:
-		13381441 (6.62%) aligned 0 times
-		149852422 (74.15%) aligned exactly 1 time
-		38861203 (19.23%) aligned >1 times
+  202095066 (100.00%) were unpaired; of these:
+    13381441 (6.62%) aligned 0 times
+    149852422 (74.15%) aligned exactly 1 time
+    38861203 (19.23%) aligned >1 times
 93.38% overall alignment rate
 
 ----------
 202095066 reads; of these:
-	161435108 (79.88%) aligned with MAPQ>=30 and are deduplicated; of these:
-		143408614 (88.83%) were paired and saved into HiCfile_pair2.bam
+  161435108 (79.88%) aligned with MAPQ>=30 and are deduplicated; of these:
+    143408614 (88.83%) were paired and saved into HiCfile_pair2.bam
 ```
 
 ### 1.1. Downloading the raw data from GEO
