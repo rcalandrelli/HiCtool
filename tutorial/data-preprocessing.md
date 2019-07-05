@@ -100,10 +100,10 @@ The structure of the output directory is the following:
 ```unix
 SRR1658570_1.fastq
 202095066 reads (length = 101 bp); of these:
-	29851195 (14.78%) contained a potential ligation junction and have been truncated.
+  29851195 (14.78%) contained a potential ligation junction and have been truncated.
 SRR1658570_2.fastq
 202095066 reads (length = 101 bp); of these:
-	28681691 (14.2%) contained a potential ligation junction and have been truncated.
+  28681691 (14.2%) contained a potential ligation junction and have been truncated.
 ```
 - ``HiCfile_pair1.bam`` and ``HiCfile_pair2.bam`` that are the bam files of the pre-truncated first and second reads in the pairs respectively, generated after alignment and filtering.
 - ``HiCfile1_log.txt`` and ``HiCfile2_log.txt`` are the log files with alignment and filtering statistics for the first and second reads in the pairs respectively.
