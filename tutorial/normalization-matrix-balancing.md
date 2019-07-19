@@ -106,12 +106,12 @@ where:
 - ``-s``: Species name.
 - ``-u`` (optional): the row sum after normalization. The iterative correction algorithm can allow users to specify the row sum after the normalization, because this method is a matrix scaling approach that normalizes the matrix to be a doubly stochastic matrix (rows and columns sums equal to 1). Then we can multiple each element of this normalized matrix by the given value of this parameter, say 10.0 or 100.0 or whatever you choose. In such a way, the row sums of normalized matrix becomes this number (10.0 or 100.0 or whatever you choose). As **default**, we use a row sum value calculated as "the average number of contacts of the observed matrix multiplied by the number of rows" to make the normalized data counts "comparable" with the observed ones. If you wish to use a custom value (for example in order to compare several samples), use this parameter.
 
-This will create a **folder ``normalized_1000000``** containing:
+**The following output files are generated inside a folder ``normalized_1000000`` (the folder name changes based on the resolution of the analysis):**
 
 - ``HiCtool_normalized_global_1000000.txt``, the normalized global matrix saved in tab separated format.
 - ``chri_chrj_1000000.txt``, all the single normalized contact matrices in tab separated format.
 
-and another **folder ``output_ic_mes``** with 2 files inside:
+Another **folder ``output_ic_mes``** with 2 files inside is also generated, deriving from the ic_mes algorithm:
 
 - ``output.log``: a log file
 - ``output.bias``: a bias file used by the software to normalize the data
