@@ -6,7 +6,6 @@ This pipeline illustrates the procedure to generate and normalize a **global Hi-
 
 1. [Running HiFive functions](#1-running-hifive-functions)
 2. [Generating the global observed contact matrix](#2-generating-the-global-observed-contact-matrix)
-   - [2.1. Extracting single contact matrices](#21-extracting-single-contact-matrices)
 3. [Normalizing the global contact matrix](#3-normalizing-the-global-contact-matrix)
 4. [Visualizing the data](#4-visualizing-the-data)
    - [4.1. Visualizing the global contact data](#41-visualizing-the-global-contact-data)
@@ -53,79 +52,31 @@ This section allows to generate a **global square observed contact matrix** (24-
 
 Especially at higher resolution, the generation of the global observed contact matrix may be computationally expensive and require long time. Therefore, we implemented a code to allow job parallelization (if your machine allows that). Each row of the contact matrix is computed in parallel, meaning all the contact matrices per each chromosome, and finally they are merged together to generate the global matrix. Each row of the matrix is saved in a temporary file, which is automatically deleted after the job is done.
 
-To calculate and save the global observed contact matrix use the script [HiCtool_global_map_observed.py](/scripts/HiCtool_global_map_observed.py) and run this command:
+To calculate and save the global observed contact matrix use the script [HiCtool_global_map_observed.sh](/scripts/HiCtool_global_map_observed.sh) and run this command:
 ```unix
-python ./HiCtool-master/scripts/HiCtool_global_map_observed.py \
+# Make the bash script executable
+chmod u+x ./HiCtool-master/scripts/HiCtool_global_map_observed.sh
+
+# Run the script
+./HiCtool-master/scripts/HiCtool_global_map_observed.sh \
 -i HiC_project_object.hdf5 \
--o /output_path/ \
+-h ./HiCtool-master/scripts/ \
 -b 1000000 \
 -s hg38 \
--c ./HiCtool-master/scripts/chromSizes/ \
---save_each 0 \
 -p 24
-
-bin_size=1000000
-while read chromosome size; do
-	cat "matrix_full_line_"$chromosome".txt" >> HiCtool_observed_global_"$bin_size".txt"
-done < ./HiCtool-master/scripts/chromSizes/hg38.chrom.sizes
 ```
 where:
 
 - ``-i``: Project object file in ``.hdf5`` format obtained with ``HiCtool_hifive.py`` above.
-- ``-o``: Output path to save the observed contact matrix with trailing slash at the end ``/``.
+- ``-h``: HiCtool scripts path with the trailing slash at the end ``/``.
 - ``-b``: The bin size (resolution) for the analysis.
 - ``-s``: Species name.
-- ``-c``: Path to the folder ``chromSizes`` with trailing slash at the end ``/``.
-- ``--save_each``: Set to 1 to save each single contact matrix (for hg38, 576 matrices in total), 0 otherwise.
 - ``-p``: Number of parallel threads to use. It has to be less or equal than the number of chromosomes of your species. If you do not have a multi-core machine, insert 1 here (note that it takes longer time at higher resolutions).
 
-**The following output files are generated:**
+**The following output files are generated inside a folder ``observed_1000000`` (the folder name changes based on the resolution of the analysis):**
 
-- ``HiCtool_1mb_matrix_global_observed.txt``, the global matrix saved using a compressed format ([see here for more details](/tutorial/HiCtool_compressed_format.md)).
-- ``HiCtool_1mb_matrix_global_observed_tab.txt``, the global matrix saved in tab separated format. This matrix will be used in the next section to normalize the data, since Hi-Corrector required the input data in a tab separated format.
-- ``info_matrix_global_observed_1mb.txt``, which contains the number of rows of the global matrix and the average rowsum (also printed in the console).
-
-### 2.1. Extracting single contact matrices
-
-After having generated the global observed contact matrix, it is possible to extract and save to file a single contact matrix (either intra- or inter-chromosomal) using the function ``extract_single_map`` of [HiCtool_global_map_analysis.py](/scripts/HiCtool_global_map_analysis.py) as following (here we extract the chr1-chr1 map):
-```unix
-python ./HiCtool-master/scripts/HiCtool_global_map_analysis.py \
---action extract_single_map \
--i HiCtool_1mb_matrix_global_observed.txt \
--c ./HiCtool-master/scripts/chromSizes/ \
--b 1000000 \
--s hg38 \
---tab_sep 0 \
---chr_row 1 \
---chr_col 1 \
---data_type observed
-```
-where:
-
-- ``--action``: action to perform (here ``extract_single_map``).
-- ``-i``: Input global contact matrix file.
-- ``-c``: Path to the folder ``chromSizes`` with trailing slash at the end ``/``.
-- ``-b``: The bin size (resolution) for the analysis.
-- ``-s``: Species name.
-- ``--tab_sep``: Set to 1 if the input matrix is in a tab separated format, 0 if it is in compressed format.
-- ``--chr_row``: Chromosome or chromosomes in the rows between square brackets, to select specific maps for extraction.
-- ``--chr_col``: Chromosome or chromosomes in the columns between square brackets, to select specific maps for extraction.
-- ``--data_type``: Data type to label your data, example: observed, normalized, etc.
-
-**Tip!** To extract a single matrix the code loads first the global matrix to the workspace and especially at higher resolution, the loading step of the matrix may require long time. Therefore, if you wish to extract multiple single matrices, it is suggested to extract everything at once, instead of running the command multiple times. See the following example where chr1-chr1, chr1-chr2, chr3-chr4 are extracted.
-
-```unix
-python ./HiCtool-master/scripts/HiCtool_global_map_analysis.py \
---action extract_single_map \
--i HiCtool_1mb_matrix_global_observed.txt \
--c ./HiCtool-master/scripts/chromSizes/ \
--b 1000000 \
--s hg38 \
---tab_sep 0 \
---chr_row [1,1,3] \
---chr_col [1,2,4] \
---data_type observed
-```
+- ``HiCtool_observed_global_1000000.txt``, the global observed matrix saved in tab separated format. This matrix will be used in the next section to normalize the data, since Hi-Corrector required the input data in a tab separated format.
+- ``chri_chrj_1000000.txt``, all the single observed contact matrices in tab separated format.
 
 ## 3. Normalizing the global contact matrix
 
@@ -134,47 +85,36 @@ Here we normalize the data using the sequential implementation from Hi-Corrector
 The Hi-Corrector source code ([see here](https://github.com/Zhong-Lab-UCSD/HiCtool#installation)) is already inside ``/HiCtool-master/scripts/``. To normalize the data, run the following command:
 ```unix
 # Make the bash script executable
-chmod u+x ./HiCtool-master/scripts/HiCtool_run_ic_mes.sh
+chmod u+x ./HiCtool-master/scripts/HiCtool_normalize_global_matrix.sh
 
 # Run the script
-./HiCtool-master/scripts/HiCtool_run_ic_mes.sh \
+./HiCtool-master/scripts/HiCtool_normalize_global_matrix.sh \
+-h ./HiCtool-master/scripts/ \
+-i ./observed_1000000/HiCtool_observed_global_1000000.txt \
+-b 1000000 \
 -q 100 \
 -m 32000 \
--r 3078 \
--s 17237 \
--h ./HiCtool-master/scripts/Hi-Corrector1.2/ \
--i HiCtool_1mb_matrix_global_observed_tab.txt
+-s hg38
 ```
 where:
 
+- ``-h``: HiCtool scripts path with the trailing slash at the end ``/``.
+- ``-i``: the observed global contact matrix in tab delimited format.
+- ``-b``: The bin size (resolution) for the analysis.
 - ``-q``: maximum number of iterations performed in the algorithm.
 - ``-m``: the memory size in Megabytes (MB). The bigger memory you allocate for the normalization process, the faster it is. Even 100 Mb is fine for 1 Mb resolution map, suggested at least 16000 Mb (16 GB) for 40 kb resolution.
-- ``-r``: the number of rows or columns of the input chromatin contact frequency matrix to be normalized (provided in  ``info_matrix_global_observed_1mb.txt`` generated in [section 2](#2-generating-the-global-observed-contact-matrix)).
-- ``-s``: the row sum after normalization. The iterative correction algorithm can allow users to specify the row sum after the normalization, because this method is a matrix scaling approach that normalizes the matrix to be a doubly stochastic matrix (rows and columns sums equal to 1). Then we can multiple each element of this normalized matrix by the given value of this parameter, say 10.0 or 100.0 or whatever you choose. In such a way, the row sums of normalized matrix becomes this number (10.0 or 100.0 or whatever you choose). In ``info_matrix_global_observed_1mb.txt`` we provide a row sum value that you could use calculated as "the average number of contacts of the observed matrix multiplied by the number of rows" to make the normalized data counts "comparable" with the observed ones. The choice is arbitrary.
-- ``-h``: the path to the Hi-Corrector source code with the final trailing slash ``/``.
-- ``-i``: the observed global contact matrix in tab delimited format.
+- ``-s``: Species name.
+- ``-u`` (optional): the row sum after normalization. The iterative correction algorithm can allow users to specify the row sum after the normalization, because this method is a matrix scaling approach that normalizes the matrix to be a doubly stochastic matrix (rows and columns sums equal to 1). Then we can multiple each element of this normalized matrix by the given value of this parameter, say 10.0 or 100.0 or whatever you choose. In such a way, the row sums of normalized matrix becomes this number (10.0 or 100.0 or whatever you choose). As **default**, we use a row sum value calculated as "the average number of contacts of the observed matrix multiplied by the number of rows" to make the normalized data counts "comparable" with the observed ones. If you wish to use a custom value (for example in order to compare several samples), use this parameter.
 
-This command creates a **folder ``output_ic_mes``** with 2 files inside:
+This will create a **folder ``normalized_1000000``** containing:
+
+- ``HiCtool_normalized_global_1000000.txt``, the normalized global matrix saved in tab separated format.
+- ``chri_chrj_1000000.txt``, all the single normalized contact matrices in tab separated format.
+
+and another **folder ``output_ic_mes``** with 2 files inside:
 
 - ``output.log``: a log file
 - ``output.bias``: a bias file used by the software to normalize the data
-
-The **global normalized contact matrix** in tab separated format is saved to your working directory as **``HiCtool_1mb_matrix_global_normalized_tab.txt``**.
-
-After having normalized the data, it is possible to extract and save to file a single contact matrix (either intra- or inter-chromosomal) using the function ``extract_single_map`` of [HiCtool_global_map_analysis.py](/scripts/HiCtool_global_map_analysis.py) as following (here we extract the chr1-chr1 map):
-```unix
-python ./HiCtool-master/scripts/HiCtool_global_map_analysis.py \
---action extract_single_map \
--i HiCtool_1mb_matrix_global_normalized_tab.txt \
--c ./HiCtool-master/scripts/chromSizes/ \
--b 1000000 \
--s hg38 \
---tab_sep 1 \
---chr_row 1 \
---chr_col 1 \
---data_type normalized
-```
-See [above](#21-extracting-single-contact-matrices) for parameters.
 
 ## 4. Visualizing the data
 
