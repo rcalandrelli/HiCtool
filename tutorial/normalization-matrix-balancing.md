@@ -187,13 +187,13 @@ To emphasize the inter-chromosomal contacts in the global matrix you may use a l
 
 - **Visualizing a single heatmap by passing as input the global contact matrix**
 
-A single contact matrix can be plotted by passing as argument the chromosome(s) in the rows (``--chr_row``) and in the columns (``--chr_col``) as a list between square brackets.
+A single contact matrix can be plotted by passing the global contact matrix and as arguments the chromosome(s) in the rows (``--chr_row``) and in the columns (``--chr_col``) as a list between square brackets.
 
-**Tip!** Loading the global map to extract the single matrices to plot may require time especially at higher resolutions. If you wish to plot several single heatmaps either input them all at once using ``--chr_row`` and ``--chr_col`` as below, or extract them before using ``--action extract_single_map`` as above and then plot them.
+**Tip!** Loading the global map to extract the single matrices to plot may require time especially at higher resolutions. If you wish to plot several single heatmaps either input them all at once using ``--chr_row`` and ``--chr_col`` as below.
 
 - **Visualizing a single heatmap by passing as input the single contact matrix**
 
-A single contact matrix can be plotted also using the single contact matrix. At higher resolution, this is suggested to avoid any memory problem.
+A single heatmap can be plotted also using the single contact matrix as input. **At higher resolution, this is suggested to avoid any memory error.**
 
 ***
 
@@ -244,7 +244,7 @@ Observed (chr6-chr3)            |  Normalized (chr6-chr3)
 
 A histogram of the contact data distribution can be plotted by setting ``--plot_histogram 1``. This can be used only when single heatmaps are plotted.
 
-To plot the observed inter-chromosomal heatmap chr6-chr3 using the single contact matrix run the following (of course in this case you can only plot one matrix at the time):
+To plot the **observed inter-chromosomal heatmap chr6-chr3 passing the single contact matrix as input** run the following (in this case you can only plot one matrix at the time):
 ```unix
 # Observed data
 python ./HiCtool-master/scripts/HiCtool_global_map_analysis.py \
