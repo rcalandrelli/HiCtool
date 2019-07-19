@@ -67,11 +67,11 @@ chmod u+x ./HiCtool-master/scripts/HiCtool_global_map_observed.sh
 ```
 where:
 
-- ``-i``: Project object file in ``.hdf5`` format obtained with ``HiCtool_hifive.py`` above.
+- ``-i``: project object file in ``.hdf5`` format obtained with ``HiCtool_hifive.py`` above.
 - ``-h``: HiCtool scripts path with the trailing slash at the end ``/``.
-- ``-b``: The bin size (resolution) for the analysis.
-- ``-s``: Species name.
-- ``-p``: Number of parallel threads to use. It has to be less or equal than the number of chromosomes of your species. If you do not have a multi-core machine, insert 1 here (note that it takes longer time at higher resolutions).
+- ``-b``: the bin size (resolution) for the analysis.
+- ``-s``: species name.
+- ``-p``: number of parallel threads to use. It has to be less or equal than the number of chromosomes of your species. If you do not have a multi-core machine, insert 1 here (note that it takes longer time at higher resolutions).
 
 **The following output files are generated inside a folder ``observed_1000000`` (the folder name changes based on the resolution of the analysis):**
 
@@ -100,25 +100,27 @@ where:
 
 - ``-h``: HiCtool scripts path with the trailing slash at the end ``/``.
 - ``-i``: the observed global contact matrix in tab delimited format.
-- ``-b``: The bin size (resolution) for the analysis.
+- ``-b``: the bin size (resolution) for the analysis.
 - ``-q``: maximum number of iterations performed in the algorithm.
 - ``-m``: the memory size in Megabytes (MB). The bigger memory you allocate for the normalization process, the faster it is. Even 100 Mb is fine for 1 Mb resolution map, suggested at least 16000 Mb (16 GB) for 40 kb resolution.
-- ``-s``: Species name.
-- ``-u`` (optional): the row sum after normalization. The iterative correction algorithm can allow users to specify the row sum after the normalization, because this method is a matrix scaling approach that normalizes the matrix to be a doubly stochastic matrix (rows and columns sums equal to 1). Then we can multiple each element of this normalized matrix by the given value of this parameter, say 10.0 or 100.0 or whatever you choose. In such a way, the row sums of normalized matrix becomes this number (10.0 or 100.0 or whatever you choose). As **default**, we use a row sum value calculated as "the average number of contacts of the observed matrix multiplied by the number of rows" to make the normalized data counts "comparable" with the observed ones. If you wish to use a custom value (for example in order to compare several samples), use this parameter.
+- ``-s``: species name.
+- ``-u`` (optional): the row sum after normalization. The iterative correction algorithm can allow users to specify the row sum after the normalization, because this method is a matrix scaling approach that normalizes the matrix to be a doubly stochastic matrix (rows and columns sums equal to 1). Then we can multiple each element of this normalized matrix by the given value of this parameter, say 10.0 or 100.0 or whatever you choose. In such a way, the row sums of normalized matrix becomes this number (10.0 or 100.0 or whatever you choose). As **default**, we use a row sum value calculated as "the average number of contacts of the observed matrix multiplied by the number of rows" to make the normalized data counts "comparable" with the observed ones. If you wish to use a custom value (for example in order to compare several samples), simply declare this parameter.
 
 **The following output files are generated inside a folder ``normalized_1000000`` (the folder name changes based on the resolution of the analysis):**
 
 - ``HiCtool_normalized_global_1000000.txt``, the normalized global matrix saved in tab separated format.
 - ``chri_chrj_1000000.txt``, all the single normalized contact matrices in tab separated format.
 
-Another **folder ``output_ic_mes``** with 2 files inside is also generated, deriving from the ic_mes algorithm:
+Another folder ``output_ic_mes`` with 2 files inside is also generated, deriving from the ic_mes algorithm:
 
 - ``output.log``: a log file
 - ``output.bias``: a bias file used by the software to normalize the data
 
 ## 4. Visualizing the data
 
-To plot the contact maps we use the function ``plot_map`` of [HiCtool_global_map_analysis.py](/scripts/HiCtool_global_map_analysis.py).
+To plot the contact maps we use the function ``plot_map`` of [HiCtool_global_map_analysis.py](/scripts/HiCtool_global_map_analysis.py). 
+
+Note that at higher resolution, loading and plotting a global contact matrix will most likely produce an error given to memory limitation. Therefore, for high resolution matrices (what high resolution means it depends on your machine specifications), you may only be able to visualize single contact matrices.
 
 ### 4.1. Visualizing the global contact data
 
@@ -127,12 +129,12 @@ You can visualize either the observed or the normalized data. Here we plot both 
 # Observed data
 python ./HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --action plot_map \
--i HiCtool_1mb_matrix_global_observed.txt \
+-i ./observed_1000000/HiCtool_observed_global_1000000.txt \
 -c ./HiCtool-master/scripts/chromSizes/ \
 -b 1000000 \
 -s hg38 \
 --isGlobal 1 \
---tab_sep 0 \
+--tab_sep 1 \
 --data_type observed \
 --my_colormap [white,red] \
 --cutoff_type percentile \
@@ -146,7 +148,7 @@ python ./HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 # Normalized data
 python ./HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --action plot_map \
--i HiCtool_1mb_matrix_global_normalized_tab.txt \
+-i ./normalized_1000000/HiCtool_normalized_global_1000000.txt \
 -c ./HiCtool-master/scripts/chromSizes/ \
 -b 1000000 \
 -s hg38 \
@@ -183,21 +185,29 @@ To emphasize the inter-chromosomal contacts in the global matrix you may use a l
 
 ### 4.2. Visualizing a single heatmap
 
+- **Visualizing a single heatmap by passing as input the global contact matrix**
+
 A single contact matrix can be plotted by passing as argument the chromosome(s) in the rows (``--chr_row``) and in the columns (``--chr_col``) as a list between square brackets.
 
 **Tip!** Loading the global map to extract the single matrices to plot may require time especially at higher resolutions. If you wish to plot several single heatmaps either input them all at once using ``--chr_row`` and ``--chr_col`` as below, or extract them before using ``--action extract_single_map`` as above and then plot them.
 
-To plot the **intra-chromosomal heatmap** of chromosome 6 and **inter-chromosomal heatmap** (chr6-chr3), run the following:
+- **Visualizing a single heatmap by passing as input the single contact matrix**
+
+A single contact matrix can be plotted also using the single contact matrix. At higher resolution, this is suggested to avoid any memory problem.
+
+***
+
+To plot the **intra-chromosomal heatmap** of chromosome 6 and **inter-chromosomal heatmap** (chr6-chr3) from the global contact matrix, run the following:
 ```unix
 # Observed data
 python ./HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --action plot_map \
--i HiCtool_1mb_matrix_global_observed.txt \
+-i ./observed_1000000/HiCtool_observed_global_1000000.txt \
 -c ./HiCtool-master/scripts/chromSizes/ \
 -b 1000000 \
 -s hg38 \
 --isGlobal 1 \
---tab_sep 0 \
+--tab_sep 1 \
 --data_type observed \
 --chr_row [6,6] \
 --chr_col [6,3] \
@@ -209,7 +219,7 @@ python ./HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 # Normalized data
 python ./HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --action plot_map \
--i HiCtool_1mb_matrix_global_normalized_tab.txt \
+-i ./normalized_1000000/HiCtool_normalized_global_1000000.txt \
 -c ./HiCtool-master/scripts/chromSizes/ \
 -b 1000000 \
 -s hg38 \
@@ -234,11 +244,31 @@ Observed (chr6-chr3)            |  Normalized (chr6-chr3)
 
 A histogram of the contact data distribution can be plotted by setting ``--plot_histogram 1``. This can be used only when single heatmaps are plotted.
 
+To plot the observed inter-chromosomal heatmap chr6-chr3 using the single contact matrix run the following (of course in this case you can only plot one matrix at the time):
+```unix
+# Observed data
+python ./HiCtool-master/scripts/HiCtool_global_map_analysis.py \
+--action plot_map \
+-i ./observed_1000000/chr6_chr3_1000000.txt \
+-c ./HiCtool-master/scripts/chromSizes/ \
+-b 1000000 \
+-s hg38 \
+--isGlobal 0 \
+--tab_sep 1 \
+--data_type observed \
+--chr_row 6 \
+--chr_col 3 \
+--my_colormap [white,red] \
+--cutoff_type percentile \
+--cutoff 99 \
+--max_color "#460000"
+```
+
 In addition, only a **region of the heatmap** can be plotted by setting the parameters ``--chr_row_coord`` and ``--chr_col_coord``. These are lists with two integers indicating the start and end coordinate of the chromosome on the rows and on the columns respectively. If several single maps are inputed at once, these parameters can be lists of lists, each with coordinates corresponding to a single heatmap (see below).
 ```unix
 python ./HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --action plot_map \
--i HiCtool_1mb_matrix_global_normalized_tab.txt \
+-i ./normalized_1000000/HiCtool_normalized_global_1000000.txt \
 -c ./HiCtool-master/scripts/chromSizes/ \
 -b 1000000 \
 -s hg38 \
@@ -269,11 +299,11 @@ chromosomes=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y]
 
 python ./HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --action plot_side_by_side_map \
--i [./HiCtool_1mb_matrix_global_observed.txt,./HEK293T/HiCtool_1mb_matrix_global_observed.txt] \
+-i [./observed_1000000/HiCtool_observed_global_1000000.txt,./HEK293T/observed_1000000/HiCtool_observed_global_1000000.txt] \
 -c ./HiCtool-master/scripts/chromSizes/ \
 -b 1000000 \
 -s hg38 \
---tab_sep 0 \
+--tab_sep 1 \
 --data_type observed \
 --chr_row $chromosomes \
 --chr_col $chromosomes \
