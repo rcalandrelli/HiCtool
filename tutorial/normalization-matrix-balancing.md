@@ -63,6 +63,11 @@ python ./HiCtool-master/scripts/HiCtool_global_map_observed.py \
 -c ./HiCtool-master/scripts/chromSizes/ \
 --save_each 0 \
 -p 24
+
+bin_size=1000000
+while read chromosome size; do
+	cat "matrix_full_line_"$chromosome".txt" >> HiCtool_observed_global_"$bin_size".txt"
+done < ./HiCtool-master/scripts/chromSizes/hg38.chrom.sizes
 ```
 where:
 

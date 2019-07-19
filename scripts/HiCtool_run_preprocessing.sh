@@ -159,7 +159,7 @@ samtools view -u -h -F 4 -q 30 HiCfile1.sam | \
 samtools sort -@ $threads -n - -o - | \
 samtools fixmate -m - - | \
 samtools sort -@ $threads - -o - | \
-samtools markdup - HiCfile1_hq_nodup.bam
+samtools markdup -r - HiCfile1_hq_nodup.bam
 echo "Done!"
 echo "Filtering and deduplicating HiCfile2.sam ... "
 samtools view -H HiCfile2.sam > header2.txt
@@ -167,7 +167,7 @@ samtools view -u -h -F 4 -q 30 HiCfile2.sam | \
 samtools sort -@ $threads -n - -o - | \
 samtools fixmate -m - - | \
 samtools sort -@ $threads - -o - | \
-samtools markdup - HiCfile2_hq_nodup.bam
+samtools markdup -r - HiCfile2_hq_nodup.bam
 echo "Done!"
 
 echo -n "Building log files ... "
