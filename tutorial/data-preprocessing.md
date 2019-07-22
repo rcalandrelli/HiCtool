@@ -52,7 +52,7 @@ bowtie2-build hg38.fa index
 
 1. Pre-truncation of the reads that contain potential ligation junctions to keep the longest piece without a junction sequence ([Ay et al., 2015](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0745-7)).
 2. Independent mapping of the read pairs to the reference genome to avoid any proximity constraint.
-3. Removing the unmapped reads and selecting reads that were uniquely mapped with a MAPQ >= 30, i.e. the estimated probability of mapping error is <= 0.1%.
+3. Removing the unmapped reads and selecting reads that were uniquely mapped with a MAPQ >= 30, i.e. the estimated probability of mapping error is <= 0.1% (this can be changed with the parameter ``-q``).
 4. Deduplicating aligned reads. (Note that PCR duplicates were previously removed in the following section, while now this step has been also added here to allow the extraction of deduplicated data already from the bam or bedpe files).
 
 ```unix
@@ -66,6 +66,7 @@ chmod u+x ./HiCtool-master/scripts/HiCtool_run_preprocessing.sh
 -1 /myfastq_path/file1.fastq \
 -2 /myfastq_path/file2.fastq \
 -e MboI \
+-q 30 \
 -g /path_to_the_genome_indexes/index \
 -p 32 \
 -c 50000000
@@ -77,6 +78,7 @@ where:
 - ``-1``: the fastq file with the first reads of the pairs.
 - ``-2``: the fastq file with the second reads of the pairs.
 - ``-e``: the restriction enzyme or enzymes passed between square brackets (example: [MboI,Hinfl] for the cocktail of the Arima Kit).
+- ``-q``: to filter mapped reads with MAPQ smaller than this threshold.
 - ``-g``: Bowtie2 genome indexes. Only the filename should be passed here without extension, in this case ``index``.
 - ``-p``: the number of parallel threads (processors) to use for alignment and preprocessing. The more the fastest the process.
 - ``-c``: chunk size. If your data are very big, you may encounter a memory error when the fastq files are loaded for pre-truncated and downstream when the paired reads between the two mapped files are selected. Thus, you may use this parameter in order to split the two fastq files into several temporary files with ``-c`` lines each (this means all the lines, i.e. 4 lines per each read), that are pre-truncated separately. The temporary files will be processed with multiple threads if you set ``-p`` greater than 1. Therefore, setting ``-c`` may help to speed up the pre-truncation process. In addition, setting ``-c`` lets the program work with smaller temporary files at the pairing step as well to generate the output bam files.
