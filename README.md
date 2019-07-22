@@ -1,4 +1,4 @@
-# HiCtool: a standardized pipeline to process and visualize Hi-C data (v2.1)
+# HiCtool: a standardized pipeline to process and visualize Hi-C data (v2.1.1)
 
 HiCtool is an open-source bioinformatic tool based on Python, which integrates several software to perform a standardized Hi-C data analysis, from the processing of raw data, to the visualization of heatmaps and the identification of topologically associated domains (TADs).
 
@@ -60,6 +60,17 @@ HiCtool is in a pipeline format based on single unix commands to allow easy usag
 We have compiled a full tutorial to show the usage of the pipeline. Please check the [Tutorial Homepage](./tutorial/ReadMe.md).
 
 ## Version history
+
+### July xx, 2019
+
+- Version 2.1.1 released:
+
+- Optimized pre-processing and normalization to allow faster analysis of high depth sequenced files.
+- Added parameter to allow custom mapped reads filtering at the pre-processing step.
+- Bedpe file generation step added for pre-processed read pairs.
+- Deduplication step added in the pre-processing pipeline.
+- Optimized FEND file generation.
+- Small bug fixes.
 
 ### May 20, 2019
 

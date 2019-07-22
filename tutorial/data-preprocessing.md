@@ -81,7 +81,7 @@ where:
 - ``-q``: to filter mapped reads with MAPQ smaller than this threshold.
 - ``-g``: Bowtie2 genome indexes. Only the filename should be passed here without extension, in this case ``index``.
 - ``-p``: the number of parallel threads (processors) to use for alignment and preprocessing. The more the fastest the process.
-- ``-c``: chunk size. If your data are very big, you may encounter a memory error when the fastq files are loaded for pre-truncated and downstream when the paired reads between the two mapped files are selected. Thus, you may use this parameter in order to split the two fastq files into several temporary files with ``-c`` lines each (this means all the lines, i.e. 4 lines per each read), that are pre-truncated separately. The temporary files will be processed with multiple threads if you set ``-p`` greater than 1. Therefore, setting ``-c`` may help to speed up the pre-truncation process. In addition, setting ``-c`` lets the program work with smaller temporary files at the pairing step as well to generate the output bam files.
+- ``-c``: chunk size. If your data are very big, you may encounter a memory error when the fastq files are loaded for pre-truncated and downstream when the paired reads between the two mapped files are selected. Thus, you it is **suggested always to use this parameter** in order to split the two fastq files into several temporary files with ``-c`` lines each (this means all the lines, i.e. 4 lines per each read), that are pre-truncated separately. The temporary files will be processed with multiple threads if you set ``-p`` greater than 1. Therefore, setting ``-c`` may help to speed up the pre-truncation process. In addition, setting ``-c`` lets the program work with smaller temporary files at the pairing step as well to generate the output bam files.
 
 The structure of the output directory is the following:
 ```unix
@@ -107,7 +107,7 @@ SRR1658570_2.fastq
 202095066 reads (length = 101 bp); of these:
   28681691 (14.2%) contained a potential ligation junction and have been truncated.
 ```
-- ``HiCfile_pair1.bam`` and ``HiCfile_pair2.bam`` that are the bam files of the pre-truncated first and second reads in the pairs respectively, generated after alignment and filtering.
+- ``HiCfile_pair1.bam`` and ``HiCfile_pair2.bam`` that are the bam files of the pre-truncated first and second reads in the pairs respectively, generated after alignment, filtering and deduplication.
 - ``HiCfile1_log.txt`` and ``HiCfile2_log.txt`` are the log files with alignment and filtering statistics for the first and second reads in the pairs respectively.
 ```unix
 HiCfile1_log.txt
