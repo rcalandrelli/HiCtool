@@ -19,7 +19,7 @@ TAD coordinates, as well as DI values and true DI values (HMM states), are calcu
 
 To perform TAD analysis (calculating DI, HMM states and topological domain coordinates) we use the function ``full_tad_analysis`` of [HiCtool_TAD_analysis.py](/scripts/HiCtool_TAD_analysis.py) and each single intra-chromosomal contact matrix as input files.
 
-Here we take chromosome 6 as example. For this case, you may either have normalized the data using the Hi-Corrector approach (``./normalized_40000/chr6_chr6_40000.txt``) or have used the approach from Yaffe and Tanay (``HiCtool_chr6_40kb_normalized_fend.txt``).
+Here we take chromosome 6 as example. For this case, you may either have normalized the data using the Hi-Corrector approach (``./normalized_40000/chr6_chr6_40000.txt``) or have used the approach from Yaffe and Tanay (``HiCtool_chr6_40kb_normalized_fend.txt``). In this last case, remember to set ``--tab_sep 0`` below.
 ```unix
 python ./HiCtool-master/scripts/HiCtool_TAD_analysis.py \
 --action full_tad_analysis \
@@ -42,7 +42,7 @@ where:
 - ``--chr``: Chromosome or chromosomes to perform the TAD analysis in a list between square brackets.
 - ``--data_type``: Data type to label your data, here ``normalized``.
 
-This script will produce four output files:
+This script will produce three output files:
 
 - ``HiCtool_chr6_DI.txt`` which contains the DI values.
 - ``HiCtool_chr6_hmm_states.txt`` which contains the HMM states extracted from the DI values.

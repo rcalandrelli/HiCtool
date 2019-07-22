@@ -120,7 +120,7 @@ Another folder ``output_ic_mes`` with 2 files inside is also generated, deriving
 
 To plot the contact maps we use the function ``plot_map`` of [HiCtool_global_map_analysis.py](/scripts/HiCtool_global_map_analysis.py). 
 
-Note that at higher resolution, loading and plotting a global contact matrix will most likely produce an error given to memory limitation. Therefore, for high resolution matrices (what high resolution means it depends on your machine specifications), you may only be able to visualize single contact matrices.
+**Note that at higher resolution, loading and plotting a global contact matrix will most likely produce an error given to memory limitation.** Therefore, for high resolution matrices (what high resolution means it depends on your machine specifications), you may only be able to visualize single contact matrices.
 
 ### 4.1. Visualizing the global contact data
 
@@ -189,7 +189,7 @@ To emphasize the inter-chromosomal contacts in the global matrix you may use a l
 
 A single contact matrix can be plotted by passing the global contact matrix and as arguments the chromosome(s) in the rows (``--chr_row``) and in the columns (``--chr_col``) as a list between square brackets.
 
-**Tip!** Loading the global map to extract the single matrices to plot may require time especially at higher resolutions. If you wish to plot several single heatmaps either input them all at once using ``--chr_row`` and ``--chr_col`` as below.
+**Tip!** Loading the global map to extract the single matrices to plot may require time especially at higher resolutions. Therefore, this solution is useful when you want to plot several matrices at once using ``--chr_row`` and ``--chr_col`` as below. Note that at very high resolution loading the global matrix may result in a memory error, thus you should plot each heatmap passing a single contact matrix.
 
 - **Visualizing a single heatmap by passing as input the single contact matrix**
 

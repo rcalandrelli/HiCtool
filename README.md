@@ -61,15 +61,15 @@ We have compiled a full tutorial to show the usage of the pipeline. Please check
 
 ## Version history
 
-### July xx, 2019
+### July 23, 2019
 
 - Version 2.1.1 released:
 
-   - Optimized pre-processing and normalization to allow faster analysis of high depth sequenced files.
+   - Optimized pre-processing and normalization to allow the analysis of very high depth sequenced files.
    - Added parameter to allow custom mapped reads filtering at the pre-processing step.
    - Bedpe file generation step added for pre-processed read pairs.
    - Deduplication step added in the pre-processing pipeline.
-   - Optimized FEND file generation.
+   - Optimized and faster FEND file generation for adding GC content and mappability score.
    - Small bug fixes.
 
 ### May 20, 2019
