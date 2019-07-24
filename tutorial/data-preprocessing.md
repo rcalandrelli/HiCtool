@@ -121,8 +121,8 @@ HiCfile1_log.txt
 
 ----------
 202095066 reads; of these:
-  172969992 (85.58%) aligned with MAPQ>=30 and are deduplicated; of these:
-    143408614 (82.90%) were paired and saved into HiCfile_pair1.bam
+  146243025 (72.36%) aligned with MAPQ>=30 and are deduplicated; of these:
+    109354498 (74.77%) were paired and saved into HiCfile_pair1.bam
 ```
 ```unix
 HiCfile2_log.txt
@@ -136,8 +136,8 @@ HiCfile2_log.txt
 
 ----------
 202095066 reads; of these:
-  161435108 (79.88%) aligned with MAPQ>=30 and are deduplicated; of these:
-    143408614 (88.83%) were paired and saved into HiCfile_pair2.bam
+  137124105 (67.85%) aligned with MAPQ>=30 and are deduplicated; of these:
+    109354498 (79.74%) were paired and saved into HiCfile_pair2.bam
 ```
 
 ### 1.1. Downloading the raw data from GEO
@@ -237,7 +237,7 @@ The structure of the output directory is the following:
 
 ***
 
-You can decide if adding both the GC content and mappability score information or only one of them. Our suggestion is to add both at this point, so you will have a complete FEND file, then you may decide later on if not considering one of these features for normalization. This process is very time consuming, so we suggest to use the highest number of processors available. Using 24 threads, we took around 18 hours to add the GC content and mappability score information for hg38-MboI. This time will increase if you are using a mixture of restriction sites in your experiment, such as the ARIMA kit cocktail (over 23 millions restriction sites for hg38).
+You can decide if adding both the GC content and mappability score information or only one of them. Our suggestion is to add both at this point, so you will have a complete FEND file, then you may decide later on if not considering one of these features for normalization. This process is very time consuming, so we suggest to use the highest number of processors available.
 
 **The update of the FEND file to add GC content and/or mappability score is performed with a single unix command line (replace parameters in the code below accordingly) and comprises the following steps:**
 
