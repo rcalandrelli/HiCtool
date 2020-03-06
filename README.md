@@ -1,4 +1,4 @@
-# HiCtool: a standardized pipeline to process and visualize Hi-C data (v2.1.1)
+# HiCtool: a standardized pipeline to process and visualize Hi-C data (v2.2)
 
 HiCtool is an open-source bioinformatic tool based on Python, which integrates several software to perform a standardized Hi-C data analysis, from the processing of raw data, to the visualization of heatmaps and the identification of topologically associated domains (TADs).
 
@@ -13,18 +13,17 @@ HiCtool is an open-source bioinformatic tool based on Python, which integrates s
 
 ## Overview
 
-We implemented a tool that is divided into three main sections:
+HiCtool leads the user step-by-step through a pipeline which consists of the following sections:
 
 - Data preprocessing
 - Data normalization and visualization
+- A/B compartment analysis
 - TAD analysis
-
-HiCtool leads the user step-by-step through a pipeline, which goes from the raw Hi-C data to the computation, visualization, and optimized storage of contact matrices (intra- and inter-chromosomal) and TAD coordinates. 
 
 HiCtool can implement contact data normalization following two approaches: 
 
-- The explicit-factor correction method reported by [Yaffe and Tanay](https://www.nature.com/articles/ng.947) and performed by the library [HiFive](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0806-y). In this case, only intra-chromosomal analysis is performed, per each chromosome singularly and only single heatmaps can be plotted. In addition, there is the possibility to plot topological domains over the heatmap at a resolution of 40kb or lower.
-- The matrix balancing approach performed by [Hi-Corrector](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4380031/). In this case, a global analysis is performed including all the chromosomes and both intra- and inter-chromosomal maps. It is possible to visualize either single intra- and inter-chromosomal heatmap or the global all-by-all chromosomes heatmap (for the global heatmap visualization, resolution could be limited by your hardware). In addition, there is the possibility to plot topological domains over the intra-chromosomal heatmap (resolution of 40kb or lower) or plot the same maps from different samples on a side-by-side view for easy comparison.
+- **The explicit-factor correction method reported by [Yaffe and Tanay](https://www.nature.com/articles/ng.947)** and performed by the library [HiFive](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0806-y). In this case, only intra-chromosomal analysis is performed, per each chromosome singularly and only single heatmaps can be plotted. In addition, there is the possibility to plot topological domains over the heatmap at a resolution of 40kb or lower. This approach allows also to compute the O/E contact matrix, derive the Pearson Correlation matrix and perform **compartment analysis**.
+- **The matrix balancing approach performed by [Hi-Corrector](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4380031/).** In this case, a global analysis is performed including all the chromosomes and both intra- and inter-chromosomal maps. It is possible to visualize either single intra- and inter-chromosomal heatmap or the global all-by-all chromosomes heatmap (for the global heatmap visualization, resolution could be limited by your hardware). In addition, there is the possibility to plot topological domains over the intra-chromosomal heatmap (resolution of 40kb or lower) or plot the same maps from different samples on a side-by-side view for easy comparison.
 
 ## Installation
 
@@ -42,6 +41,7 @@ HiCtool is in a pipeline format based on single unix commands to allow easy usag
 - [pandas](https://pandas.pydata.org/)
 - [multiprocessing](https://docs.python.org/2/library/multiprocessing.html)
 - [biopython](http://biopython.org/)
+- [sklearn-decomposition](https://scikit-learn.org/)
 
 **2. Python packages:**
 
@@ -61,13 +61,22 @@ We have compiled a full tutorial to show the usage of the pipeline. Please check
 
 ## Reference
 
-HiCtool was developed by Riccardo Calandrelli and Qiuyang Wu from Dr. Sheng Zhong's Lab at University of California, San Diego. 
+HiCtool was developed by Riccardo Calandrelli and Qiuyang Wu from Dr. Sheng Zhong's Lab at University of California San Diego. 
 
 If you use HiCtool, please cite the paper: 
 
 Calandrelli, R., Wu, Q., Guan, J., & Zhong, S. (2018). GITAR: An open source tool for analysis and visualization of Hi-C data. *Genomics, proteomics & bioinformatics.*
 
 ## Version history
+
+### March xx, 2020
+
+- Version 2.2 released:
+
+   - A/B compartment analysis added on a separate section.
+   - Calculation and plotting of the Pearson correlation matrix from the O/E contact matrix (only Yaffe-Tanay method).
+   - Possibility of calculating and plotting both PC1 and PC1 for A/B compartment annotation.
+   - Small bug fixes.
 
 ### July 25, 2019
 
