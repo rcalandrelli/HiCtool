@@ -631,8 +631,8 @@ def plot_chromosome_DI(input_file_DI,
         neg_DI_true[neg_DI_true != min(DI_part)-15] = np.nan
         
         plt.close("all")
-        plt.bar(x, pos_DI, width, color="r", label="Positive DI")
-        plt.bar(x, neg_DI, width, color="g", label="Negative DI")
+        plt.bar(x, pos_DI, width, color="r", label="Positive DI", linewidth = 0.1)
+        plt.bar(x, neg_DI, width, color="g", label="Negative DI", linewidth = 0.1)
         plt.plot(x, pos_DI_true, marker=">", color="r", label="Positive true DI")
         plt.plot(x, neg_DI_true, marker="<", color="g", label="Negative true DI")
         plt.xlim([x[0]-bin_size*8,x[-1]+bin_size*8])
