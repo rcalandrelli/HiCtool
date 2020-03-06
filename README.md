@@ -1,6 +1,6 @@
 # HiCtool: a standardized pipeline to process and visualize Hi-C data (v2.2)
 
-HiCtool is an open-source bioinformatic tool based on Python, which integrates several software to perform a standardized Hi-C data analysis, from the processing of raw data, to the visualization of heatmaps and the identification of topologically associated domains (TADs).
+HiCtool is an open-source bioinformatic tool based on Python, which integrates several software to perform a standardized Hi-C data analysis, from the processing of raw data, to the visualization of heatmaps and the identification of topologically associated domains (TADs) and A/B compartment.
 
 ## Table of Contents
 
@@ -22,7 +22,7 @@ HiCtool leads the user step-by-step through a pipeline which consists of the fol
 
 HiCtool can implement contact data normalization following two approaches: 
 
-- **The explicit-factor correction method reported by [Yaffe and Tanay](https://www.nature.com/articles/ng.947)** and performed by the library [HiFive](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0806-y). In this case, only intra-chromosomal analysis is performed, per each chromosome singularly and only single heatmaps can be plotted. In addition, there is the possibility to plot topological domains over the heatmap at a resolution of 40kb or lower. This approach allows also to compute the O/E contact matrix, derive the Pearson Correlation matrix and perform **compartment analysis**.
+- **The explicit-factor correction method reported by [Yaffe and Tanay](https://www.nature.com/articles/ng.947)** and performed by the library [HiFive](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0806-y). In this case, only intra-chromosomal analysis is performed, per each chromosome singularly and only single heatmaps can be plotted. In addition, there is the possibility to plot topological domains over the heatmap at a resolution of 40kb or lower. **This approach allows also to compute the O/E contact matrix, derive the Pearson Correlation matrix and perform A/B compartment analysis**.
 - **The matrix balancing approach performed by [Hi-Corrector](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4380031/).** In this case, a global analysis is performed including all the chromosomes and both intra- and inter-chromosomal maps. It is possible to visualize either single intra- and inter-chromosomal heatmap or the global all-by-all chromosomes heatmap (for the global heatmap visualization, resolution could be limited by your hardware). In addition, there is the possibility to plot topological domains over the intra-chromosomal heatmap (resolution of 40kb or lower) or plot the same maps from different samples on a side-by-side view for easy comparison.
 
 ## Installation
