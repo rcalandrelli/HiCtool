@@ -1,6 +1,6 @@
 # HiCtool: a standardized pipeline to process and visualize Hi-C data (v2.2)
 
-HiCtool is an open-source bioinformatic tool based on Python, which integrates several software to perform a standardized Hi-C data analysis, from the processing of raw data, to the visualization of heatmaps and the identification of topologically associated domains (TADs) and A/B compartment.
+HiCtool is an open-source bioinformatic tool based on Python, which integrates several software to perform a standardized Hi-C data analysis, from the processing of raw data, to the visualization of heatmaps and the identification of topologically associated domains (TADs) and A/B compartments.
 
 ## Table of Contents
 

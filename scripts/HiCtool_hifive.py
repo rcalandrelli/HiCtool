@@ -15,6 +15,8 @@
 
 from optparse import OptionParser
 import hifive
+import os.path
+from os import path
 
 parameters = {'fend_file': None,
               'bam_file_1': None,
@@ -39,49 +41,7 @@ class hi_five:
         else:
             restriction_enzyme = ','.join(restriction_enzymes)
     
-        if model == 'Yaffe-Tanay':
-            # Creating a Fend object
-            fend = hifive.Fend('fend_object.hdf5', mode='w')
-            fend.load_fends(fend_file, re_name=restriction_enzyme, format='bed')
-            fend.save()
-    
-            # Creating a HiCData object
-            data = hifive.HiCData('HiC_data_object.hdf5', mode='w')
-            data.load_data_from_bam('fend_object.hdf5',
-                                    [bam_file_1,bam_file_2], 
-                                    maxinsert=500,
-                                    skip_duplicate_filtering=False)
-            data.save()
-    
-            # Creating a HiC Project object
-            hic = hifive.HiC('HiC_project_object.hdf5', 'w')
-            hic.load_data('HiC_data_object.hdf5')
-            hic.save()
-    
-            # Filtering HiC fends
-            hic = hifive.HiC('HiC_project_object.hdf5')
-            hic.filter_fends(mininteractions=1, mindistance=0, maxdistance=0)
-            hic.save()
-    
-            # Finding HiC distance function
-            hic = hifive.HiC('HiC_project_object.hdf5')
-            hic.find_distance_parameters(numbins=90, minsize=200, maxsize=0)
-            hic.save()
-    
-            # Learning correction parameters using the binning algorithm
-            hic = hifive.HiC('HiC_project_object.hdf5')
-            hic.find_binning_fend_corrections(max_iterations=1000,
-                                              mindistance=500000,
-                                              maxdistance=0,
-                                              num_bins=[20,20,20,20],
-                                              model=['len','distance','gc','mappability'],
-                                              parameters=['even','even','even','even'],
-                                              usereads='cis',
-                                              learning_threshold=1.0)
-            hic.save('HiC_norm_binning.hdf5')
-        
-        elif model == 'Hi-Corrector':
-            # Creating a Fend object
+        if model == 'Yaffe-Tanay' or model == 'Hi-Corrector':
             fend = hifive.Fend('fend_object.hdf5', mode='w')
             fend.load_fends(fend_file, re_name=restriction_enzyme, format='bed')
             fend.save()
@@ -98,8 +58,25 @@ class hi_five:
             hic = hifive.HiC('HiC_project_object.hdf5', 'w')
             hic.load_data('HiC_data_object.hdf5')
             hic.save()
+    
+        if model == 'Yaffe-Tanay':
+            # Filtering HiC fends
+            hic = hifive.HiC('HiC_project_object.hdf5')
+            hic.filter_fends(mininteractions=1, mindistance=0, maxdistance=0)
             
+            # Finding HiC distance function
+            hic.find_distance_parameters(numbins=90, minsize=200, maxsize=0)
             
+            # Learning correction parameters using the binning algorithm
+            hic.find_binning_fend_corrections(max_iterations=1000,
+                                              mindistance=500000,
+                                              maxdistance=0,
+                                              num_bins=[20,20,20,20],
+                                              model=['len','distance','gc','mappability'],
+                                              parameters=['even','even','even','even'],
+                                              usereads='cis',
+                                              learning_threshold=1.0)
+            hic.save('HiC_norm_binning.hdf5')
             
 if __name__ == '__main__':
     
