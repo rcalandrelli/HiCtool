@@ -21,7 +21,7 @@ To perform TAD analysis (calculating DI, HMM states and topological domain coord
 
 Here we take chromosome 6 as example. For this case, you may either have normalized the data using the Hi-Corrector approach (``./normalized_40000/chr6_chr6_40000.txt``) or have used the approach from Yaffe and Tanay (``HiCtool_chr6_40kb_normalized_fend.txt``). In this last case, remember to set ``--tab_sep 0`` below.
 ```unix
-python ./HiCtool-master/scripts/HiCtool_TAD_analysis.py \
+python2.7 ./HiCtool-master/scripts/HiCtool_TAD_analysis.py \
 --action full_tad_analysis \
 -i ./normalized_40000/chr6_chr6_40000.txt \
 -c ./HiCtool-master/scripts/chromSizes/ \
@@ -33,7 +33,7 @@ python ./HiCtool-master/scripts/HiCtool_TAD_analysis.py \
 ```
 where:
 
-- ``--action``: action to perform (here ``full_tad_analysis``).
+- ``--action``: Action to perform (here ``full_tad_analysis``).
 - ``-i``: Input contact matrix file.
 - ``-c``: Path to the folder ``chromSizes`` with trailing slash at the end ``/``.
 - ``-s``: Species name.
@@ -55,7 +55,7 @@ To calculate the **topological domain coordinates for multiple chromosomes** you
 chromosomes=("1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "20" "21" "22" "X" "Y")
 
 for i in "${chromosomes[@]}"; do
-	python ./HiCtool-master/scripts/HiCtool_TAD_analysis.py \
+	python2.7 ./HiCtool-master/scripts/HiCtool_TAD_analysis.py \
 	--action full_tad_analysis \
 	-i "./normalized_40000/chr"$i"_chr"$i"_40000.txt" \
 	-c ./HiCtool-master/scripts/chromSizes/ \
@@ -78,7 +78,7 @@ To plot the topological domains on the heatmap, use the function ``plot_map`` of
 **Note!** To plot topological domains on the heatmap this should be with a bin size of 40kb or lower!
 
 ```unix
-python ./HiCtool-master/scripts/HiCtool_global_map_analysis.py \
+python2.7 ./HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --action plot_map \
 -i ./normalized_40000/chr6_chr6_40000.txt \
 -c ./HiCtool-master/scripts/chromSizes/ \
@@ -100,7 +100,7 @@ python ./HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 ![](/figures/HiCtool_chr6_chr6_40kb_normalized_domains_80000000_120000000.png)
 
 where:
-- ``--action``: action to perform (here ``plot_map``).
+- ``--action``: Action to perform (here ``plot_map``).
 - ``-i``: Input contact matrix file.
 - ``-c``: Path to the folder ``chromSizes`` with trailing slash at the end ``/``.
 - ``-b``: The bin size (resolution) for the analysis.
@@ -110,17 +110,17 @@ where:
 - ``--data_type``: Data type to label your data, example: observed, normalized, etc.
 - ``--chr_row``: Chromosome to plot the DI values of.
 - ``--chr_col``: Same as ``--chr_row`` since this is only for intra-chromosomal maps.
-- ``--my_colormap``: Colormap to be used to plot the data. You can choose among any colorbar at https://matplotlib.org/examples/color/colormaps_reference.html, or input a list of colors if you want a custom colorbar. Example: [white, red, black]. Colors can be specified also HEX format. Default: [white,red].
-- ``--cutoff_type``: To select a type of cutoff (percentile or contact) or plot the full range of the data (not declared). Default: percentile.
-- ``--cutoff``: To set a maximum cutoff on the number of contacts for the colorbar based on ``--cutoff_type``. Default: 95.
-- ``--max_color``: To set the color of the bins with contact counts over ``--cutoff``. Default: "#460000".
+- ``--my_colormap``: Colormap to be used to plot the data. You can choose among any colorbar at https://matplotlib.org/examples/color/colormaps_reference.html, or input a list of colors if you want a custom colorbar. Example: ``[white, red, black]``. Colors can be specified also HEX format. Default: ``[white,red]``.
+- ``--cutoff_type``: To select a type of cutoff (``percentile`` or ``contact``) or plot the full range of the data (not declared). Default: ``percentile``.
+- ``--cutoff``: To set a maximum cutoff on the number of contacts for the colorbar based on ``--cutoff_type``. Default: ``95``.
+- ``--max_color``: To set the color of the bins with contact counts over ``--cutoff``. Default: ``#460000``.
 - ``--chr_row_coord``:  List of two integers with start and end coordinates for the chromosome on the rows.
 - ``--chr_col_coord``: List of two integers with start and end coordinates for the chromosome on the columns.
 - ``--topological_domains``: Topological domain coordinates file to visualize domains on the heatmap.
 
 Zoom in on a smaller region (chr6: 50,000,000-54,000,000):
 ```unix
-python ./HiCtool-master/scripts/HiCtool_global_map_analysis.py \
+python2.7 ./HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --action plot_map \
 -i ./normalized_40000/chr6_chr6_40000.txt \
 -c ./HiCtool-master/scripts/chromSizes/ \
@@ -162,7 +162,7 @@ To compute DI, we need the fend normalized contact data at a bin size of 40 kb. 
 
 To **plot the DI values** use the function ``plot_chromosome_DI`` of [HiCtool_TAD_analysis.py](/scripts/HiCtool_TAD_analysis.py) as following (in this case we plot DI values for chromosome 6, from 50 to 54 Mb):
 ```unix
-python ./HiCtool-master/scripts/HiCtool_TAD_analysis.py \
+python2.7 ./HiCtool-master/scripts/HiCtool_TAD_analysis.py \
 --action plot_chromosome_DI \
 -i HiCtool_chr6_DI.txt \
 -c ./HiCtool-master/scripts/chromSizes/ \
@@ -191,7 +191,7 @@ For true DI calculation, we consider the **emission sequence** as the observed D
 
 To **plot the DI values and HMM states** use the function ``plot_chromosome_DI`` of [HiCtool_TAD_analysis.py](/scripts/HiCtool_TAD_analysis.py) and add the parameter ``--input_file_hmm`` to input the HMM states file as following:
 ```unix
-python ./HiCtool-master/scripts/HiCtool_TAD_analysis.py \
+python2.7 ./HiCtool-master/scripts/HiCtool_TAD_analysis.py \
 --action plot_chromosome_DI \
 -i HiCtool_chr6_DI.txt \
 -c ./HiCtool-master/scripts/chromSizes/ \
