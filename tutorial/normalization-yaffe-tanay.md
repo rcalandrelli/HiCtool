@@ -7,7 +7,7 @@ This pipeline illustrates the procedure to normalize and visualize Hi-C **intra-
 1. [Running HiFive functions](#1-running-hifive-functions)
 2. [Normalizing the data](#2-normalizing-the-data)
    - [2.1. Normalizing fend data](#21-normalizing-fend-data)
-   - [2.2. Normalizing enrichment O/E data and calculating the Pearson correlation matrix](#22-normalizing-enrichment-oe-data-and-calculating-the-person-correlation-matrix)
+   - [2.2. Normalizing enrichment data and calculating the Pearson correlation matrix](#22-normalizing-enrichment-data-and-calculating-the-person-correlation-matrix)
 3. [Visualizing the data](#3-visualizing-the-data)
    - [3.1. Visualizing the contact data](#31-visualizing-the-contact-data)
    - [3.2. Visualizing the enrichment data](#32-visualizing-the-enrichment-data)
@@ -109,7 +109,7 @@ python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 -p 24
 ```
 
-### 2.2. Normalizing enrichment O/E data and calculating the Pearson correlation matrix
+### 2.2. Normalizing enrichment data and calculating the Pearson correlation matrix
 
 To calculate and save the **O/E intra-chromosomal contact matrix** and the **Pearson correlation matrix** for a chromosome ``--chr`` do as following:
 ```unix
