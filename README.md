@@ -22,14 +22,14 @@ HiCtool leads the user step-by-step through a pipeline which consists of the fol
 
 HiCtool can implement contact data normalization following two approaches: 
 
-- **The explicit-factor correction method reported by [Yaffe and Tanay](https://www.nature.com/articles/ng.947)** and performed by the library [HiFive](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0806-y). In this case, only intra-chromosomal analysis is performed, per each chromosome singularly and only single heatmaps can be plotted. In addition, there is the possibility to plot topological domains over the heatmap at a resolution of 40kb or lower. **This approach allows also to compute the O/E contact matrix, derive the Pearson Correlation matrix and perform A/B compartment analysis**.
+- **The explicit-factor correction method reported by [Yaffe and Tanay](https://www.nature.com/articles/ng.947)** and performed by the library [HiFive](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0806-y). In this case, only intra-chromosomal analysis is performed, per each chromosome singularly and only single heatmaps can be plotted. In addition, there is the possibility to plot topological domains over the heatmap at a resolution of 40kb or lower. **This approach allows also to compute the O/E contact matrix, derive the Pearson correlation matrix and perform A/B compartment analysis**.
 - **The matrix balancing approach performed by [Hi-Corrector](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4380031/).** In this case, a global analysis is performed including all the chromosomes and both intra- and inter-chromosomal maps. It is possible to visualize either single intra- and inter-chromosomal heatmap or the global all-by-all chromosomes heatmap (for the global heatmap visualization, resolution could be limited by your hardware). In addition, there is the possibility to plot topological domains over the intra-chromosomal heatmap (resolution of 40kb or lower) or plot the same maps from different samples on a side-by-side view for easy comparison.
 
 ## Installation
 
 HiCtool is in a pipeline format based on single unix commands to allow easy usage. In order to use HiCtool, you need to install the following Python libraries, packages and software. Everything is open source. After that, you need the HiCtool source codes. **[Click here to download HiCtool](https://github.com/Zhong-Lab-UCSD/HiCtool/archive/master.zip)**, unzip the file, all the scripts are under the folder ``scripts``. [Hi-Corrector](http://zhoulab.usc.edu/Hi-Corrector/) source code is already inside this folder.
 
-**1. Python libraries [for python>2.7]:**
+**1. Python libraries [for Python 2.7]:**
 
 - [numpy](http://scipy.org/)
 - [scipy](http://scipy.org/)
@@ -45,7 +45,7 @@ HiCtool is in a pipeline format based on single unix commands to allow easy usag
 
 **2. Python packages:**
 
-- [hifive](http://bxlab-hifive.readthedocs.org/en/latest/introduction.html)
+- [hifive (v1.4)](http://bxlab-hifive.readthedocs.org/en/latest/introduction.html)
 - [hmmlearn](https://github.com/hmmlearn/hmmlearn)
 
 **3. Other software:**
@@ -73,9 +73,9 @@ Calandrelli, R., Wu, Q., Guan, J., & Zhong, S. (2018). GITAR: An open source too
 
 - Version 2.2 released:
 
-   - A/B compartment analysis added on a separate section.
+   - A/B compartment analysis is now included.
    - Calculation and plotting of the Pearson correlation matrix from the O/E contact matrix (only Yaffe-Tanay method).
-   - Possibility of calculating and plotting both PC1 and PC1 for A/B compartment annotation.
+   - Possibility of calculating and plotting eigenvector for A/B compartment annotation.
    - Small bug fixes.
 
 ### July 25, 2019
