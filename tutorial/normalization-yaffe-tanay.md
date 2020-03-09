@@ -7,7 +7,7 @@ This pipeline illustrates the procedure to normalize and visualize Hi-C **intra-
 1. [Running HiFive functions](#1-running-hifive-functions)
 2. [Normalizing the data](#2-normalizing-the-data)
    - [2.1. Normalizing fend data](#21-normalizing-fend-data)
-   - [2.2. Normalizing enrichment data](#22-normalizing-enrichment-data)
+   - [2.2. Normalizing enrichment O/E data and calculating the Pearson correlation matrix](#22-normalizing-enrichment-O/E-data-and-calculating-the-person-correlation-matrix)
 3. [Visualizing the data](#3-visualizing-the-data)
    - [3.1. Visualizing the contact data](#31-visualizing-the-contact-data)
    - [3.2. Visualizing the enrichment data](#32-visualizing-the-enrichment-data)
@@ -23,7 +23,7 @@ The Python script [HiCtool_hifive.py](/scripts/HiCtool_hifive.py) is used to run
 - Creating the HiCData object from a Fend object and mapped data in bam format. At this step spurious ligation products (paired-reads whose total distance to their respective restriction sites exceeds 500 bp) are removed. In addition, PCR duplicates are removed and reads with ends mapping to the same fragment and reads with ends mapping to adjacent fragments on opposite strands are also excluded, to consider the possibility of incomplete restriction enzyme digestion and fragment circularization.
 - Creating the HiC project object, which stores the information about the observed contact data that we will use for the downstream analysis.
 - Filtering fragments that do not have at least one interaction before learning correction parameters.
-- Estimating the distance-dependence relationship from the data prior to normalization, in order to avoid biases that may result due to restriction site distribution characteristics or the influence of distance/signal relationship. Restriction sites over the genome are unevenly distributed and this results in a large set of distances between fragments and their neighbors. Since the interaction frequency is strongly inversely-related to inter-fragment distance, this means that fragments surrounded by shorter ones will show higher nearby interactions than those with longer adjacent fragments, due to the uneven distribution of the restriction sites position.
+- Estimating the distance-dependence relationship from the data prior to normalization. This step allows to compute the expected contact matrix based on genomic distance which is used to output the O/E contact matrix.
 - Learning the correction model for Hi-C data. For the normalization, we take into account of fragments length, inter-fragment distance, GC content and mappability score biases, according to the information included in the Fend object. We also consider a minimum distance of 500 kb between fragments to take into account of the effect of biological biases (TSSs and CTCF bound sites) while learning the correction parameters.
 
 For more information about these functions, please see [HiFive’s API documentation](http://bxlab-hifive.readthedocs.org/en/latest/api.html). To run these steps execute the following command on the Unix console (update parameters properly):
@@ -48,12 +48,12 @@ where:
 - ``fend_object.hdf5``
 - ``HiC_data_object.hdf5``
 - ``HiC_project_object.hdf5``
+- ``HiC_project_object_with distance_parameters.hdf5``
 - ``HiC_norm_binning.hdf5`` to be used in the following section.
-
 
 ## 2. Normalizing the data
 
-For the normalization, observed data and correction parameters to remove biases to obtain the corrected read counts are required. Therefore, the observed contact matrix and the fend expected contact matrix are calculated. In addition, the enrichment expected contact matrix is calculated to compute the observed over expected enrichment values, considering also the distance between fends.
+For the normalization, observed data and correction parameters to remove biases to obtain the corrected read counts are required. Therefore, the observed contact matrix and the fend expected contact matrix are calculated. In addition, the enrichment expected contact matrix (considering the genomic distance) is calculated to compute the O/E contact matrix and the Pearson correlation matrix of the O/E matrix (to be used in the A/B compartment analysis).
 
 For each chromosome, the following five matrices can be computed and saved to file. Data are compressed in a format to reduce storage occupation and improving saving and loading time ([see here for more details](/tutorial/HiCtool_compressed_format.md)).
 
@@ -64,7 +64,7 @@ For each chromosome, the following five matrices can be computed and saved to fi
 - The **normalized enrichment data** ("observed over expected" matrix) contain the enrichment value (O/E) for each bin.
 
 **Note!**
-If you need only the normalized contact matrices, there is no need to calculate also the enrichment data. If you do not need the expected data, do not save it since they are the biggest files and the process may take time.
+If you need only the normalized contact matrices and do not need A/B compartment analysis, there is no need to calculate also the enrichment data. If you do not need the expected data, do not save it since they are the biggest files and the process may take time.
 
 To normalize the data, the script [HiCtool_yaffe_tanay.py](/scripts/HiCtool_yaffe_tanay.py) is used.
 
@@ -109,9 +109,9 @@ python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 -p 24
 ```
 
-### 2.2. Normalizing enrichment data
+### 2.2. Normalizing enrichment O/E data and calculating the Pearson correlation matrix
 
-To calculate and save the **"observed/expected" intra-chromosomal contact matrix** for a chromosome ``--chr`` do as following:
+To calculate and save the **O/E intra-chromosomal contact matrix** and the **Pearson correlation matrix** for a chromosome ``--chr`` do as following:
 ```unix
 python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 --action normalize_enrich \
@@ -152,7 +152,7 @@ python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 
 ## 3. Visualizing the data
 
-This section allows to plot the contact data (observed, expected or normalized fend) and the enrichment "observed over expected" data.
+This section allows to plot the contact data (observed, expected or normalized fend), the enrichment O/E contact matrix and the Pearson correlation matrix.
 
 For plotting functionalities, the script [HiCtool_yaffe_tanay.py](/scripts/HiCtool_yaffe_tanay.py) is used.
 
@@ -260,3 +260,18 @@ python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 Heatmap             |  Histogram
 :-------------------------:|:-------------------------:
 ![](/figures/HiCtool_chr6_1mb_normalized_enrich.png)  |  ![](/figures/HiCtool_chr6_1mb_normalized_enrich_histogram.png)
+
+### 3.3. Visualizing the Pearson correlation matrix
+
+This part is to plot the heatmap of the Person correlation matrix derived from the O/E matrix.
+
+```unix
+python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
+--action plot_correlation \
+-i HiCtool_chr6_1mb_correlation_matrix.txt \
+-c /HiCtool-master/scripts/chromSizes/ \
+-b 1000000 \
+-s hg38 \
+--chr 6
+```
+![](/figures/HiCtool_chr6_1mb_correlation_matrix.png) 

@@ -41,23 +41,23 @@ class hi_five:
         else:
             restriction_enzyme = ','.join(restriction_enzymes)
     
-        if model == 'Yaffe-Tanay' or model == 'Hi-Corrector':
-            fend = hifive.Fend('fend_object.hdf5', mode='w')
-            fend.load_fends(fend_file, re_name=restriction_enzyme, format='bed')
-            fend.save()
-            
-            # Creating a HiCData object
-            data = hifive.HiCData('HiC_data_object.hdf5', mode='w')
-            data.load_data_from_bam('fend_object.hdf5',
-                                    [bam_file_1,bam_file_2],
-                                    maxinsert=500,
-                                    skip_duplicate_filtering=False)
-            data.save()
-                                    
-            # Creating a HiC Project object
-            hic = hifive.HiC('HiC_project_object.hdf5', 'w')
-            hic.load_data('HiC_data_object.hdf5')
-            hic.save()
+        # Run for both models
+        fend = hifive.Fend('fend_object.hdf5', mode='w')
+        fend.load_fends(fend_file, re_name=restriction_enzyme, format='bed')
+        fend.save()
+        
+        # Creating a HiCData object
+        data = hifive.HiCData('HiC_data_object.hdf5', mode='w')
+        data.load_data_from_bam('fend_object.hdf5',
+                                [bam_file_1,bam_file_2],
+                                maxinsert=500,
+                                skip_duplicate_filtering=False)
+        data.save()
+                                
+        # Creating a HiC Project object
+        hic = hifive.HiC('HiC_project_object.hdf5', 'w')
+        hic.load_data('HiC_data_object.hdf5')
+        hic.save()
     
         if model == 'Yaffe-Tanay':
             # Filtering HiC fends
@@ -66,6 +66,7 @@ class hi_five:
             
             # Finding HiC distance function
             hic.find_distance_parameters(numbins=90, minsize=200, maxsize=0)
+            hic.save('HiC_project_object_with_distance_parameters.hdf5')
             
             # Learning correction parameters using the binning algorithm
             hic.find_binning_fend_corrections(max_iterations=1000,
@@ -119,6 +120,6 @@ if __name__ == '__main__':
     if parameters['model'] in ['Yaffe-Tanay', 'Hi-Corrector']:
         print "Running HiFive functions for the model " + parameters['model'] + " ..."
     else:
-        parser.error("Please insert the correct model, one between Yaffe-Tanay and Hi-Corrector.")
+        parser.error("Please insert the correct model, Yaffe-Tanay or Hi-Corrector.")
         
     hi_five(parameters)
