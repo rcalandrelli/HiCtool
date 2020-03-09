@@ -46,6 +46,7 @@ python2.7 /HiCtool-master/scripts/HiCtool_compartment_analysis.py \
 
 The following code allows to plot the principal component values in a barplot, which allows to delineate compartments.
 
+```unix
 python2.7 /HiCtool-master/scripts/HiCtool_compartment_analysis.py \
 --action plot_pc \
 -i HiCtool_chr6_1mb_PC1.txt \
@@ -54,6 +55,7 @@ python2.7 /HiCtool-master/scripts/HiCtool_compartment_analysis.py \
 -s hg38 \
 --chr 6 \
 --pc PC1
+```
 
 where:
 
