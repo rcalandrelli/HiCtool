@@ -1,6 +1,6 @@
 # Data normalization with explicit-factor correction model of Yaffe and Tanay
 
-This pipeline illustrates the procedure to normalize and visualize Hi-C **intra-chromosomal contact data only** following the explicit-factor model of [Yaffe and Tanay](http://www.nature.com/ng/journal/v43/n11/abs/ng.947.html). This allows also to generate the O/E contact data used to calculate the Pearson correlation matrix (this can be used for A/B compartment analysis [here](/tutorial/compartment.md)).
+This pipeline presents the procedure to normalize and visualize **Hi-C intra-chromosomal contact data only** following the explicit-factor model of [Yaffe and Tanay](http://www.nature.com/ng/journal/v43/n11/abs/ng.947.html). This allows also to generate the O/E contact data used to calculate the Pearson correlation matrix (this can be used for A/B compartment analysis reported [here](/tutorial/compartment.md)).
 
 ## Table of contents
 
@@ -15,7 +15,7 @@ This pipeline illustrates the procedure to normalize and visualize Hi-C **intra-
 
 ## 1. Running HiFive functions
 
-We resort to the HiFive package, and specifically the binning algorithm, to normalize the data using the approach of Yaffe and Tanay. HiFive allows to remove spurious ligation products, as well as PCR duplicates and non-informative reads before generating the contact matrix.
+We resort to the HiFive package, and specifically the binning algorithm, to normalize the data using the approach of Yaffe and Tanay. HiFive allows to remove spurious ligation products, as well as PCR duplicates (even though deduplication was already performed during preprocessing) and non-informative reads before generating the contact matrix.
 
 The Python script [HiCtool_hifive.py](/scripts/HiCtool_hifive.py) is used to run all the steps needed in order to generate the data used for normalization: 
 
@@ -28,7 +28,7 @@ The Python script [HiCtool_hifive.py](/scripts/HiCtool_hifive.py) is used to run
 
 For more information about these functions, please see [HiFive’s API documentation](http://bxlab-hifive.readthedocs.org/en/latest/api.html). To run these steps execute the following command on the Unix console (update parameters properly):
 ```unix
-python /HiCtool-master/scripts/HiCtool_hifive.py \
+python2.7 /HiCtool-master/scripts/HiCtool_hifive.py \
 -f restrictionsites.bed \
 --b1 HiCfile_pair1.bam \
 --b2 HiCfile_pair2.bam \
@@ -40,8 +40,8 @@ where:
 - ``-f`` is the FEND file in bed format from preprocessing.
 - ``--b1`` is the first bam file from preprocessing.
 - ``--b2`` is the second bam file from preprocessing.
-- ``-e`` is the restriction enzyme or enzymes names between square brackets (example [MboI,Hinfl]).
-- ``-m`` is the normalization model used (Yaffe_Tanay in this case).
+- ``-e`` is the restriction enzyme or enzymes names between square brackets (example ``[MboI,Hinfl]``).
+- ``-m`` is the normalization model used (``Yaffe_Tanay`` in this case).
 
 **The following output files are generated:**
 
@@ -61,10 +61,11 @@ For each chromosome, the following five matrices can be computed and saved to fi
 - The **fend expected data** contain the learned correction value to remove biases related to fends for each bin.
 - The **enrichment expected data** contain the expected reads count for each bin, considering the linear distance between read pairs and the learned correction parameters.
 - The **normalized fend data** contain the corrected read count for each bin.
-- The **normalized enrichment data** ("observed over expected" matrix) contain the enrichment value (O/E) for each bin.
+- The **normalized enrichment data** (observed over expected matrix) contain the enrichment value (O/E) for each bin.
 
 **Note!**
-If you need only the normalized contact matrices and do not need A/B compartment analysis, there is no need to calculate also the enrichment data. If you do not need the expected data, do not save it since they are the biggest files and the process may take time.
+
+If you need only the normalized (corrected counts) contact matrices and do not need A/B compartment analysis, there is no need to calculate also the enrichment data. If you do not need the expected data, do not save it since they are the biggest files and the process may take longer time.
 
 To normalize the data, the script [HiCtool_yaffe_tanay.py](/scripts/HiCtool_yaffe_tanay.py) is used.
 
@@ -72,7 +73,7 @@ To normalize the data, the script [HiCtool_yaffe_tanay.py](/scripts/HiCtool_yaff
 
 To calculate and save the **normalized intra-chromosomal contact matrix** for a chromosome ``--chr`` do as following:
 ```unix
-python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
+python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 --action normalize_fend \
 -i HiC_norm_binning.hdf5 \
 -c /HiCtool-master/scripts/chromSizes/ \
@@ -97,7 +98,7 @@ The parameter ``--chr`` can be used also to normalize multiple chromosomes (pass
 ```unix
 chromosomes=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y]
 
-python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
+python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 --action normalize_fend \
 -i HiC_norm_binning.hdf5 \
 -c /HiCtool-master/scripts/chromSizes/ \
@@ -113,7 +114,7 @@ python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 
 To calculate and save the **O/E intra-chromosomal contact matrix** and the **Pearson correlation matrix** for a chromosome ``--chr`` do as following:
 ```unix
-python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
+python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 --action normalize_enrich \
 -i HiC_norm_binning.hdf5 \
 -c /HiCtool-master/scripts/chromSizes/ \
@@ -138,7 +139,7 @@ The parameter ``--chr`` can be used also to normalize multiple chromosomes (pass
 ```unix
 chromosomes=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y]
 
-python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
+python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 --action normalize_enrich \
 -i HiC_norm_binning.hdf5 \
 -c /HiCtool-master/scripts/chromSizes/ \
@@ -152,9 +153,7 @@ python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 
 ## 3. Visualizing the data
 
-This section allows to plot the contact data (observed, expected or normalized fend), the enrichment O/E contact matrix and the Pearson correlation matrix.
-
-For plotting functionalities, the script [HiCtool_yaffe_tanay.py](/scripts/HiCtool_yaffe_tanay.py) is used.
+This section allows to plot the contact data (observed, expected or normalized fend), the enrichment O/E contact matrix and the Pearson correlation matrix. For plotting functionalities, the script [HiCtool_yaffe_tanay.py](/scripts/HiCtool_yaffe_tanay.py) is used.
 
 ### 3.1. Visualizing the contact data
 
@@ -162,7 +161,7 @@ This part is to plot heatmaps and histograms of the contact data. You can use th
 
 To plot and save the heatmap and histogram of the normalized data at 40 kb resolution run the following:
 ```unix
-python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
+python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 --action plot_map \
 -i HiCtool_chr6_40kb_normalized_fend.txt \
 -c /HiCtool-master/scripts/chromSizes/ \
@@ -187,8 +186,8 @@ where:
 - ``--chr``: chromosome.
 - ``--coord``: List of two integers with start and end coordinates for the chromosome to be plotted.
 - ``--data_type``: Data type to label your data, example: observed, normalized, expected_fend etc.
-- ``--my_colormap``: Colormap to be used to plot the data. You can choose among any colorbar at https://matplotlib.org/examples/color/colormaps_reference.html, or input a list of colors if you want a custom colorbar. Example: [white, red, black]. Colors can be specified also HEX format. Default: [white,red].
-- ``--cutoff_type``: To select a type of cutoff (percentile or contact) or plot the full range of the data (not declared). Default: percentile.
+- ``--my_colormap``: Colormap to be used to plot the data. You can choose among any colorbar at https://matplotlib.org/examples/color/colormaps_reference.html, or input a list of colors if you want a custom colorbar. Example: ``[white, red, black]``. Colors can be specified also HEX format. Default: ``[white,red]``.
+- ``--cutoff_type``: To select a type of cutoff (``percentile`` or ``contact``) or plot the full range of the data (not declared). Default: ``percentile``.
 - ``--cutoff``: To set a maximum cutoff on the number of contacts for the colorbar based on ``--cutoff_type``. Default: 95.
 - ``--max_color``: To set the color of the bins with contact counts over ``--cutoff``. Default: "#460000".
 - ``--plot_histogram``: Set to 1 to plot the histogram of the data distribution, 0 otherwise.
@@ -204,7 +203,7 @@ In order to change the heatmap resolution, first data have to be normalized at t
 
 Then, we plot the entire heatmap (we also change here the colormap to white and blue):
 ```unix
-python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
+python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 --action plot_map \
 -i HiCtool_chr6_1mb_normalized_fend.txt \
 -c /HiCtool-master/scripts/chromSizes/ \
@@ -221,11 +220,11 @@ python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 
 ### 3.2. Visualizing the enrichment data
 
-This part is to plot the heatmap and histogram for the enrichment normalized data ("observed over expected"). The **log2 of the data** is plotted to quantify the positive enrichment (red) and the negative enrichment (blue). Loci (pixels) equal to zero before performing the log2 (deriving from zero observed contacts) are shown in gray. Loci (pixels) where enrichment expected contact was zero before performing the ratio (observed / expected) are shown in black.
+This part is to plot the heatmap and histogram for the enrichment O/E data ("observed over expected"). The **log2 of the data** is plotted to quantify the positive enrichment (red) and the negative enrichment (blue). Loci (pixels) equal to zero before performing the log2 (deriving from zero observed contacts) are shown in gray. Loci (pixels) where enrichment expected contact was zero before performing the ratio (observed / expected) are shown in black.
 
 To plot and save the heatmap and histogram use the following code:
 ```unix
-python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
+python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 --action plot_enrich \
 -i HiCtool_chr6_40kb_normalized_enrich.txt \
 -c /HiCtool-master/scripts/chromSizes/ \
@@ -246,7 +245,7 @@ In order to change the heatmap resolution, first data have to be normalized at t
 
 Then, we plot the entire heatmap with a maximum and minimum cutoff for the log2 at 4 and -4 respectively:
 ```unix
-python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
+python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 --action plot_enrich \
 -i HiCtool_chr6_1mb_normalized_enrich.txt \
 -c /HiCtool-master/scripts/chromSizes/ \
@@ -263,10 +262,10 @@ Heatmap             |  Histogram
 
 ### 3.3. Visualizing the Pearson correlation matrix
 
-This part is to plot the heatmap of the Person correlation matrix derived from the O/E matrix.
+This part is to plot the heatmap of the Person correlation matrix derived from the O/E matrix. The input file ``HiCtool_chr6_1mb_correlation_matrix.txt`` was generated as output file [above](#22-normalizing-enrichment-oe-data-and-calculating-the-pearson-correlation-matrix).
 
 ```unix
-python /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
+python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 --action plot_correlation \
 -i HiCtool_chr6_1mb_correlation_matrix.txt \
 -c /HiCtool-master/scripts/chromSizes/ \
