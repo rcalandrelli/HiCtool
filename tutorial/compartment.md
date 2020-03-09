@@ -1,6 +1,6 @@
 # A/B compartment analysis
 
-This pipeline allows to calculate principal components (PC) of the Pearson correlation matrix that can be used to delineate A/B compartments in Hi-C data at low resolution (usually 1 mb or 500 kb). It is possible to calculate both PC1 and PC2. Usually, the sign of the eigenvector (PC1) indicates the compartment.
+This section allows to calculate the principal components (PC) of the Pearson correlation matrix that can be used to delineate A/B compartments in Hi-C data at low resolution (usually 1 mb or 500 kb). It is possible to calculate both PC1 and PC2. Usually, the sign of the eigenvector (PC1) indicates the compartment.
 
 ## Table of contents
 
@@ -11,6 +11,8 @@ This pipeline allows to calculate principal components (PC) of the Pearson corre
 
 HiCtool allows to calculate either the first (typically used) or the second principal component of the Person correlation matrix. In order to do so, the Person correlation matrix has to be calculated first as presented [here](/tutorial/normalization-yaffe-tanay.md#22-normalizing-enrichment-oe-data-and-calculating-the-pearson-correlation-matrix).
 
+This is the code to calculate the first principal component:
+```unix
 python2.7 /HiCtool-master/scripts/HiCtool_compartment_analysis.py \
 --action calculate_pc \
 -c /HiCtool-master/scripts/chromSizes/ \
@@ -18,6 +20,7 @@ python2.7 /HiCtool-master/scripts/HiCtool_compartment_analysis.py \
 -s hg38 \
 --chr 6 \
 --pc PC1
+```
 
 where:
 
@@ -26,7 +29,7 @@ where:
 - ``-b``: The bin size (resolution) for the analysis.
 - ``-s``: Species name.
 - ``--chr``: The chromosome to be used.
-- ``--pc``: Which principal component to be returned (either PC1 or PC2).
+- ``--pc``: Which principal component to be returned (either ``PC1`` or ``PC2``).
 
 The output is a txt file with the values of the principal component selected, in this case ``HiCtool_chr6_1mb_PC1.txt``.
 
@@ -44,7 +47,7 @@ python2.7 /HiCtool-master/scripts/HiCtool_compartment_analysis.py \
 
 ## 2. Plotting the principal component
 
-The following code allows to plot the principal component values in a barplot, which allows to delineate compartments.
+The following code allows to plot the principal component values in a barplot, which allows to visually delineate compartments. The following plot usually is presented together with the Pearson correlation matrix.
 
 ```unix
 python2.7 /HiCtool-master/scripts/HiCtool_compartment_analysis.py \
@@ -65,6 +68,6 @@ where:
 - ``-b``: The bin size (resolution) for the analysis.
 - ``-s``: Species name.
 - ``--chr``: The chromosome to be used.
-- ``--pc``: Which principal component to be returned (either PC1 or PC2).
+- ``--pc``: Which principal component to be returned (the same you have calculated above).
 
 ![](/figures/HiCtool_chr6_1mb_PC1.png) 
