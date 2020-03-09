@@ -1,6 +1,6 @@
 # A/B compartment analysis
 
-This pipeline illustrates the procedure to calculate principal components (PC) of the Pearson correlation matrix that can be used to delineate A/B compartments in Hi-C data at low resolution (usually 1 mb or 500 kb). The code allows to calculate both PC1 and PC2. Usually, the sign of the eigenvector (PC1) indicates the compartment.
+This pipeline allows to calculate principal components (PC) of the Pearson correlation matrix that can be used to delineate A/B compartments in Hi-C data at low resolution (usually 1 mb or 500 kb). It is possible to calculate both PC1 and PC2. Usually, the sign of the eigenvector (PC1) indicates the compartment.
 
 ## Table of contents
 
@@ -9,11 +9,11 @@ This pipeline illustrates the procedure to calculate principal components (PC) o
 
 ## 1. Calculating the principal component
 
-HiCtool allows to calculate either the first (typically used) or the second principal component of the Person correlation matrix. In order to do so, the Person correlation matrix has to be calculated first as presented [here](/tutorial/normalization-yaffe-tanay.md#22-normalizing-enrichment-data-and-calculating-the-person-correlation-matrix).
+HiCtool allows to calculate either the first (typically used) or the second principal component of the Person correlation matrix. In order to do so, the Person correlation matrix has to be calculated first as presented [here](/tutorial/normalization-yaffe-tanay.md#22-normalizing-enrichment-oe-data-and-calculating-the-pearson-correlation-matrix).
 
-python /mnt/extraids/OceanStor-SysCmn-2/rcalandrelli/HiCtool/scripts/HiCtool_compartment_analysis.py \
+python2.7 /HiCtool-master/scripts/HiCtool_compartment_analysis.py \
 --action calculate_pc \
--c /mnt/extraids/OceanStor-SysCmn-2/rcalandrelli/HiCtool/scripts/chromSizes/ \
+-c /HiCtool-master/scripts/chromSizes/ \
 -b 1000000 \
 -s hg38 \
 --chr 6 \
@@ -21,30 +21,48 @@ python /mnt/extraids/OceanStor-SysCmn-2/rcalandrelli/HiCtool/scripts/HiCtool_com
 
 where:
 
-- ``--action``: action to perform (here ``normalize_fend``).
+- ``--action``: Action to perform (here ``calculate_pc``).
 - ``-c``: Path to the folder ``chromSizes`` with trailing slash at the end ``/``.
 - ``-b``: The bin size (resolution) for the analysis.
 - ``-s``: Species name.
-- ``--chr``: The chromosome to normalize.
-- ``--save_obs``: Set to 1 to save the observed contact matrix, 0 otherwise.
-- ``--save_expect``: Set to 1 to save the fend expected data with correction values, 0 otherwise.
+- ``--chr``: The chromosome to be used.
+- ``--pc``: Which principal component to be returned (either PC1 or PC2).
 
-**The following output files are generated:**
+The output is a txt file with the values of the principal component selected, in this case ``HiCtool_chr6_1mb_PC1.txt``.
 
-- ``fend_object.hdf5``
-- ``HiC_data_object.hdf5``
-- ``HiC_project_object.hdf5``
-- ``HiC_project_object_with distance_parameters.hdf5``
-- ``HiC_norm_binning.hdf5`` to be used in the following section.
+The parameter ``--chr`` can be used also to pass multiple chromosomes (as a list between square brackets) at once and also multi-processing computation is provided if your machine supports it using the parameters ``-p``:
+```unix
+chromosomes=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y]
+python2.7 /HiCtool-master/scripts/HiCtool_compartment_analysis.py \
+--action calculate_pc \
+-c /HiCtool-master/scripts/chromSizes/ \
+-b 1000000 \
+-s hg38 \
+--chr $chromosomes \
+--pc PC1
+```
 
+## 2. Plotting the principal component
 
-## 2.
+The following code allows to plot the principal component values in a barplot, which allows to delineate compartments.
 
-python2.7 /mnt/extraids/OceanStor-SysCmn-2/rcalandrelli/HiCtool/scripts/HiCtool_compartment_analysis.py \
+python2.7 /HiCtool-master/scripts/HiCtool_compartment_analysis.py \
 --action plot_pc \
 -i HiCtool_chr6_1mb_PC1.txt \
--c /mnt/extraids/OceanStor-SysCmn-2/rcalandrelli/HiCtool/scripts/chromSizes/ \
+-c /HiCtool-master/scripts/chromSizes/ \
 -b 1000000 \
 -s hg38 \
 --chr 6 \
 --pc PC1
+
+where:
+
+- ``--action``: Action to perform (here ``plot_pc``).
+- ``-i``: Input file with the principal component values calculated above.
+- ``-c``: Path to the folder ``chromSizes`` with trailing slash at the end ``/``.
+- ``-b``: The bin size (resolution) for the analysis.
+- ``-s``: Species name.
+- ``--chr``: The chromosome to be used.
+- ``--pc``: Which principal component to be returned (either PC1 or PC2).
+
+![](/figures/HiCtool_chr6_1mb_PC1.png) 
