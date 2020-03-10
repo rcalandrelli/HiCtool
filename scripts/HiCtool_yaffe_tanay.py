@@ -35,6 +35,8 @@
 from optparse import OptionParser
 import numpy as np
 import os
+import os.path
+from os import path
 from time import gmtime, strftime
 from multiprocessing import Pool
 
@@ -65,8 +67,7 @@ parameters = {'action': None,
 def save_matrix(a_matrix, output_file):
     """
     Save an intra-chromosomal contact matrix in the HiCtool compressed format to txt file.
-    1) The upper-triangular part of the matrix is selected (including the
-    diagonal).
+    1) The upper-triangular part of the matrix is selected (including the diagonal).
     2) Data are reshaped to form a vector.
     3) All the consecutive zeros are replaced with a "0" followed by the
     number of times zeros are repeated consecutively.
@@ -229,13 +230,11 @@ def normalize_chromosome_fend_data(a_chr):
     chromosome = 'chr' + a_chr
     print "Normalizing fend data " + chromosome + " ..."
     
-    if bin_size >= 1000000:
-        bin_size_str = str(bin_size/1000000)
-        output_filename = 'HiCtool_' + chromosome + '_' + bin_size_str + 'mb_'
-    elif bin_size < 1000000:
-        bin_size_str = str(bin_size/1000)
-        output_filename = 'HiCtool_' + chromosome + '_' + bin_size_str + 'kb_'    
-    
+    output_path = "yaffe-tanay_" + str(bin_size)
+    if not path.exists(output_path):
+        os.mkdir(output_path)
+    output_filename = chromosome + '_' + str(bin_size) + '_'
+
     chromosomes = open(parameters['chromSizes_path'] + parameters['species'] + '.chrom.sizes', 'r')
     d_chr_dim = {}
     while True:
@@ -274,13 +273,14 @@ def normalize_chromosome_fend_data(a_chr):
     
     observed = heatmap_fend[:,:,0] # observed contact data extracted from the heatmap object
     if save_obs == True:
-        save_matrix(observed, output_filename + 'observed.txt')    
+        save_matrix(observed, output_path + "/" + output_filename + 'observed.txt') 
+
     
     # Expected fend (fend corrections)
     expected_fend = heatmap_fend[:,:,1]/scaling_factor # fend correction values
     if save_expect == True:
-        save_matrix(expected_fend, output_filename + 'expected_fend.txt')
-            
+        save_matrix(expected_fend, output_path + "/" + output_filename + 'expected_fend.txt') 
+ 
     # In the above calls, all valid possible interactions are queried from 
     # chromosome 'chrom' between 'start' and 'stop' parameters. The 'arraytype' 
     # parameter determines what shape of array data are returned in: 'full' 
@@ -300,7 +300,8 @@ def normalize_chromosome_fend_data(a_chr):
             else:
                 normalized_fend[i][j] = float(observed[i][j])/float(expected_fend[i][j])
     
-    save_matrix(normalized_fend, output_filename + 'normalized_fend.txt')
+    save_matrix(normalized_fend, output_path + "/" + output_filename + 'normalized_fend.txt') 
+   
     print "Done!"
     return normalized_fend
 
@@ -352,13 +353,11 @@ def plot_chromosome_data(contact_matrix,
 
     chromosome = 'chr' + a_chr
     
-    if bin_size >= 1000000:
-        bin_size_str = str(bin_size/1000000)
-        output_filename = 'HiCtool_' + chromosome + '_' + bin_size_str + 'mb_' + data_type
-    elif bin_size < 1000000:
-        bin_size_str = str(bin_size/1000)
-        output_filename = 'HiCtool_' + chromosome + '_' + bin_size_str + 'kb_' + data_type
-    
+    output_path = "yaffe-tanay_" + str(bin_size)
+    if not path.exists(output_path):
+        os.mkdir(output_path)
+    output_filename = chromosome + '_' + str(bin_size) + '_' + data_type
+
     chromosomes = open(parameters['chromSizes_path'] + parameters['species'] + '.chrom.sizes', 'r')
     d_chr_dim = {}
     while True:
@@ -495,7 +494,7 @@ def plot_chromosome_data(contact_matrix,
     plt.yticks(fontsize=8)
     plt.tick_params(axis='both', which='both', direction='out', top=False, right=False)
     plt.tight_layout()
-    plt.savefig(output_filename + '.pdf', format = 'pdf', dpi=my_dpi)
+    plt.savefig(output_path + "/" + output_filename + '.pdf', format = 'pdf', dpi=my_dpi)
         
     # Plot of the histogram
     if plot_histogram:
@@ -516,7 +515,7 @@ def plot_chromosome_data(contact_matrix,
         plt.xticks(fontsize=14)
         plt.yticks(fontsize=14)
         plt.tight_layout()
-        plt.savefig(output_filename + '_histogram.pdf', format = 'pdf')
+        plt.savefig(output_path + "/" + output_filename + '_histogram.pdf', format = 'pdf')
     print "Done!"
 
 
@@ -548,13 +547,11 @@ def normalize_chromosome_enrich_data(a_chr):
     print "Normalizing enrichment data..."
     chromosome = 'chr' + a_chr
     
-    if bin_size >= 1000000:
-        bin_size_str = str(bin_size/1000000)
-        output_filename = 'HiCtool_' + chromosome + '_' + bin_size_str + 'mb_'
-    elif bin_size < 1000000:
-        bin_size_str = str(bin_size/1000)
-        output_filename = 'HiCtool_' + chromosome + '_' + bin_size_str + 'kb_'
-    
+    output_path = "yaffe-tanay_" + str(bin_size)
+    if not path.exists(output_path):
+        os.mkdir(output_path)
+    output_filename = chromosome + '_' + str(bin_size) + '_'
+
     start_pos = 0
     chromosomes = open(parameters['chromSizes_path'] + parameters['species'] + '.chrom.sizes', 'r')
     d_chr_dim = {}
@@ -578,14 +575,14 @@ def normalize_chromosome_enrich_data(a_chr):
     
     # Observed data
     observed = heatmap_enrich[:,:,0] # observed contact data extracted from the heatmap object
-    if save_obs == True: 
-        save_matrix(observed, output_filename + 'observed.txt')            
-            
+    if save_obs == True:
+        save_matrix(observed, output_path + "/" + output_filename + 'observed.txt') 
+     
     # Expected enrichment data (fend corrections and distance property)
     expected_enrich = heatmap_enrich[:,:,1] # expected enrichment contact data extracted from the heatmap object
-    if save_expect == True:  
-        save_matrix(expected_enrich, output_filename + 'expected_enrich.txt')
-    
+    if save_expect == True:
+        save_matrix(expected_enrich, output_path + "/" + output_filename + 'expected_enrich.txt') 
+
     # Normalized enrichment contact matrix
     n = len(expected_enrich)
     normalized_enrich = np.zeros((n,n))
@@ -597,8 +594,10 @@ def normalize_chromosome_enrich_data(a_chr):
                 normalized_enrich[i][j] = float(observed[i][j])/float(expected_enrich[i][j])
     
     pcc_contact_matrix = np.corrcoef(normalized_enrich)
-    save_matrix(normalized_enrich, output_filename + 'normalized_enrich.txt')
-    save_matrix(pcc_contact_matrix, output_filename + 'correlation_matrix.txt')
+
+    save_matrix(normalized_enrich, output_path + "/" + output_filename + 'normalized_enrich.txt') 
+    save_matrix(pcc_contact_matrix, output_path + "/" + output_filename + 'correlation_matrix.txt') 
+    
     print "Done!"
     return normalized_enrich
 
@@ -643,13 +642,10 @@ def plot_chromosome_enrich_data(contact_matrix,
     import copy
 
     chromosome = 'chr' + a_chr
-    
-    if bin_size >= 1000000:
-        bin_size_str = str(bin_size/1000000)
-        output_filename = 'HiCtool_' + chromosome + '_' + bin_size_str + 'mb_normalized_enrich'
-    elif bin_size < 1000000:
-        bin_size_str = str(bin_size/1000)
-        output_filename = 'HiCtool_' + chromosome + '_' + bin_size_str + 'kb_normalized_enrich'
+    output_path = "yaffe-tanay_" + str(bin_size)
+    if not path.exists(output_path):
+        os.mkdir(output_path)
+    output_filename = chromosome + '_' + str(bin_size) + '_normalized_enrich'
     
     chromosomes = open(parameters['chromSizes_path'] + parameters['species'] + '.chrom.sizes', 'r')
     d_chr_dim = {}
@@ -818,7 +814,7 @@ def plot_chromosome_enrich_data(contact_matrix,
     plt.yticks(fontsize=8)
     plt.tick_params(axis='both', which='both', direction='out', top=False, right=False)
     plt.tight_layout()
-    plt.savefig(output_filename + '.pdf', format = 'pdf', dpi = my_dpi)
+    plt.savefig(output_path + "/" + output_filename + '.pdf', format = 'pdf', dpi = my_dpi)
     
     # Plot the histogram
     if plot_histogram:        
@@ -840,7 +836,7 @@ def plot_chromosome_enrich_data(contact_matrix,
         plt.xticks(fontsize=14)
         plt.yticks(fontsize=14)
         plt.tight_layout()
-        plt.savefig(output_filename + '_histogram.pdf', format = 'pdf')
+        plt.savefig(output_path + "/" + output_filename + '_histogram.pdf', format = 'pdf')
     print "Done!"
     
     
@@ -873,13 +869,10 @@ def plot_chromosome_correlation_data(correlation_matrix,
     from matplotlib.colors import Normalize
 
     chromosome = 'chr' + a_chr
-    
-    if bin_size >= 1000000:
-        bin_size_str = str(bin_size/1000000)
-        output_filename = 'HiCtool_' + chromosome + '_' + bin_size_str + 'mb_correlation_matrix'
-    elif bin_size < 1000000:
-        bin_size_str = str(bin_size/1000)
-        output_filename = 'HiCtool_' + chromosome + '_' + bin_size_str + 'kb_correlation_matrix'
+    output_path = "yaffe-tanay_" + str(bin_size)
+    if not path.exists(output_path):
+        os.mkdir(output_path)
+    output_filename = chromosome + '_' + str(bin_size) + '_correlation_matrix'
     
     chromosomes = open(parameters['chromSizes_path'] + parameters['species'] + '.chrom.sizes', 'r')
     d_chr_dim = {}
@@ -1021,7 +1014,7 @@ def plot_chromosome_correlation_data(correlation_matrix,
     plt.yticks(fontsize=8)
     plt.tick_params(axis='both', which='both', direction='out', top=False, right=False)
     plt.tight_layout()
-    plt.savefig(output_filename + '.pdf', format = 'pdf', dpi = my_dpi)
+    plt.savefig(output_path + "/" + output_filename + '.pdf', format = 'pdf', dpi = my_dpi)
     print "Done!"
 
 

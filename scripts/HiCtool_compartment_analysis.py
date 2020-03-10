@@ -91,14 +91,8 @@ def calculate_pc(a_chr):
     bin_size = parameters["bin_size"]
     pc = parameters['pc']
     
-    if bin_size >= 1000000:
-        bin_size_str = str(bin_size/1000000)
-        input_correlation_matrix = load_matrix('HiCtool_chr' + a_chr + '_' + bin_size_str + 'mb_correlation_matrix.txt')
-        output_filename = 'HiCtool_chr' + a_chr + '_' + bin_size_str + 'mb_' + pc + '.txt'
-    elif bin_size < 1000000:
-        bin_size_str = str(bin_size/1000)
-        input_correlation_matrix = load_matrix('HiCtool_chr' + a_chr + '_' + bin_size_str + 'kb_correlation_matrix.txt')
-        output_filename = 'HiCtool_chr' + a_chr + '_' + bin_size_str + 'kb_'  + pc + '.txt'  
+    input_correlation_matrix = load_matrix("yaffe-tanay_" + str(bin_size) + "/chr" + a_chr + "_" + str(bin_size) + "_correlation_matrix.txt")
+    output_filename = "yaffe-tanay_" + str(bin_size) + "/chr" + a_chr + '_' + str(bin_size) + '_'  + pc + '.txt'  
     
     print "Performing PCA..."
     pca = PCA(n_components=2)
@@ -155,12 +149,7 @@ def plot_pc(input_pc_file,
         except StopIteration:
             break
 
-    if bin_size >= 1000000:
-        bin_size_str = str(bin_size/1000000)
-        output_filename = 'HiCtool_chr' + a_chr + '_' + bin_size_str + 'mb_' + pc + '.pdf'
-    elif bin_size < 1000000:
-        bin_size_str = str(bin_size/1000)
-        output_filename = 'HiCtool_chr' + a_chr + '_' + bin_size_str + 'kb_'  + pc + '.pdf'  
+    output_filename = "yaffe-tanay_" + str(bin_size) + '/chr' + a_chr + '_' + str(bin_size) + '_' + pc + '.pdf'
 
     if full_chromosome == True:
         start_pos = 0
