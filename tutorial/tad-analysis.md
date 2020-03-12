@@ -42,7 +42,7 @@ where:
 - ``--chr``: Chromosome or chromosomes to perform the TAD analysis in a list between square brackets.
 - ``--data_type``: Data type to label your data, here ``normalized``.
 
-This script will produce three output files:
+This script will produce three output files inside the folder ``tad_analysis``:
 
 - ``HiCtool_chr6_DI.txt`` which contains the DI values.
 - ``HiCtool_chr6_hmm_states.txt`` which contains the HMM states extracted from the DI values.
@@ -95,7 +95,7 @@ python2.7 ./HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --max_color "#460000" \
 --chr_row_coord [80000000,120000000] \
 --chr_col_coord [80000000,120000000] \
---topological_domains HiCtool_chr6_topological_domains.txt
+--topological_domains ./tad_analysis/HiCtool_chr6_topological_domains.txt
 ```
 ![](/figures/HiCtool_chr6_chr6_40kb_normalized_domains_80000000_120000000.png)
 
@@ -137,7 +137,7 @@ python2.7 ./HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --max_color "#460000" \
 --chr_row_coord [50000000,54000000] \
 --chr_col_coord [50000000,54000000] \
---topological_domains HiCtool_chr6_topological_domains.txt
+--topological_domains ./tad_analysis/HiCtool_chr6_topological_domains.txt
 ```
 ![](/figures/HiCtool_chr6_chr6_40kb_normalized_domains_50000000_54000000.png)
 
@@ -164,7 +164,7 @@ To **plot the DI values** use the function ``plot_chromosome_DI`` of [HiCtool_TA
 ```unix
 python2.7 ./HiCtool-master/scripts/HiCtool_TAD_analysis.py \
 --action plot_chromosome_DI \
--i HiCtool_chr6_DI.txt \
+-i ./tad_analysis/HiCtool_chr6_DI.txt \
 -c ./HiCtool-master/scripts/chromSizes/ \
 -s hg38 \
 --chr 6 \
@@ -193,13 +193,13 @@ To **plot the DI values and HMM states** use the function ``plot_chromosome_DI``
 ```unix
 python2.7 ./HiCtool-master/scripts/HiCtool_TAD_analysis.py \
 --action plot_chromosome_DI \
--i HiCtool_chr6_DI.txt \
+-i ./tad_analysis/HiCtool_chr6_DI.txt \
 -c ./HiCtool-master/scripts/chromSizes/ \
 -s hg38 \
 --chr 6 \
 --full_chromosome 0 \
 --coord [50000000,54000000] \
---input_file_hmm HiCtool_chr6_hmm_states.txt
+--input_file_hmm ./tad_analysis/HiCtool_chr6_hmm_states.txt
 ```
 
 ![](/figures/HiCtool_chr6_DI_HMM.png)
