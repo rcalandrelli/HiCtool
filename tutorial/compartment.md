@@ -31,11 +31,12 @@ where:
 - ``--chr``: The chromosome to be used.
 - ``--pc``: Which principal component to be returned (either ``PC1`` or ``PC2``).
 
-The output is a txt file with the values of the principal component selected, in this case ``chr6_1000000_PC1.txt`` inside the folder ``yaffe_tanay_1000000``.
+The output is a txt file with the values of the principal component selected, in this case ``chr6_1000000_PC1.txt`` inside the folder ``./yaffe_tanay_1000000/``.
 
 The parameter ``--chr`` can be used also to pass multiple chromosomes (as a list between square brackets) at once and also multi-processing computation is provided if your machine supports it using the parameters ``-p``:
 ```unix
 chromosomes=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y]
+
 python2.7 /HiCtool-master/scripts/HiCtool_compartment_analysis.py \
 --action calculate_pc \
 -c /HiCtool-master/scripts/chromSizes/ \
