@@ -31,7 +31,7 @@ where:
 - ``--chr``: The chromosome to be used.
 - ``--pc``: Which principal component to be returned (either ``PC1`` or ``PC2``).
 
-The output is a txt file with the values of the principal component selected, in this case ``HiCtool_chr6_1mb_PC1.txt``.
+The output is a txt file with the values of the principal component selected, in this case ``chr6_1000000_PC1.txt`` inside the folder ``yaffe_tanay_1000000``.
 
 The parameter ``--chr`` can be used also to pass multiple chromosomes (as a list between square brackets) at once and also multi-processing computation is provided if your machine supports it using the parameters ``-p``:
 ```unix
@@ -52,7 +52,7 @@ The following code allows to plot the principal component values in a barplot, w
 ```unix
 python2.7 /HiCtool-master/scripts/HiCtool_compartment_analysis.py \
 --action plot_pc \
--i HiCtool_chr6_1mb_PC1.txt \
+-i ./yaffe_tanay_1000000/chr6_1000000_PC1.txt \
 -c /HiCtool-master/scripts/chromSizes/ \
 -b 1000000 \
 -s hg38 \
