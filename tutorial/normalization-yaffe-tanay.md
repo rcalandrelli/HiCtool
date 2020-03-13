@@ -49,23 +49,24 @@ where:
 - ``HiC_data_object.hdf5``
 - ``HiC_project_object.hdf5``
 - ``HiC_project_object_with distance_parameters.hdf5``
-- ``HiC_norm_binning.hdf5`` to be used in the following section.
+- ``HiC_norm_binning.hdf5`` to be used in the following sections.
 
 ## 2. Normalizing the data
 
 For the normalization, observed data and correction parameters to remove biases to obtain the corrected read counts are required. Therefore, the observed contact matrix and the fend expected contact matrix are calculated. In addition, the enrichment expected contact matrix (considering the genomic distance) is calculated to compute the O/E contact matrix and the Pearson correlation matrix of the O/E matrix (to be used in the A/B compartment analysis).
 
-For each chromosome, the following five matrices can be computed and saved to file. Data are compressed in a format to reduce storage occupation and improving saving and loading time ([see here for more details](/tutorial/HiCtool_compressed_format.md)).
+For each chromosome, the following matrices can be computed and saved to file. Data are compressed in a format to reduce storage occupation and improving saving and loading time ([see here for more details](/tutorial/HiCtool_compressed_format.md)).
 
-- The **observed data** contain the observed reads count for each bin.
-- The **fend expected data** contain the learned correction value to remove biases related to fends for each bin.
-- The **enrichment expected data** contain the expected reads count for each bin, considering the linear distance between read pairs and the learned correction parameters.
-- The **normalized fend data** contain the corrected read count for each bin.
-- The **normalized enrichment data** (observed over expected matrix) contain the enrichment value (O/E) for each bin.
+- The **observed contact matrix** contains the observed reads count for each bin.
+- The **fend expected contain matrix** contains the learned correction value to remove biases related to fends for each bin.
+- The **enrichment expected contact matrix** contains the expected reads count for each bin, considering the linear distance between read pairs and the learned correction parameters.
+- The **normalized fend contact matrix** contains the corrected read count for each bin.
+- The **normalized enrichment (O/E) contact matrix** contains the observed/expected value for each bin.
+- The **Pearson correlation matrix** calculated from the O/E contact matrix.
 
 **Note!**
 
-If you need only the normalized (corrected counts) contact matrices and do not need A/B compartment analysis, there is no need to calculate also the enrichment data. If you do not need the expected data, do not save it since they are the biggest files and the process may take longer time.
+If you need only the normalized (corrected counts) contact matrices and do not need A/B compartment analysis, there is no need to calculate also the enrichment data. If you do not need the "expected" data, do not save it since they are the biggest files and the process may take longer time.
 
 To normalize the data, the script [HiCtool_yaffe_tanay.py](/scripts/HiCtool_yaffe_tanay.py) is used.
 
@@ -85,7 +86,7 @@ python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 ```
 where:
 
-- ``--action``: action to perform (here ``normalize_fend``).
+- ``--action``: Action to perform (here ``normalize_fend``).
 - ``-i``:  Norm binning file in ``.hdf5`` format obtained with ``HiCtool_hifive.py`` above.
 - ``-c``: Path to the folder ``chromSizes`` with trailing slash at the end ``/``.
 - ``-b``: The bin size (resolution) for the analysis.
@@ -112,13 +113,14 @@ python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 
 ### 2.2. Normalizing enrichment O/E data and calculating the Pearson correlation matrix
 
+This analysis is generally useful to calculate A/B compartments, which means that it is usually performed at coarse resolution (1 Mb typically, or 500 kb).
 To calculate and save the **O/E intra-chromosomal contact matrix** and the **Pearson correlation matrix** for a chromosome ``--chr`` do as following:
 ```unix
 python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 --action normalize_enrich \
 -i HiC_norm_binning.hdf5 \
 -c /HiCtool-master/scripts/chromSizes/ \
--b 40000 \
+-b 1000000 \
 -s hg38 \
 --chr 6 \
 --save_obs 1 \
@@ -143,7 +145,7 @@ python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 --action normalize_enrich \
 -i HiC_norm_binning.hdf5 \
 -c /HiCtool-master/scripts/chromSizes/ \
--b 40000 \
+-b 1000000 \
 -s hg38 \
 --chr $chromosomes \
 --save_obs 1 \
@@ -163,7 +165,7 @@ To plot and save the heatmap and histogram of the normalized data at 40 kb resol
 ```unix
 python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 --action plot_map \
--i HiCtool_chr6_40kb_normalized_fend.txt \
+-i ./yaffe_tanay_40000/chr6_40000_normalized_fend.txt \
 -c /HiCtool-master/scripts/chromSizes/ \
 -b 40000 \
 -s hg38 \
@@ -178,7 +180,7 @@ python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 ```
 where:
 
-- ``--action``: action to perform (here ``plot_map``).
+- ``--action``: Action to perform (here ``plot_map``).
 - ``-i``:  Input contact matrix.
 - ``-c``: Path to the folder ``chromSizes`` with trailing slash at the end ``/``.
 - ``-b``: The bin size (resolution) for the analysis.
@@ -205,7 +207,7 @@ Then, we plot the entire heatmap (we also change here the colormap to white and 
 ```unix
 python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 --action plot_map \
--i HiCtool_chr6_1mb_normalized_fend.txt \
+-i ./yaffe_tanay_1000000/chr6_1000000_normalized_fend.txt \
 -c /HiCtool-master/scripts/chromSizes/ \
 -b 1000000 \
 -s hg38 \
@@ -222,32 +224,11 @@ python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 
 This part is to plot the heatmap and histogram for the enrichment O/E data ("observed over expected"). The **log2 of the data** is plotted to quantify the positive enrichment (red) and the negative enrichment (blue). Loci (pixels) equal to zero before performing the log2 (deriving from zero observed contacts) are shown in gray. Loci (pixels) where enrichment expected contact was zero before performing the ratio (observed / expected) are shown in black.
 
-To plot and save the heatmap and histogram use the following code:
+To plot and save the heatmap and histogram use the following code (maximum and minimum cutoff for the log2 at 4 and -4 respectively):
 ```unix
 python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 --action plot_enrich \
--i HiCtool_chr6_40kb_normalized_enrich.txt \
--c /HiCtool-master/scripts/chromSizes/ \
--b 40000 \
--s hg38 \
---chr 6 \
---coord [50000000,100000000] \
---plot_histogram 1
-```
-
-Heatmap             |  Histogram
-:-------------------------:|:-------------------------:
-![](/figures/HiCtool_chr6_40kb_normalized_enrich_50000000_54000000.png)  |  ![](/figures/HiCtool_chr6_40kb_normalized_enrich_histogram_50000000_54000000.png)
-
-**Additional example of the enrichment contact matrix for chromosome 6 at 1 Mb resolution**
-
-In order to change the heatmap resolution, first data have to be normalized at the desired resolution set with the parameter ``-b`` above ([see section 2.2.](#21-normalizing-enrichment-data)):
-
-Then, we plot the entire heatmap with a maximum and minimum cutoff for the log2 at 4 and -4 respectively:
-```unix
-python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
---action plot_enrich \
--i HiCtool_chr6_1mb_normalized_enrich.txt \
+-i ./yaffe_tanay_1000000/chr6_1000000_normalized_enrich.txt \
 -c /HiCtool-master/scripts/chromSizes/ \
 -b 1000000 \
 -s hg38 \
@@ -260,6 +241,25 @@ Heatmap             |  Histogram
 :-------------------------:|:-------------------------:
 ![](/figures/HiCtool_chr6_1mb_normalized_enrich.png)  |  ![](/figures/HiCtool_chr6_1mb_normalized_enrich_histogram.png)
 
+**Additional example of the enrichment contact matrix for chromosome 6 at 40 kb resolution**
+
+O/E data may be plotted even at finer resolution (note that it may require some time to compute the contact matrix). In order to change the heatmap resolution, first data have to be normalized at the desired resolution set with the parameter ``-b`` above ([see section 2.2.](#21-normalizing-enrichment-data)):
+
+```unix
+python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
+--action plot_enrich \
+-i ./yaffe_tanay_40000/chr6_40000_normalized_enrich.txt \
+-c /HiCtool-master/scripts/chromSizes/ \
+-b 40000 \
+-s hg38 \
+--chr 6 \
+--coord [50000000,100000000] \
+--plot_histogram 1
+```
+Heatmap             |  Histogram
+:-------------------------:|:-------------------------:
+![](/figures/HiCtool_chr6_40kb_normalized_enrich_50000000_54000000.png)  |  ![](/figures/HiCtool_chr6_40kb_normalized_enrich_histogram_50000000_54000000.png)
+
 ### 3.3. Visualizing the Pearson correlation matrix
 
 This part is to plot the heatmap of the Person correlation matrix derived from the O/E matrix. The input file ``HiCtool_chr6_1mb_correlation_matrix.txt`` was generated as output file [above](#22-normalizing-enrichment-oe-data-and-calculating-the-pearson-correlation-matrix).
@@ -267,7 +267,7 @@ This part is to plot the heatmap of the Person correlation matrix derived from t
 ```unix
 python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 --action plot_correlation \
--i HiCtool_chr6_1mb_correlation_matrix.txt \
+-i ./yaffe_tanay_1000000/chr6_1000000_correlation_matrix.txt \
 -c /HiCtool-master/scripts/chromSizes/ \
 -b 1000000 \
 -s hg38 \

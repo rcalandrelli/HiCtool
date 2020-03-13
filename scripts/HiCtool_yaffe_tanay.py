@@ -6,7 +6,7 @@
 #
 # To use this code, fend correction values must be provided (see HiCtool_hifive.py, -m Yaffe-Tanay)
 
-# Usage: python2.7 HiCtool_yaffe-tanay.py [-h] [options]
+# Usage: python2.7 HiCtool_yaffe_tanay.py [-h] [options]
 # Options:
 #  -h, --help                show this help message and exit
 #  --action                  Action to perform: normalize_fend, plot_map, normalize_enrich, plot_enrich, plot_correlation.
@@ -230,7 +230,7 @@ def normalize_chromosome_fend_data(a_chr):
     chromosome = 'chr' + a_chr
     print "Normalizing fend data " + chromosome + " ..."
     
-    output_path = "yaffe-tanay_" + str(bin_size)
+    output_path = "yaffe_tanay_" + str(bin_size)
     if not path.exists(output_path):
         os.mkdir(output_path)
     output_filename = chromosome + '_' + str(bin_size) + '_'
@@ -353,7 +353,7 @@ def plot_chromosome_data(contact_matrix,
 
     chromosome = 'chr' + a_chr
     
-    output_path = "yaffe-tanay_" + str(bin_size)
+    output_path = "yaffe_tanay_" + str(bin_size)
     if not path.exists(output_path):
         os.mkdir(output_path)
     output_filename = chromosome + '_' + str(bin_size) + '_' + data_type
@@ -547,7 +547,7 @@ def normalize_chromosome_enrich_data(a_chr):
     print "Normalizing enrichment data..."
     chromosome = 'chr' + a_chr
     
-    output_path = "yaffe-tanay_" + str(bin_size)
+    output_path = "yaffe_tanay_" + str(bin_size)
     if not path.exists(output_path):
         os.mkdir(output_path)
     output_filename = chromosome + '_' + str(bin_size) + '_'
@@ -642,7 +642,7 @@ def plot_chromosome_enrich_data(contact_matrix,
     import copy
 
     chromosome = 'chr' + a_chr
-    output_path = "yaffe-tanay_" + str(bin_size)
+    output_path = "yaffe_tanay_" + str(bin_size)
     if not path.exists(output_path):
         os.mkdir(output_path)
     output_filename = chromosome + '_' + str(bin_size) + '_normalized_enrich'
@@ -869,7 +869,7 @@ def plot_chromosome_correlation_data(correlation_matrix,
     from matplotlib.colors import Normalize
 
     chromosome = 'chr' + a_chr
-    output_path = "yaffe-tanay_" + str(bin_size)
+    output_path = "yaffe_tanay_" + str(bin_size)
     if not path.exists(output_path):
         os.mkdir(output_path)
     output_filename = chromosome + '_' + str(bin_size) + '_correlation_matrix'
