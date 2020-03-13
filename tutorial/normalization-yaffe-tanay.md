@@ -113,8 +113,8 @@ python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 
 ### 2.2. Normalizing enrichment O/E data and calculating the Pearson correlation matrix
 
-This analysis is generally useful to calculate A/B compartments, which means that it is usually performed at coarse resolution (1 Mb typically, or 500 kb).
-To calculate and save the **O/E intra-chromosomal contact matrix** and the **Pearson correlation matrix** for a chromosome ``--chr`` do as following:
+This analysis is generally used to calculate A/B compartments, and it is performed at coarse resolution (1 Mb typically, or 500 kb).
+To calculate and save the **O/E contact matrix** and the **Pearson correlation matrix** for a chromosome ``--chr`` do as following:
 ```unix
 python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
 --action normalize_enrich \
@@ -159,7 +159,7 @@ This section allows to plot the contact data (observed, expected or normalized f
 
 ### 3.1. Visualizing the contact data
 
-This part is to plot heatmaps and histograms of the contact data. You can use this to plot observed, fend normalized contact data or expected data, either fend expected or enrichment expected (see above for definitions).
+This part is to plot heatmaps and histograms of the contact data. You can use this to plot observed, fend normalized contact data or expected data, either fend expected (correction values) or enrichment expected (see above for definitions).
 
 To plot and save the heatmap and histogram of the normalized data at 40 kb resolution run the following:
 ```unix
@@ -262,7 +262,7 @@ Heatmap             |  Histogram
 
 ### 3.3. Visualizing the Pearson correlation matrix
 
-This part is to plot the heatmap of the Person correlation matrix derived from the O/E matrix. The input file ``HiCtool_chr6_1mb_correlation_matrix.txt`` was generated as output file [above](#22-normalizing-enrichment-oe-data-and-calculating-the-pearson-correlation-matrix).
+This part is to plot the heatmap of the Person correlation matrix derived from the O/E matrix at 1 Mb resolution. The input file ``chr6_1000000_correlation_matrix.txt`` was generated as output file [above](#22-normalizing-enrichment-oe-data-and-calculating-the-pearson-correlation-matrix).
 
 ```unix
 python2.7 /HiCtool-master/scripts/HiCtool_yaffe_tanay.py \
