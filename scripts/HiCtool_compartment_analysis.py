@@ -91,8 +91,8 @@ def calculate_pc(a_chr):
     bin_size = parameters["bin_size"]
     pc = parameters['pc']
     
-    input_correlation_matrix = load_matrix("yaffe-tanay_" + str(bin_size) + "/chr" + a_chr + "_" + str(bin_size) + "_correlation_matrix.txt")
-    output_filename = "yaffe-tanay_" + str(bin_size) + "/chr" + a_chr + '_' + str(bin_size) + '_'  + pc + '.txt'  
+    input_correlation_matrix = load_matrix("yaffe_tanay_" + str(bin_size) + "/chr" + a_chr + "_" + str(bin_size) + "_correlation_matrix.txt")
+    output_filename = "yaffe_tanay_" + str(bin_size) + "/chr" + a_chr + '_' + str(bin_size) + '_'  + pc + '.txt'  
     
     print "Performing PCA..."
     pca = PCA(n_components=2)
@@ -149,7 +149,7 @@ def plot_pc(input_pc_file,
         except StopIteration:
             break
 
-    output_filename = "yaffe-tanay_" + str(bin_size) + '/chr' + a_chr + '_' + str(bin_size) + '_' + pc + '.pdf'
+    output_filename = "yaffe_tanay_" + str(bin_size) + '/chr' + a_chr + '_' + str(bin_size) + '_' + pc + '.pdf'
 
     if full_chromosome == True:
         start_pos = 0

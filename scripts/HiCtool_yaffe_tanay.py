@@ -592,10 +592,12 @@ def normalize_chromosome_enrich_data(a_chr):
                 normalized_enrich[i][j] = -1
             else:
                 normalized_enrich[i][j] = float(observed[i][j])/float(expected_enrich[i][j])
-    
-    pcc_contact_matrix = np.corrcoef(normalized_enrich)
 
     save_matrix(normalized_enrich, output_path + "/" + output_filename + 'normalized_enrich.txt') 
+    
+    # normalized_enrich[normalized_enrich == -1] = 0
+    pcc_contact_matrix = np.corrcoef(normalized_enrich)
+    pcc_contact_matrix[np.isnan(pcc_contact_matrix)] = 0
     save_matrix(pcc_contact_matrix, output_path + "/" + output_filename + 'correlation_matrix.txt') 
     
     print "Done!"
