@@ -819,7 +819,7 @@ def plot_chromosome_enrich_data(contact_matrix,
     plt.savefig(output_path + "/" + output_filename + '.pdf', format = 'pdf', dpi = my_dpi)
     
     # Plot the histogram
-    if plot_histogram:        
+    if plot_histogram == 1:        
         histogram = []
         k = 1
         for i in xrange(n):
@@ -1216,7 +1216,7 @@ if __name__ == '__main__':
                                     cutoff_max,
                                     cutoff_min,
                                     parameters['my_dpi'],
-                                    bool(parameters['plot_histogram']))
+                                    parameters['plot_histogram'])
     
     elif parameters['action']  == "plot_correlation":
         

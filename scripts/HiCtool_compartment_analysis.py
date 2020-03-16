@@ -16,8 +16,10 @@
 #  --chr                     Single chromosome for PC calculation or plotting, or list of chromosomes between square brackets for PC calculation of multiple chromosomes at once.
 #  --full_chromosome         Insert 1 to plot PC values for the entire chromosome, 0 otherwise.
 #  --pc                      Which principal component to be used for compartment analysis: PC1 or PC2.
+#  --flip                    By default HiCtool will try to assign positive PC values to active zones (leave this parameter as None). Set to -1 if you wish to flip PC values anyways, 1 if you want to force no flipping.
 #  --coord                   List of two integers with start and end coordinates to plot PC values only for a specific region.
 #  --plot_grid               If action is "plot_pc", insert 1 to plot the grid, 0 otherwise.
+#  --plot_axis               If action is "plot_pc", insert 1 to plot the axis, 0 otherwise.
 
 from optparse import OptionParser
 import numpy as np
@@ -35,7 +37,9 @@ parameters = {'action': None,
               'full_chromosome': None,
               'coord': None,
               'pc': None,
-              'plot_grid': None,        
+              'flip': None,
+              'plot_grid': None,
+              'plot_axis': None
               }
 
 
@@ -90,6 +94,7 @@ def calculate_pc(a_chr):
     
     bin_size = parameters["bin_size"]
     pc = parameters['pc']
+    flip = parameters['flip']
     
     input_correlation_matrix = load_matrix("yaffe_tanay_" + str(bin_size) + "/chr" + a_chr + "_" + str(bin_size) + "_correlation_matrix.txt")
     output_filename = "yaffe_tanay_" + str(bin_size) + "/chr" + a_chr + '_' + str(bin_size) + '_'  + pc + '.txt'  
@@ -99,6 +104,14 @@ def calculate_pc(a_chr):
     principalComponents = pca.fit_transform(input_correlation_matrix)
     principalDf = pd.DataFrame(data = principalComponents, columns = ['PC1', 'PC2'])
     compartments = principalDf[pc]
+    # Checking if active zones correspond to positive PC
+    if flip == None:
+        corr_coeff = np.corrcoef(compartments,input_correlation_matrix[0])[0,1]
+        if corr_coeff > 0:
+            compartments = compartments * -1
+    elif flip == -1: # forcing flipping of the PC values
+        compartments = compartments * -1
+    
     # Save pc values to output file
     with open (output_filename,'w') as fout:
         n = len(compartments)
@@ -114,7 +127,8 @@ def plot_pc(input_pc_file,
             start_pos=0, 
             end_pos=0,
             pc="PC1",
-            plot_grid=True):
+            plot_grid=False,
+            plot_axis=False):
     """
     Function to plot the PC values for a chromosome.
     Arguments:
@@ -126,6 +140,7 @@ def plot_pc(input_pc_file,
         end_pos (int): end coordinate for the plot in bp.
         pc (str): which PC has been used in the analysis (PC1 or PC2).
         plot_grid (bool): if True, plot the grid.
+        plot_axis (bool): if True, plot the axis.
     Output:
         Plot saved to pdf file.
     """    
@@ -191,6 +206,8 @@ def plot_pc(input_pc_file,
     plt.title(pc + " [Chr " + a_chr +": " + str(start_pos) + "-" + str(end_pos) + "]")
     plt.xlabel("Base coordinates")
     plt.grid(plot_grid)
+    if plot_axis == 0:
+        plt.axis('off')
     plt.savefig(output_filename, format = 'pdf')
     print "Done!"
 
@@ -208,8 +225,10 @@ if __name__ == '__main__':
     parser.add_option('--chr', dest='chr', type='str', help='Single chromosome for PC calculation or plotting, or list of chromosomes between square brackets for PC calculation of multiple chromosomes at once.')  
     parser.add_option('--full_chromosome', dest='full_chromosome', type='int', default=1, help='Insert 1 to plot PC values for the entire chromosome, 0 otherwise.')      
     parser.add_option('--pc', dest='pc', type='str', help='Which principal component to be used for compartment analysis: PC1 or PC2.')  
+    parser.add_option('--flip', dest='flip', type='int', help='By default HiCtool will try to assign positive PC values to active zones (leave this parameter as None). Set to -1 if you wish to flip PC values anyways, 1 if you want to force no flipping.')  
     parser.add_option('--coord', dest='coord', type='str', help='List of two integers with start and end coordinates to plot PC values only for a specific region.')  
     parser.add_option('--plot_grid', dest='plot_grid', type='int', default=0, help='If action is "plot_pc", insert 1 to plot the grid, 0 otherwise.')  
+    parser.add_option('--plot_axis', dest='plot_axis', type='int', default=0, help='If action is "plot_pc", insert 1 to plot the axis, 0 otherwise.')  
     (options, args) = parser.parse_args( )
     
     if options.action == None:
@@ -247,7 +266,9 @@ if __name__ == '__main__':
     parameters['full_chromosome'] = options.full_chromosome
     parameters['coord'] = options.coord
     parameters['pc'] = options.pc
+    parameters['flip'] = options.flip
     parameters['plot_grid'] = options.plot_grid
+    parameters['plot_axis'] = options.plot_axis
 
     if parameters['species'] + ".chrom.sizes" not in os.listdir(parameters['chromSizes_path']):
         available_species = ', '.join([x.split('.')[0] for x in  os.listdir(parameters['chromSizes_path'])])
@@ -307,4 +328,5 @@ if __name__ == '__main__':
                 start_pos,
                 end_pos,
                 parameters['pc'],
-                bool(parameters["plot_grid"]))
+                bool(parameters["plot_grid"]),
+                bool(parameters["plot_axis"]))

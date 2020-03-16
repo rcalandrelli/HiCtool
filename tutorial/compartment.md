@@ -2,6 +2,8 @@
 
 This section allows to calculate the principal components (PC) of the Pearson correlation matrix that can be used to delineate A/B compartments in Hi-C data at low resolution (usually 1 mb or 500 kb). It is possible to calculate both PC1 and PC2. Usually, the sign of the eigenvector (PC1) indicates the compartment.
 
+Note that comparing PC values (either PC1 or PC2) between experiments may not be appropriate. While PC1 usually correlates with active and inactive compartments, the nature of this association may be different among experiments. It is always recommended to compare interaction profiles of a specific genomic locus towards the other loci instead.
+
 ## Table of contents
 
 1. [Calculating the principal component](#1-calculating-the-principal-component)
@@ -31,6 +33,8 @@ where:
 - ``--chr``: The chromosome to be used.
 - ``--pc``: Which principal component to be returned (either ``PC1`` or ``PC2``).
 
+By default HiCtool will try to assign positive PC values to active zones, which it may be done by flipping the sign of the eigenvector if needed. The user may decide to change this default behavior by using the parameter ``--flip``. Set in the command above ``--flip -1`` if you wish to flip PC values anyways, ``--flip 1`` if you want to force no flipping.
+
 The output is a txt file with the values of the principal component selected, in this case ``chr6_1000000_PC1.txt`` inside the folder ``./yaffe_tanay_1000000/``.
 
 The parameter ``--chr`` can be used also to pass multiple chromosomes (as a list between square brackets) at once and also multi-processing computation is provided if your machine supports it using the parameters ``-p``:
@@ -58,7 +62,8 @@ python2.7 /HiCtool-master/scripts/HiCtool_compartment_analysis.py \
 -b 1000000 \
 -s hg38 \
 --chr 6 \
---pc PC1
+--pc PC1 \
+--plot_axis 1
 ```
 
 where:
@@ -70,5 +75,8 @@ where:
 - ``-s``: Species name.
 - ``--chr``: The chromosome to be used.
 - ``--pc``: Which principal component to be returned (the same you have calculated above).
+- ``--plot_grid``: Set to 1 if you wish to plot the grid.
+- ``--plot_axis``: Set to 0 or remove this parameter if you do not wish to plot the axis. This may be useful to obtain a simpler plot that you may want to add to the correlation matrix.
 
-![](/figures/HiCtool_chr6_1mb_PC1.png) 
+
+![](/figures/HiCtool_chr6_1mb_PC1.png)
