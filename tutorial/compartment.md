@@ -33,7 +33,7 @@ where:
 - ``--chr``: The chromosome to be used.
 - ``--pc``: Which principal component to be returned (either ``PC1`` or ``PC2``).
 
-By default HiCtool will try to assign positive PC values to active zones, which it may be done by flipping the sign of the eigenvector if needed. The user may decide to change this default behavior by using the parameter ``--flip``. Set in the command above ``--flip -1`` if you wish to flip PC values anyways, ``--flip 1`` if you want to force no flipping.
+By default HiCtool will try to assign positive PC values to active zones, which it may be done by flipping the sign of the eigenvector if needed. The user may decide to change this default behavior by using the parameter ``--flip``. Set ``--flip -1`` if you wish to flip PC values anyways, ``--flip 1`` if you want to force no flipping.
 
 The output is a txt file with the values of the principal component selected, in this case ``chr6_1000000_PC1.txt`` inside the folder ``./yaffe_tanay_1000000/``.
 
