@@ -199,8 +199,8 @@ def plot_pc(input_pc_file,
     
     print "Plotting " + pc + " values..."
     plt.close("all")
-    plt.bar(x, pos_comp, width, color="r", label="Positive " + pc, linewidth = 0.1)
-    plt.bar(x, neg_comp, width, color="b", label="Negative " + pc, linewidth = 0.1)
+    plt.bar(x, pos_comp, width, color="r", label="Positive " + pc, linewidth = 0)
+    plt.bar(x, neg_comp, width, color="b", label="Negative " + pc, linewidth = 0)
     plt.xlim([x[0]-bin_size*8,x[-1]+bin_size*8])
     plt.ylim([min(input_pc_part)-2,max(input_pc_part)+2])
     plt.title(pc + " [Chr " + a_chr +": " + str(start_pos) + "-" + str(end_pos) + "]")
