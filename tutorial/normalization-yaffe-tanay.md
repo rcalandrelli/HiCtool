@@ -1,6 +1,6 @@
 # Data normalization with explicit-factor correction model of Yaffe and Tanay
 
-This pipeline presents the procedure to normalize and visualize **Hi-C intra-chromosomal contact data only** following the explicit-factor model of [Yaffe and Tanay](http://www.nature.com/ng/journal/v43/n11/abs/ng.947.html). This allows also to generate the O/E contact data used to calculate the Pearson correlation matrix (this can be used for A/B compartment analysis reported [here](/tutorial/compartment.md)).
+This pipeline presents the procedure to normalize and visualize **Hi-C intra-chromosomal contact data only** following the explicit-factor model of [Yaffe and Tanay](http://www.nature.com/ng/journal/v43/n11/abs/ng.947.html). This allows also to generate the O/E contact data used to calculate the **Pearson correlation matrix** (this can be used for A/B compartment analysis reported [here](/tutorial/compartment.md)).
 
 ## Table of contents
 
