@@ -24,7 +24,7 @@ The Python script [HiCtool_hifive.py](/scripts/HiCtool_hifive.py) is used to run
 - Creating the HiC project object, which stores the information about the observed contact data that we will use for the downstream analysis.
 - Filtering fragments that do not have at least one interaction before learning correction parameters.
 - Estimating the distance-dependence relationship from the data prior to normalization. This step allows to compute the expected contact matrix based on genomic distance which is used to output the O/E contact matrix.
-- Learning the correction model for Hi-C data. For the normalization, we take into account of fragments length, inter-fragment distance, GC content and mappability score biases, according to the information included in the Fend object. We also consider a minimum distance of 500 kb between fragments to take into account of the effect of biological biases (TSSs and CTCF bound sites) while learning the correction parameters.
+- Learning the correction model for Hi-C data. For the normalization, we take into account of fragments length, inter-fragment distance, GC content and mappability score biases (see parameters ``--add_gc`` and ``--add_mappability`` in the code snippet below), according to the information included in the Fend object. We also consider a minimum distance of 500 kb between fragments to take into account of the effect of biological biases (TSSs and CTCF bound sites) while learning the correction parameters.
 
 For more information about these functions, please see [HiFive’s API documentation](http://bxlab-hifive.readthedocs.org/en/latest/api.html). To run these steps execute the following command on the Unix console (update parameters properly):
 ```unix
@@ -33,7 +33,9 @@ python2.7 /HiCtool-master/scripts/HiCtool_hifive.py \
 --b1 HiCfile_pair1.bam \
 --b2 HiCfile_pair2.bam \
 -e MboI \
--m Yaffe-Tanay
+-m Yaffe-Tanay \
+--add_gc 1 \
+--add_mappability 1
 ```
 where:
 
@@ -42,6 +44,8 @@ where:
 - ``--b2`` is the second bam file from preprocessing.
 - ``-e`` is the restriction enzyme or enzymes names between square brackets (example ``[MboI,Hinfl]``).
 - ``-m`` is the normalization model used (``Yaffe_Tanay`` in this case).
+- ``--add_gc`` set to 1 to consider also the fragment GC content in the normalization process. Set to 0 if you wish not to do so.
+- ``--add_mappability`` set to 1 to consider also the fragment mappability score in the normalization process. Set to 0 if you wish not to do so.
 
 **The following output files are generated:**
 
