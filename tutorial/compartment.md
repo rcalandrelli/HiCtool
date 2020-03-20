@@ -63,6 +63,7 @@ python2.7 /HiCtool-master/scripts/HiCtool_compartment_analysis.py \
 -s hg38 \
 --chr 6 \
 --pc PC1 \
+--plot_grid 0 \
 --plot_axis 1
 ```
 
