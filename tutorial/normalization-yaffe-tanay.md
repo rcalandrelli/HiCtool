@@ -99,7 +99,7 @@ where:
 - ``--save_obs``: Set to 1 to save the observed contact matrix, 0 otherwise.
 - ``--save_expect``: Set to 1 to save the fend expected data with correction values, 0 otherwise.
 
-The parameter ``--chr`` can be used also to normalize multiple chromosomes (passed as a list between square brackets) at once and also multi-processing computation is provided if your machine supports it using the parameters ``-p``:
+The parameter ``--chr`` can be used also to normalize multiple chromosomes (passed as a list between square brackets) at once and also multi-processing computation is provided if your machine supports it, using the parameters ``-p`` followed by the number of processors to be used in parallel (for example ``-p 2``):
 ```unix
 chromosomes=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y]
 
@@ -141,7 +141,7 @@ where:
 - ``--save_obs``: Set to 1 to save the observed contact matrix, 0 otherwise.
 - ``--save_expect``: Set to 1 to save the expected data, 0 otherwise.
 
-The parameter ``--chr`` can be used also to normalize multiple chromosomes (passed as a list between square brackets) at once and also multi-processing computation is provided if your machine supports it using the parameters ``-p``:
+The parameter ``--chr`` can be used also to normalize multiple chromosomes (passed as a list between square brackets) at once and also multi-processing computation is provided if your machine supports it, using the parameters ``-p`` followed by the number of processors to be used in parallel (for example ``-p 2``):
 ```unix
 chromosomes=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y]
 

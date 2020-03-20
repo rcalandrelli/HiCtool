@@ -78,9 +78,9 @@ class hi_five:
                 
                 # Learning correction parameters using the binning algorithm
                 my_model = ['len','distance']
-                if 'add_gc' == True:
+                if add_gc == True:
                     my_model.append('gc')
-                if 'add_mappability' == True:
+                if add_mappability == True:
                     my_model.append('mappability')
                 my_num_bins = [20] * len(my_model)
                 my_parameters = ['even'] * len(my_model)

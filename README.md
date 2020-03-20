@@ -75,7 +75,7 @@ Calandrelli, R., Wu, Q., Guan, J., & Zhong, S. (2018). GITAR: An open source too
 
    - A/B compartment analysis is now included.
    - Calculation and plotting of the Pearson correlation matrix from the O/E contact matrix (only Yaffe-Tanay method).
-   - Possibility of calculating and plotting eigenvector for A/B compartment annotation.
+   - Calculation and plotting of the eigenvector for A/B compartment annotation.
    - Small bug fixes.
 
 ### July 25, 2019

@@ -1,8 +1,8 @@
 # A/B compartment analysis
 
-This section allows to calculate the principal components (PC) of the Pearson correlation matrix that can be used to delineate A/B compartments in Hi-C data at low resolution (usually 1 mb or 500 kb). It is possible to calculate both PC1 and PC2. Usually, the sign of the eigenvector (PC1) indicates the compartment.
+This section allows to calculate the principal components (PCs) of the Pearson correlation matrix that can be used to delineate A/B compartments in Hi-C data at low resolution (usually 1 mb or 500 kb). It is possible to calculate both PC1 and PC2. Usually, the sign of the eigenvector (PC1) indicates the compartment.
 
-Note that comparing PC values (either PC1 or PC2) between experiments may not be appropriate. While PC1 usually correlates with active and inactive compartments, the nature of this association may be different among experiments. It is always recommended to compare interaction profiles of a specific genomic locus towards the other loci instead.
+Note that comparing PC values (either PC1 or PC2) between experiments may not be appropriate. While PC1 usually correlates with active and inactive compartments, the nature of this association may be different among experiments. Instead, it is always recommended to compare interaction profiles of a specific genomic locus towards the other loci.
 
 ## Table of contents
 
@@ -37,7 +37,7 @@ By default HiCtool will try to assign positive PC values to active zones, which 
 
 The output is a txt file with the values of the principal component selected, in this case ``chr6_1000000_PC1.txt`` inside the folder ``./yaffe_tanay_1000000/``.
 
-The parameter ``--chr`` can be used also to pass multiple chromosomes (as a list between square brackets) at once and also multi-processing computation is provided if your machine supports it using the parameters ``-p``:
+The parameter ``--chr`` can be used also to pass multiple chromosomes (as a list between square brackets) at once and also multi-processing computation is provided if your machine supports it, using the parameters ``-p`` followed by the number of processors to be used in parallel (for example ``-p 2``):
 ```unix
 chromosomes=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y]
 
