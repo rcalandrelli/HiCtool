@@ -118,7 +118,7 @@ where:
 - ``--chr_col_coord``: List of two integers with start and end coordinates for the chromosome on the columns.
 - ``--topological_domains``: Topological domain coordinates file to visualize domains on the heatmap.
 
-Zoom in on a smaller region (chr6: 50,000,000-54,000,000):
+Zoom on a smaller region (chr6: 50,000,000-54,000,000):
 ```unix
 python2.7 ./HiCtool-master/scripts/HiCtool_global_map_analysis.py \
 --action plot_map \
