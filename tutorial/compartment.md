@@ -77,7 +77,7 @@ where:
 - ``--chr``: The chromosome to be used.
 - ``--pc``: Which principal component to be returned (the same you have calculated above).
 - ``--plot_grid``: Set to 1 if you wish to plot the grid.
-- ``--plot_axis``: Set to 0 or remove this parameter if you do not wish to plot the axis. This may be useful to obtain a simpler plot that you may want to add to the correlation matrix.
+- ``--plot_axis``: Set to 0 or remove this parameter if you do not wish to plot the axis. This may be useful to obtain a simpler plot that you may want to visualize together with the correlation matrix.
 
 
 ![](/figures/HiCtool_chr6_1mb_PC1.png)
