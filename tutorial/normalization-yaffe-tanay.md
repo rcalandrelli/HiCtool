@@ -43,7 +43,7 @@ where:
 - ``--b1`` is the first bam file from preprocessing.
 - ``--b2`` is the second bam file from preprocessing.
 - ``-e`` is the restriction enzyme or enzymes names between square brackets (example ``[MboI,Hinfl]``).
-- ``-m`` is the normalization model used (``Yaffe_Tanay`` in this case).
+- ``-m`` is the normalization model used (``Yaffe-Tanay`` in this case).
 - ``--add_gc`` set to 1 to consider also the fragment GC content in the normalization process. Set to 0 if you wish not to do so.
 - ``--add_mappability`` set to 1 to consider also the fragment mappability score in the normalization process. Set to 0 if you wish not to do so.
 
